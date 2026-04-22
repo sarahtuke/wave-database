@@ -632,7 +632,7 @@ function renderTypology(){
   setTimeout(()=>{
     const ctx=document.getElementById('tyRadar');if(!ctx)return;
     if(radarChart)radarChart.destroy();
-    radarChart=new Chart(ctx,{type:'radar',data:{labels:['Structural','Ecological','Economic','Social','Aesthetic'],datasets:[{data:ancData.map(d=>d.score),backgroundColor:'rgba(127,119,221,0.15)',borderColor:'rgba(127,119,221,0.65)',borderWidth:1.5,pointBackgroundColor:'rgba(127,119,221,0.85)',pointRadius:3}]},options:{animation:{duration:350},scales:{r:{min:0,max:1,ticks:{display:false,stepSize:0.5},grid:{color:'rgba(255,255,255,0.06)'},pointLabels:{color:'#7a7870',font:{size:9,family:'Courier New'}},angleLines:{color:'rgba(255,255,255,0.05)'}}},plugins:{legend:{display:false}}}});
+    radarChart=new Chart(ctx,{type:'radar',data:{labels:['Structural','Ecological','Economic','Social','Aesthetic'],datasets:[{data:ancData.map(d=>d.score),backgroundColor:'rgba(127,119,221,0.15)',borderColor:'rgba(127,119,221,0.65)',borderWidth:1.5,pointBackgroundColor:'rgba(127,119,221,0.85)',pointRadius:3}]},options:{animation:{duration:350},scales:{r:{min:0,max:1,ticks:{display:false,stepSize:0.5},grid:{color:'rgba(255,255,255,0.06)'},pointLabels:{color:'#4e4d4a',font:{size:9,family:'Courier New'}},angleLines:{color:'rgba(255,255,255,0.05)'}}},plugins:{legend:{display:false}}}});
   },30);
 }
 
@@ -826,7 +826,7 @@ function openStudy(asa){
   document.getElementById('sm').classList.add('open');
   setTimeout(()=>{
     const ctx=document.getElementById('smRadar');if(!ctx)return;
-    new Chart(ctx,{type:'radar',data:{labels:['Structural','Ecological','Economic','Social','Aesthetic'],datasets:[{data:ANC.map(a=>(s.anchors&&s.anchors[a]&&s.anchors[a].has?1:0)),backgroundColor:'rgba(127,119,221,0.15)',borderColor:'rgba(127,119,221,0.65)',borderWidth:1.5,pointBackgroundColor:'rgba(127,119,221,0.85)',pointRadius:3}]},options:{animation:{duration:300},scales:{r:{min:0,max:1,ticks:{display:false},grid:{color:'rgba(255,255,255,0.05)'},pointLabels:{color:'#6a6860',font:{size:8,family:'Courier New'}},angleLines:{color:'rgba(255,255,255,0.04)'}}},plugins:{legend:{display:false}}}});
+    new Chart(ctx,{type:'radar',data:{labels:['Structural','Ecological','Economic','Social','Aesthetic'],datasets:[{data:ANC.map(a=>(s.anchors&&s.anchors[a]&&s.anchors[a].has?1:0)),backgroundColor:'rgba(127,119,221,0.15)',borderColor:'rgba(127,119,221,0.65)',borderWidth:1.5,pointBackgroundColor:'rgba(127,119,221,0.85)',pointRadius:3}]},options:{animation:{duration:300},scales:{r:{min:0,max:1,ticks:{display:false},grid:{color:'rgba(255,255,255,0.05)'},pointLabels:{color:'#4e4d4a',font:{size:8,family:'Courier New'}},angleLines:{color:'rgba(255,255,255,0.04)'}}},plugins:{legend:{display:false}}}});
   },30);
 }
 
