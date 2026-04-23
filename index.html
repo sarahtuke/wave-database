@@ -15,6 +15,7 @@
   --sas-ac:#7F77DD;--sas-ac2:#EF9F27;
   --sas-cA:#1D9E75;--sas-cB:#639922;--sas-cC:#7F77DD;--sas-cD:#378ADD;--sas-cE:#EF9F27;
   --sas-f1:#c0544e;--sas-f2:#378ADD;--sas-f3:#1D9E75;--sas-f4:#9F77DD;
+  --sas-os:#c0544e;--sas-osp:#4ECDC4;
   --sas-r:5px;--sas-rl:9px;
 }
 html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad0);font-family:'Courier New',monospace;font-size:24px;overflow:hidden}
@@ -46,7 +47,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 ::-webkit-scrollbar-thumb{background:var(--sas-bg4,#1e2438);border-radius:2px}
 
 /* MATRIX */
-#left-col{width:320px;min-width:320px;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+#left-col{width:640px;min-width:640px;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
 #panel-m{flex:1;min-height:0}
 .mx-col-heads{display:grid;grid-template-columns:44px repeat(4,1fr);gap:2px;margin-bottom:2px}
 .mx-col-head{font-size:14px;color:var(--sas-t3,#4e4d4a);text-align:center;letter-spacing:0.05em;padding:3px 1px;line-height:1.3}
@@ -690,11 +691,16 @@ function renderRecords(){
 }
 
 function renderObjTab(body,objs){
-  if(!objs.length){body.innerHTML='<div class="no-rec">No speculative objects<br>catalogued for this typology yet.</div>';return;}
+  if(!objs.length){body.innerHTML='<div class="no-rec">No objects catalogued<br>for this typology yet.</div>';return;}
   body.innerHTML=objs.map(function(o){
-    var gc=GC[o.typology_id?o.typology_id.slice(-1):'']||'#888';
+    var isStudied=!!o.asa_code;
+    var clr=isStudied?'var(--sas-os,#c0544e)':'var(--sas-osp,#4ECDC4)';
+    var label=isStudied?'studied object':'speculative object';
     var s='<div class="sc">';
-    s+='<div class="sc-asa" style="color:'+gc+'">'+(o.typology_id||'—')+'</div>';
+    s+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">';
+    s+='<span style="font-size:16px;letter-spacing:0.07em;color:'+clr+';cursor:pointer;text-decoration:underline;text-underline-offset:2px" onclick="openObjCell(\''+o.typology_id+'\',\''+o.id+'\')">'+(o.typology_id||'—')+'</span>';
+    s+='<span style="font-size:12px;color:var(--sas-t3,#4e4d4a);letter-spacing:0.05em">'+label+'</span>';
+    s+='</div>';
     s+='<div class="sc-title">'+(o.name||'Unnamed')+'</div>';
     if(o.author||o.year)s+='<div class="sc-cite">'+(o.author||'')+(o.year?' · '+o.year:'')+'</div>';
     if(o.coastal_context)s+='<div class="sc-cite" style="color:var(--sas-t3,#4e4d4a)">'+o.coastal_context+'</div>';
@@ -765,10 +771,11 @@ function plotAtlasMarkers(){
   if(showObjects){
     OBJECTS.forEach(o=>{
       if(!o.location)return;
-      const m=L.circleMarker([o.location.lat,o.location.lng],{radius:5,fillColor:'#EF9F27',color:'rgba(255,255,255,0.3)',weight:1,opacity:1,fillOpacity:0.75,dashArray:'3,3'});
+      const oClr=o.asa_code?'#c0544e':'#4ECDC4';const oBdr=o.asa_code?'rgba(192,84,78,0.3)':'rgba(78,205,196,0.3)';
+      const m=L.circleMarker([o.location.lat,o.location.lng],{radius:5,fillColor:oClr,color:'rgba(255,255,255,0.3)',weight:1,opacity:1,fillOpacity:0.75,dashArray:'3,3'});
       m.typologyId=o.typology_id;
       m.markerType='object';
-      m.bindPopup(`<div style="font-size:14px;padding:1px 6px;border-radius:3px;border:1px solid rgba(239,159,39,0.3);color:#EF9F27;display:inline-block;margin-bottom:5px;letter-spacing:0.05em">speculative object</div><div style="font-size:20px;color:var(--sas-t1,#dedad0);margin-bottom:2px;line-height:1.3">${o.name}</div><div style="font-size:16px;color:var(--sas-t3,#4e4d4a);margin-bottom:4px">${o.author} &middot; ${o.year}</div><div style="font-size:16px;color:var(--sas-t3,#4e4d4a);font-style:italic;margin-bottom:5px">${o.location.label}</div><div style="font-size:16px;color:var(--sas-t2,#8a8880);margin-bottom:6px;line-height:1.4">${o.coastal_context}</div><div style="font-size:16px;color:#9b95f0;cursor:pointer" onclick="clickCell('${o.typology_id}')">&#8594; view typology</div>`,{className:'sas-popup'});
+      m.bindPopup(`<div style="font-size:14px;padding:1px 6px;border-radius:3px;border:1px solid ${oBdr};color:${oClr};display:inline-block;margin-bottom:5px;letter-spacing:0.05em">${o.asa_code?'studied object':'speculative object'}</div><div style="font-size:20px;color:var(--sas-t1,#dedad0);margin-bottom:2px;line-height:1.3">${o.name}</div><div style="font-size:16px;color:var(--sas-t3,#4e4d4a);margin-bottom:4px">${o.author} &middot; ${o.year}</div><div style="font-size:16px;color:var(--sas-t3,#4e4d4a);font-style:italic;margin-bottom:5px">${o.location.label}</div><div style="font-size:16px;color:var(--sas-t2,#8a8880);margin-bottom:6px;line-height:1.4">${o.coastal_context}</div><div style="font-size:16px;color:#9b95f0;cursor:pointer" onclick="clickCell('${o.typology_id}')">&#8594; view typology</div>`,{className:'sas-popup'});
       m.on('click',()=>{clickCell(m.typologyId);});
       m.addTo(atlasMap);
       atlasMarkers.push(m);
@@ -811,6 +818,15 @@ function clickCell(cid){
   updateAtlasSelection();
 }
 function clearSel(){selCell=null;renderMatrix();renderTypology();renderRecords();updateAtlasSelection();}
+function openObjCell(cid,objId){
+  selCell=cid;
+  renderMatrix();renderTypology();renderRecords();updateAtlasSelection();
+  setTimeout(function(){
+    var objs=OBJECTS.filter(function(o){return o.typology_id===cid;});
+    var idx=objs.findIndex(function(o){return o.id===objId;});
+    if(idx>=0)goToObj(cid,idx);
+  },150);
+}
 function setRTab(tab,el){recTab=tab;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('on'));el.classList.add('on');renderRecords();}
 
 // ── STUDY MODAL ──────────────────────────────────────────
