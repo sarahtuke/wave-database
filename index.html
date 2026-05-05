@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAS · Wave Catalogue</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sas-bg:#0e1015;--sas-bg2:#141720;--sas-bg3:#1a1d25;--sas-bg4:#21252e;
+  --sas-bd:rgba(255,255,255,0.07);--sas-bd2:rgba(255,255,255,0.13);
+  --sas-t1:#dedad0;--sas-t2:#8a8880;--sas-t3:#4e4d4a;
+  --sas-ac:#7F77DD;--sas-ac2:#EF9F27;--sas-ac3:#1D9E75;
+  --sas-cA:#1D9E75;--sas-cB:#639922;--sas-cC:#7F77DD;--sas-cD:#378ADD;--sas-cE:#EF9F27;
+  --sas-f1:#c0544e;--sas-f2:#378ADD;--sas-f3:#1D9E75;--sas-f4:#9F77DD;
+  --sas-r:5px;--sas-rl:10px;
+}
+html,body{height:100%;background:var(--sas-bg);color:var(--sas-t1);font-family:'Courier New',monospace;font-size:13px;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+#topbar{height:44px;min-height:44px;background:var(--sas-bg2);border-bottom:1px solid var(--sas-bd);display:flex;align-items:center;padding:0 16px;gap:14px;z-index:10;flex-shrink:0}
+.logo{font-size:11px;letter-spacing:0.16em;text-transform:uppercase;white-space:nowrap}
+.logo em{color:var(--sas-t3);font-style:normal}
+.tb-div{width:1px;height:18px;background:var(--sas-bd)}
+.tb-stat{font-size:10px;color:var(--sas-t3);white-space:nowrap}
+.tb-stat strong{color:var(--sas-t2)}
+.tb-acts{margin-left:auto;display:flex;gap:6px}
+.btn{font-size:9px;padding:4px 10px;border:1px solid var(--sas-bd2);border-radius:var(--sas-r);background:transparent;color:var(--sas-t2);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.04em;transition:all 0.12s}
+.btn:hover{background:rgba(255,255,255,0.04);color:var(--sas-t1)}
+.btn.ac{border-color:rgba(127,119,221,0.5);color:var(--sas-ac)}
+.btn.ac:hover{background:rgba(127,119,221,0.1)}
+.btn.ac2{border-color:rgba(239,159,39,0.5);color:var(--sas-ac2)}
+.btn.ac2:hover{background:rgba(239,159,39,0.1)}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+#panels{flex:1;display:flex;overflow:hidden;min-height:0}
+.vdiv{width:1px;background:var(--sas-bd);flex-shrink:0}
+.panel{display:flex;flex-direction:column;overflow:hidden;background:var(--sas-bg)}
+.ph{height:36px;min-height:36px;background:var(--sas-bg2);border-bottom:1px solid var(--sas-bd);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+.ph-title{font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:var(--sas-t3)}
+.ph-badge{font-size:8px;padding:1px 7px;border-radius:3px;border:1px solid var(--sas-bd);color:var(--sas-t3)}
+.pb{flex:1;overflow-y:auto;padding:10px}
+::-webkit-scrollbar{width:3px;height:3px}
+/* ── OPENING OVERLAY ─────────────────────────────────────── */
+#opening-overlay{position:fixed;inset:0;z-index:500;background:var(--sas-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;transition:opacity 0.3s}
+#opening-overlay.hidden{opacity:0;pointer-events:none}
+.oo-logo{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:6px}
+.oo-headline{font-size:18px;color:var(--sas-t1);letter-spacing:-0.01em;margin-bottom:8px;text-align:center}
+.oo-sub{font-size:10px;color:var(--sas-t3);text-align:center;line-height:1.6;max-width:320px;margin-bottom:24px}
+.oo-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:520px}
+.oo-card{background:var(--sas-bg2);border:1px solid var(--sas-bd);border-radius:var(--sas-rl);padding:20px 18px;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.oo-card:hover{border-color:var(--sas-bd2);background:var(--sas-bg3)}
+.oo-card.oo-build:hover{border-color:rgba(127,119,221,0.5);background:rgba(127,119,221,0.07)}
+.oo-icon{font-size:22px;opacity:0.55}
+.oo-name{font-size:12px;color:var(--sas-t1);letter-spacing:0.04em}
+.oo-desc{font-size:9px;color:var(--sas-t2);line-height:1.5}
+.oo-hint{font-size:8px;color:var(--sas-t3);letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
+
+/* ── BRIEF BUILDER (in typology panel empty state) ─────── */
+#brief-builder{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 16px;overflow-y:auto;gap:12px}
+.bb-title{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--sas-t3);text-align:center}
+.bb-sub{font-size:9px;color:var(--sas-t3);text-align:center;line-height:1.5;max-width:360px}
+.bb-toggles{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;width:100%}
+.anc-tog{font-size:9px;padding:3px 10px;border-radius:20px;border:1px solid var(--sas-bd2);color:var(--sas-t2);cursor:pointer;transition:all 0.12s;background:transparent;font-family:'Courier New',monospace;letter-spacing:0.04em}
+.anc-tog:hover{border-color:var(--sas-bd2);color:var(--sas-t1)}
+.anc-tog.on{color:var(--sas-ac);border-color:var(--sas-ac);background:rgba(127,119,221,0.1)}
+.anc-tog.custom-on{color:var(--sas-ac2);border-color:rgba(239,159,39,0.45);background:rgba(239,159,39,0.07)}
+.bb-add-row{display:flex;gap:6px;width:100%;max-width:360px}
+.bb-input{flex:1;background:var(--sas-bg3);border:1px solid var(--sas-bd);border-radius:var(--sas-r);color:var(--sas-t2);font-size:9px;padding:5px 10px;font-family:'Courier New',monospace}
+.bb-input:focus{outline:none;border-color:var(--sas-bd2)}
+.bb-add-btn{font-size:9px;padding:5px 12px;border:1px solid var(--sas-bd2);border-radius:var(--sas-r);background:transparent;color:var(--sas-t2);cursor:pointer;font-family:'Courier New',monospace;transition:all 0.12s}
+.bb-add-btn:hover{background:rgba(255,255,255,0.04);color:var(--sas-t1)}
+.bb-rec-title{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3);text-align:center;width:100%}
+.bb-rec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;width:100%}
+.bb-cell{border:1px solid var(--sas-bd);border-radius:var(--sas-r);padding:7px 5px;text-align:center;cursor:pointer;transition:all 0.12s;background:var(--sas-bg3)}
+.bb-cell:hover{border-color:var(--sas-bd2);background:var(--sas-bg4)}
+.bb-cell.bb-match{border-color:rgba(127,119,221,0.3);background:rgba(127,119,221,0.05)}
+.bb-cell.bb-strong{box-shadow:0 0 0 1px rgba(127,119,221,0.2)}
+.bb-cell-code{font-size:8px;letter-spacing:0.06em;margin-bottom:2px}
+.bb-cell-name{font-size:7px;color:var(--sas-t3);line-height:1.3}
+.bb-cell-pct{font-size:8px;font-weight:bold;margin-top:3px}
+.bb-note{font-size:8px;color:var(--sas-t3);text-align:center;font-style:italic;line-height:1.5}
+.bb-switch{font-size:8px;color:var(--sas-t3);cursor:pointer;text-align:center;margin-top:4px}
+.bb-switch:hover{color:var(--sas-t2)}
+/* matrix brief highlight */
+.mc.brief-match{border-color:rgba(127,119,221,0.35)!important;background:rgba(127,119,221,0.08)!important}
+.mc.brief-strong{border-color:var(--sas-ac)!important;background:rgba(127,119,221,0.16)!important;box-shadow:0 0 0 1px rgba(127,119,221,0.3)!important}
+
+::-webkit-scrollbar-thumb{background:var(--sas-bg4);border-radius:2px}
+
+/* MATRIX */
+#panel-m{width:226px;min-width:226px}
+.mx-col-heads{display:grid;grid-template-columns:46px repeat(4,1fr);gap:2px;margin-bottom:2px}
+.mx-col-head{font-size:7px;color:var(--sas-t3);text-align:center;letter-spacing:0.05em;padding:3px 2px;line-height:1.3}
+.mx-row{display:grid;grid-template-columns:46px repeat(4,1fr);gap:2px;margin-bottom:2px}
+.mx-rh{display:flex;flex-direction:column;justify-content:center;padding:3px 6px;border-radius:var(--sas-r);border:1px solid var(--sas-bd)}
+.mx-rh-c{font-size:7px;color:var(--sas-t3)}
+.mx-rh-n{font-size:8px;font-weight:bold;line-height:1.2;margin-top:1px}
+.mc{border-radius:var(--sas-r);border:1px solid var(--sas-bd);background:var(--sas-bg3);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.12s;position:relative;min-height:38px;padding:3px}
+.mc:hover{border-color:var(--sas-bd2);background:var(--sas-bg4)}
+.mc.pop{border-color:rgba(127,119,221,0.25);background:rgba(127,119,221,0.05)}
+.mc.pop:hover{border-color:rgba(127,119,221,0.55);background:rgba(127,119,221,0.12)}
+.mc.sel{border-color:var(--sas-ac)!important;background:rgba(127,119,221,0.18)!important;box-shadow:0 0 0 1px rgba(127,119,221,0.28)}
+.mc-code{font-size:7px;color:var(--sas-t3);letter-spacing:0.04em}
+.mc-dot{width:4px;height:4px;border-radius:50%;background:var(--sas-ac);position:absolute;top:4px;right:4px}
+.mc-n{position:absolute;bottom:2px;right:3px;font-size:6px;color:var(--sas-ac);font-weight:bold}
+.mc-obj{position:absolute;bottom:2px;left:3px;font-size:6px;color:var(--sas-ac2);font-weight:bold}
+.mx-legend{padding:8px 10px 4px;border-top:1px solid var(--sas-bd);margin-top:4px;flex-shrink:0}
+.mxl-title{font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:5px}
+.mxl-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.mxl-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.mxl-label{font-size:8px;color:var(--sas-t2)}
+.mx-key{padding:6px 10px 6px;border-top:1px solid var(--sas-bd);flex-shrink:0;display:flex;gap:10px;flex-wrap:wrap}
+.mxk-item{display:flex;align-items:center;gap:4px;font-size:7px;color:var(--sas-t3)}
+.mxk-s{width:5px;height:5px;border-radius:50%;background:var(--sas-ac)}
+.mxk-o{width:5px;height:5px;border-radius:50%;background:var(--sas-ac2)}
+.mxk-r{width:5px;height:5px;border-radius:2px;background:var(--sas-ac3)}
+
+/* CUSTOM ANCHORS BAR */
+#anc-bar{padding:6px 10px;border-top:1px solid var(--sas-bd);flex-shrink:0;background:var(--sas-bg2)}
+.anc-bar-title{font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:5px}
+.anc-chips{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px}
+.anc-chip{display:flex;align-items:center;gap:4px;font-size:8px;padding:2px 7px;border-radius:3px;border:1px solid rgba(127,119,221,0.3);color:var(--sas-ac);background:rgba(127,119,221,0.07)}
+.anc-chip-x{cursor:pointer;opacity:0.6;font-size:9px;line-height:1}
+.anc-chip-x:hover{opacity:1}
+.anc-chip.unverified{border-color:rgba(255,255,255,0.15);color:var(--sas-t3);background:rgba(255,255,255,0.03)}
+.anc-add-row{display:flex;gap:4px}
+.anc-input{background:var(--sas-bg);border:1px solid var(--sas-bd);border-radius:var(--sas-r);color:var(--sas-t2);font-size:9px;padding:3px 7px;font-family:'Courier New',monospace;flex:1;min-width:0}
+.anc-input:focus{outline:none;border-color:var(--sas-bd2)}
+
+/* TYPOLOGY */
+#panel-t{flex:1;min-width:0}
+#ty-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--sas-t3)}
+#ty-empty .arr{font-size:24px;opacity:0.15}
+#ty-empty .msg{font-size:11px;letter-spacing:0.05em}
+#ty-empty .hint{font-size:9px;opacity:0.4;max-width:200px;text-align:center;line-height:1.5}
+#ty-content{display:none;flex-direction:column;height:100%;overflow:hidden}
+.ty-hdr{background:var(--sas-bg2);border-bottom:1px solid var(--sas-bd);padding:10px 14px;flex-shrink:0}
+.ty-code{font-size:8px;letter-spacing:0.14em;color:var(--sas-t3);margin-bottom:3px}
+.ty-name{font-size:16px;color:var(--sas-t1);letter-spacing:-0.01em;margin-bottom:7px}
+.ty-badges{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.ty-badge{font-size:8px;padding:2px 7px;border-radius:3px;border:1px solid;letter-spacing:0.04em}
+.ty-conf{margin-left:auto;font-size:8px;color:var(--sas-t3);display:flex;align-items:center;gap:5px}
+.conf-pips{display:flex;gap:2px}
+.cp{width:5px;height:5px;border-radius:50%;border:1px solid var(--sas-bd2)}
+.cp.on{background:var(--sas-ac)}
+.ty-body{flex:1;overflow-y:auto;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
+.ty-full{grid-column:1/-1}
+.sec-title{font-size:7px;letter-spacing:0.16em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--sas-bd);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.sec-title span{font-size:9px;color:var(--sas-t3)}
+.sec-body{overflow:hidden;transition:max-height 0.2s ease}
+.sec-body.col{max-height:0!important}
+
+/* CONSTELLATION */
+.constellation-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.constellation-legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.cl-item{display:flex;align-items:center;gap:4px;font-size:8px;color:var(--sas-t3)}
+
+/* ANCHOR TABLE */
+.atbl{width:100%;border-collapse:collapse;font-size:9px}
+.atbl th{padding:3px 5px;text-align:left;font-size:7px;letter-spacing:0.09em;text-transform:uppercase;color:var(--sas-t3);font-weight:normal;border-bottom:1px solid var(--sas-bd)}
+.atbl td{padding:5px 5px;border-bottom:1px solid var(--sas-bd);vertical-align:middle;line-height:1.4;color:var(--sas-t2)}
+.atbl tr:last-child td{border-bottom:none}
+.an-name{display:flex;align-items:center;gap:4px;color:var(--sas-t1)}
+.an-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.bar-wrap{width:48px;background:rgba(255,255,255,0.05);border-radius:2px;height:3px}
+.bar-fill{height:100%;border-radius:2px;background:var(--sas-ac);transition:width 0.5s}
+.ctag{font-size:7px;padding:1px 4px;border-radius:3px;border:1px solid var(--sas-bd)}
+.ctag.hi{border-color:rgba(29,158,117,0.35);color:#5DCAA5;background:rgba(29,158,117,0.07)}
+.ctag.md{border-color:rgba(239,159,39,0.35);color:#EF9F27;background:rgba(239,159,39,0.07)}
+.ctag.lo{border-color:rgba(192,84,78,0.35);color:#f09595;background:rgba(192,84,78,0.07)}
+.ctag.na{border-color:var(--sas-bd);color:var(--sas-t3)}
+.ctag.uv{border-color:rgba(255,255,255,0.15);color:var(--sas-t3);font-style:italic}
+
+/* METRICS */
+.mlist{display:flex;flex-wrap:wrap;gap:4px}
+.mchip{font-size:8px;padding:2px 7px;border-radius:3px;border:1px solid var(--sas-bd);color:var(--sas-t2);background:var(--sas-bg3)}
+.mchip.eq{border-style:dashed;color:var(--sas-ac);border-color:rgba(127,119,221,0.28)}
+
+/* OBJECT CARDS (shared by speculative + realistic) */
+.obj-carousel{border:1px solid var(--sas-bd);border-radius:var(--sas-rl);overflow:hidden;margin-bottom:8px}
+.obj-vis{position:relative;background:var(--sas-bg3);min-height:110px;display:flex;align-items:center;justify-content:center}
+.obj-img{width:100%;max-height:130px;object-fit:contain;display:block}
+.obj-nav{position:absolute;top:50%;transform:translateY(-50%);width:100%;display:flex;justify-content:space-between;padding:0 6px;pointer-events:none}
+.obj-nav-btn{pointer-events:all;background:rgba(14,16,21,0.8);border:1px solid var(--sas-bd2);color:var(--sas-t2);cursor:pointer;font-size:10px;padding:3px 7px;border-radius:var(--sas-r);font-family:'Courier New',monospace}
+.obj-nav-btn:hover{color:var(--sas-t1)}
+.obj-meta{padding:8px 11px 7px}
+.obj-name{font-size:10px;color:var(--sas-t1);margin-bottom:2px;line-height:1.3}
+.obj-byline{font-size:8px;color:var(--sas-t3);margin-bottom:4px}
+.obj-desc{font-size:8px;color:var(--sas-t2);line-height:1.5;margin-bottom:5px}
+.obj-ctx{display:inline-block;font-size:7px;padding:2px 7px;border-radius:3px;border:1px solid rgba(239,159,39,0.28);color:var(--sas-ac2);background:rgba(239,159,39,0.07);margin-bottom:4px}
+.scale-tag{display:inline-flex;align-items:center;gap:4px;font-size:7px;padding:2px 7px;border-radius:3px;border:1px solid var(--sas-bd2);color:var(--sas-t2);margin-left:4px}
+.scale-icon{font-size:8px;opacity:0.7}
+.obj-foot{padding:5px 11px 8px;border-top:1px solid var(--sas-bd);display:flex;align-items:center;justify-content:space-between}
+.obj-dots{display:flex;gap:4px}
+.obj-dot{width:5px;height:5px;border-radius:50%;border:1px solid var(--sas-bd2);cursor:pointer;transition:all 0.12s}
+.obj-dot.on{background:var(--sas-ac);border-color:var(--sas-ac)}
+.obj-dot.real{background:var(--sas-ac3);border-color:var(--sas-ac3)}
+.obj-spec-tag{font-size:7px;padding:1px 6px;border-radius:3px;border:1px solid rgba(239,159,39,0.22);color:var(--sas-ac2);letter-spacing:0.04em}
+.obj-real-tag{font-size:7px;padding:1px 6px;border-radius:3px;border:1px solid rgba(29,158,117,0.3);color:var(--sas-ac3);letter-spacing:0.04em}
+.wf-scene{width:70px;height:70px;perspective:200px;margin:10px auto}
+.wf-cube{width:46px;height:46px;position:relative;transform-style:preserve-3d;animation:wfspin 9s linear infinite;margin:10px auto}
+@keyframes wfspin{from{transform:rotateY(0deg) rotateX(18deg)}to{transform:rotateY(360deg) rotateX(18deg)}}
+.wf-face{position:absolute;width:46px;height:46px;border:1px solid rgba(127,119,221,0.3);background:rgba(127,119,221,0.02)}
+.wf-front{transform:translateZ(23px)}.wf-back{transform:rotateY(180deg) translateZ(23px)}
+.wf-left{transform:rotateY(-90deg) translateZ(23px)}.wf-right{transform:rotateY(90deg) translateZ(23px)}
+.wf-top{transform:rotateX(90deg) translateZ(23px)}.wf-bottom{transform:rotateX(-90deg) translateZ(23px)}
+.real-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90px;gap:4px}
+.real-icon{font-size:22px;opacity:0.25}
+.future-tag{display:inline-block;font-size:7px;padding:1px 6px;border-radius:3px;border:1px solid rgba(127,119,221,0.2);color:var(--sas-ac);background:rgba(127,119,221,0.06);margin-top:4px;letter-spacing:0.04em}
+.lbox{font-size:9px;color:var(--sas-t2);line-height:1.6;background:var(--sas-bg3);border-left:2px solid var(--sas-ac);padding:7px 9px;border-radius:0 var(--sas-r) var(--sas-r) 0;margin-bottom:4px}
+.spl{display:flex;align-items:center;gap:7px;padding:6px 9px;border:1px solid var(--sas-bd);border-radius:var(--sas-r);cursor:pointer;transition:all 0.12s;margin-bottom:4px;background:var(--sas-bg3)}
+.spl:hover{border-color:var(--sas-bd2);background:var(--sas-bg4)}
+.spl-asa{font-size:8px;color:var(--sas-ac);letter-spacing:0.06em;white-space:nowrap;flex-shrink:0}
+.spl-title{font-size:9px;color:var(--sas-t2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spl-arr{font-size:9px;color:var(--sas-t3)}
+.gap-state{border:1px dashed var(--sas-bd);border-radius:var(--sas-rl);padding:16px;text-align:center;color:var(--sas-t3)}
+.gap-code{font-size:18px;color:var(--sas-t3);opacity:0.15;font-weight:bold;letter-spacing:0.1em;margin-bottom:6px}
+.gap-note{font-size:8px;margin-top:10px;padding:6px 10px;border:1px solid var(--sas-bd);border-radius:var(--sas-r);color:var(--sas-t3);opacity:0.55;font-style:italic;line-height:1.4}
+
+/* RECORDS */
+#panel-r{width:264px;min-width:264px}
+.rec-tabs{display:flex;border-bottom:1px solid var(--sas-bd)}
+.rtab{flex:1;font-size:8px;padding:7px;border:none;background:transparent;color:var(--sas-t3);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid transparent;transition:all 0.12s;margin-bottom:-1px}
+.rtab.on{color:var(--sas-t2);border-bottom-color:var(--sas-ac)}
+.rec-ctx{font-size:8px;color:var(--sas-t3);padding:5px 12px;border-bottom:1px solid var(--sas-bd);display:flex;align-items:center;justify-content:space-between}
+.ctx-clr{font-size:8px;cursor:pointer;color:var(--sas-ac);opacity:0.7}
+.ctx-clr:hover{opacity:1}
+.sc{border:1px solid var(--sas-bd);border-radius:var(--sas-rl);padding:9px;margin-bottom:7px;cursor:pointer;transition:all 0.12s;background:var(--sas-bg3)}
+.sc:hover{border-color:var(--sas-bd2);background:var(--sas-bg4)}
+.sc-asa{font-size:8px;letter-spacing:0.07em;margin-bottom:3px}
+.sc-title{font-size:10px;color:var(--sas-t1);line-height:1.3;margin-bottom:4px}
+.sc-cite{font-size:8px;color:var(--sas-t3);font-style:italic;margin-bottom:5px;line-height:1.3}
+.sc-row{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:5px}
+.sc-tag{font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid var(--sas-bd);color:var(--sas-t2)}
+.scale-badge{font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid var(--sas-bd2);color:var(--sas-t2);background:var(--sas-bg4)}
+.sc-pips{display:flex;gap:2px;margin-top:4px}
+.sc-pip{width:16px;height:16px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:bold;border:1px solid rgba(255,255,255,0.06)}
+.sc-pip.on{background:rgba(127,119,221,0.16);border-color:rgba(127,119,221,0.32);color:#9b95f0}
+.sc-pip.off{background:var(--sas-bg);color:var(--sas-t3)}
+.no-rec{padding:20px 0;text-align:center;color:var(--sas-t3);font-size:9px;line-height:1.6}
+.mini-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+.mini-stat{background:var(--sas-bg3);border:1px solid var(--sas-bd);border-radius:var(--sas-r);padding:7px 8px}
+.mini-stat-label{font-size:7px;color:var(--sas-t3);margin-bottom:2px}
+.mini-stat-val{font-size:16px;font-weight:bold;color:var(--sas-t2)}
+.mini-chart-title{font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:6px;margin-top:10px}
+
+/* ATLAS */
+#atlas-bar{height:30px;flex-shrink:0;background:var(--sas-bg2);border-top:1px solid var(--sas-bd);display:flex;align-items:center;padding:0 14px;gap:10px;cursor:pointer;user-select:none}
+#atlas-bar{cursor:default!important}#atlas-bar:hover{background:var(--sas-bg2)}
+#atlas-bar-title{font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:var(--sas-t3)}
+#atlas-bar-stats{font-size:8px;color:var(--sas-t3);flex:1}
+#atlas-filters{display:flex;gap:5px;margin-right:8px}
+.af-btn{font-size:8px;padding:2px 8px;border:1px solid var(--sas-bd);border-radius:3px;background:transparent;color:var(--sas-t3);cursor:pointer;font-family:'Courier New',monospace;transition:all 0.12s}
+.af-btn:hover{border-color:var(--sas-bd2);color:var(--sas-t2)}
+.af-btn.on{border-color:rgba(127,119,221,0.45);color:var(--sas-ac);background:rgba(127,119,221,0.08)}
+.af-btn.on.obj{border-color:rgba(239,159,39,0.45);color:var(--sas-ac2);background:rgba(239,159,39,0.08)}
+#atlas-chev{font-size:10px;color:var(--sas-t3);transition:transform 0.2s}
+#atlas-chev.up{transform:rotate(180deg)}
+#atlas-body{height:200px;overflow:hidden;transition:height 0.2s ease;flex-shrink:0}
+#atlas-body.collapsed{height:0}
+#atlas-map{width:100%;height:100%}
+.leaflet-container{background:#0a0d14!important;font-family:'Courier New',monospace!important}
+.leaflet-control-zoom a{background:var(--sas-bg3)!important;color:var(--sas-t2)!important;border-color:var(--sas-bd2)!important}
+.leaflet-control-zoom a:hover{background:var(--sas-bg4)!important;color:var(--sas-t1)!important}
+.leaflet-control-attribution{background:rgba(14,16,21,0.75)!important;color:#4e4d4a!important;font-size:7px!important}
+.leaflet-popup-content-wrapper{background:#141720!important;border:1px solid rgba(255,255,255,0.13)!important;border-radius:10px!important;box-shadow:0 4px 20px rgba(0,0,0,0.5)!important;color:#dedad0!important}
+.leaflet-popup-tip{background:#141720!important}
+.leaflet-popup-content{margin:10px 14px!important;font-family:'Courier New',monospace!important;min-width:160px}
+.leaflet-popup-close-button{color:#4e4d4a!important}
+
+/* STUDY MODAL */
+#sm{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.6)}
+#sm.open{display:flex;align-items:stretch}
+#sm-backdrop{flex:1;cursor:pointer}
+#sm-inner{width:560px;min-width:560px;background:var(--sas-bg2);border-left:1px solid var(--sas-bd2);overflow-y:auto;padding:16px}
+.sm-close-bar{display:flex;justify-content:space-between;align-items:center;margin:-16px -16px 14px;padding:14px 16px;border-bottom:1px solid var(--sas-bd);position:sticky;top:-16px;background:var(--sas-bg2);z-index:10}
+.sm-close-btn{background:none;border:1px solid var(--sas-bd);color:var(--sas-t2);cursor:pointer;font-size:8px;padding:3px 9px;border-radius:var(--sas-r);font-family:'Courier New',monospace}
+.sm-close-btn:hover{border-color:var(--sas-bd2);color:var(--sas-t1)}
+.sm-asa{font-size:8px;letter-spacing:0.12em;color:var(--sas-t3)}
+.sm-title{font-size:14px;color:var(--sas-t1);margin:4px 0 3px;line-height:1.3}
+.sm-cite{font-size:9px;color:var(--sas-t2);font-style:italic;margin-bottom:9px}
+.sm-badges{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px}
+.sm-badge{font-size:7px;padding:2px 6px;border-radius:3px;border:1px solid}
+.ms{margin-bottom:12px}
+.ms-title{font-size:7px;letter-spacing:0.13em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--sas-bd);cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between}
+.ms-tog{font-size:8px}
+.ms-body{overflow:hidden}
+.ms-body.col{max-height:0!important}
+.atbl2{width:100%;border-collapse:collapse;font-size:9px}
+.atbl2 th{padding:3px 5px;text-align:left;font-size:7px;text-transform:uppercase;letter-spacing:0.08em;color:var(--sas-t3);font-weight:normal;border-bottom:1px solid var(--sas-bd)}
+.atbl2 td{padding:4px 5px;border-bottom:1px solid var(--sas-bd);vertical-align:top;line-height:1.4;color:var(--sas-t2)}
+.atbl2 tr:last-child td{border-bottom:none}
+.tl{padding-left:12px;border-left:1px solid var(--sas-bd2);margin-top:2px}
+.tl-item{position:relative;margin-bottom:9px}
+.tl-item::before{content:'';position:absolute;left:-16px;top:3px;width:6px;height:6px;border-radius:50%;border:1px solid var(--sas-bd2);background:var(--sas-bg2)}
+.tl-scale{font-size:7px;color:var(--sas-ac);letter-spacing:0.07em;margin-bottom:1px}
+.tl-text{font-size:9px;color:var(--sas-t2);line-height:1.5}
+.warn{font-size:8px;color:#EF9F27;background:rgba(239,159,39,0.07);border:1px solid rgba(239,159,39,0.22);border-radius:var(--sas-r);padding:5px 8px;line-height:1.5;margin-bottom:9px}
+.hidden-sec{background:rgba(127,119,221,0.04);border:1px solid rgba(127,119,221,0.14);border-radius:var(--sas-r);padding:9px 11px;margin-bottom:5px}
+.hidden-sec-label{font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sas-ac);opacity:0.7;margin-bottom:4px}
+.hidden-sec-text{font-size:9px;color:var(--sas-t2);line-height:1.7;font-style:italic}
+</style>
+</head>
+<body>
+
+<!-- OPENING OVERLAY -->
+<div id="opening-overlay">
+  <div class="oo-logo">SAS · Wave Catalogue</div>
+  <div class="oo-headline">Where do you want to begin?</div>
+  <div class="oo-sub">Browse the evidence catalogue by typology, or build a hybrid coastal strategy brief and discover which typology combinations match your needs.</div>
+  <div class="oo-cards">
+    <div class="oo-card" onclick="dismissOverlay('browse')">
+      <div class="oo-icon">⊞</div>
+      <div class="oo-name">Scan cells</div>
+      <div class="oo-desc">Browse all 20 CPM typologies across the matrix. Click any cell to see studies, objects, and anchor evidence.</div>
+      <div class="oo-hint">start browsing →</div>
+    </div>
+    <div class="oo-card oo-build" onclick="dismissOverlay('build')">
+      <div class="oo-icon">◎</div>
+      <div class="oo-name">Build a hybrid constellation</div>
+      <div class="oo-desc">Define what your coastal strategy needs to achieve. We'll identify which typology combinations complement your hybrid brief.</div>
+      <div class="oo-hint">define your brief →</div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+
+<header id="topbar">
+  <div class="logo">Wave Catalogue <em>&middot; SAS</em></div>
+  <div class="tb-div"></div>
+  <div class="tb-stat"><strong id="s-studies">0</strong> studies</div>
+  <div class="tb-stat"><strong id="s-typos">0</strong>/20 typologies</div>
+  <div class="tb-stat"><strong id="s-spec">0</strong> speculative</div>
+  <div class="tb-stat"><strong id="s-real">0</strong> real-world</div>
+  <div class="tb-acts">
+    <button class="btn ac" onclick="openImp()">+ add study</button>
+  </div>
+</header>
+
+<div id="main">
+  <div id="panels">
+
+    <!-- MATRIX -->
+    <div id="panel-m" class="panel">
+      <div class="ph"><span class="ph-title">Matrix</span><span class="ph-badge">5&times;4</span></div>
+      <div class="pb" id="mx-body"></div>
+      <div class="mx-legend">
+        <div class="mxl-title">Group Types</div>
+        <div class="mxl-row"><div class="mxl-dot" style="background:var(--sas-cA)"></div><div class="mxl-label">A &middot; Grey</div></div>
+        <div class="mxl-row"><div class="mxl-dot" style="background:var(--sas-cB)"></div><div class="mxl-label">B &middot; Green</div></div>
+        <div class="mxl-row"><div class="mxl-dot" style="background:var(--sas-cC)"></div><div class="mxl-label">C &middot; Hybrid</div></div>
+        <div class="mxl-row"><div class="mxl-dot" style="background:var(--sas-cD)"></div><div class="mxl-label">D &middot; Amphibious</div></div>
+        <div class="mxl-row"><div class="mxl-dot" style="background:var(--sas-cE)"></div><div class="mxl-label">E &middot; LoTek</div></div>
+      </div>
+      <div class="mx-key">
+        <div class="mxk-item"><div class="mxk-s"></div>studies</div>
+        <div class="mxk-item"><div class="mxk-o"></div>speculative</div>
+        <div class="mxk-item"><div class="mxk-r"></div>real-world</div>
+      </div>
+      <!-- CUSTOM ANCHORS -->
+      <div id="anc-bar">
+        <div class="anc-bar-title">Project Constellation &mdash; Custom Anchors</div>
+        <div class="anc-chips" id="anc-chips"></div>
+        <div class="anc-add-row">
+          <input class="anc-input" id="anc-input" placeholder="add anchor (e.g. health)" maxlength="30"
+            onkeydown="if(event.key==='Enter')addAnchor()">
+          <button class="btn" onclick="addAnchor()">add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="vdiv"></div>
+
+    <!-- TYPOLOGY -->
+    <div id="panel-t" class="panel">
+      <div class="ph"><span class="ph-title">Typology</span><span class="ph-badge" id="ty-badge">&ndash;</span></div>
+      <div id="ty-empty">
+        <!-- DEFAULT empty state -->
+        <div id="ty-empty-default" style="display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--sas-t3)">
+          <div class="arr">&#8592;</div>
+          <div class="msg">select a matrix cell</div>
+          <div class="hint" style="font-size:8px;opacity:0.4;max-width:200px;text-align:center;line-height:1.5">populated cells show aggregated typology data</div>
+          <div style="margin-top:12px;font-size:8px;color:var(--sas-t3);cursor:pointer;text-decoration:underline;text-underline-offset:2px" onclick="activateBriefBuilder()">or build a hybrid constellation →</div>
+        </div>
+        <!-- BRIEF BUILDER -->
+        <div id="brief-builder" style="display:none"></div>
+      </div>
+      <div id="ty-content">
+        <div class="ty-hdr">
+          <div class="ty-code" id="ty-code"></div>
+          <div class="ty-name" id="ty-name"></div>
+          <div class="ty-badges" id="ty-badges"></div>
+        </div>
+        <div class="ty-body" id="ty-body"></div>
+      </div>
+    </div>
+
+    <div class="vdiv"></div>
+
+    <!-- RECORDS -->
+    <div id="panel-r" class="panel">
+      <div class="ph"><span class="ph-title">Records</span></div>
+      <div class="rec-tabs">
+        <button class="rtab on" onclick="setRTab('s',this)">Studies</button>
+        <button class="rtab" onclick="setRTab('a',this)">Analytics</button>
+      </div>
+      <div class="rec-ctx">
+        <span id="rec-ctx-label">all studies</span>
+        <span class="ctx-clr" id="rec-clr" onclick="clearSel()" style="display:none">clear &times;</span>
+      </div>
+      <div class="pb" id="rec-body"></div>
+    </div>
+
+  </div>
+
+  <div id="atlas-bar">
+    <span id="atlas-bar-title">Atlas</span>
+    <span id="atlas-bar-stats" style="margin-left:10px"></span>
+    <div id="atlas-filters" onclick="event.stopPropagation()">
+      <button class="af-btn on" onclick="setAtlasFilter('all',this)">All</button>
+      <button class="af-btn" onclick="setAtlasFilter('studies',this)">Studies</button>
+      <button class="af-btn obj" onclick="setAtlasFilter('objects',this)">Speculative</button>
+    </div>
+    <div style="display:flex;gap:4px;margin-left:auto" onclick="event.stopPropagation()">
+      <button class="btn" onclick="setAtlasSize('full')" title="Expand map to full screen" style="padding:3px 8px;font-size:11px" id="atlas-btn-full">&#8679;</button>
+      <button class="btn" onclick="setAtlasSize('panel')" title="Default panel height" style="padding:3px 8px;font-size:11px" id="atlas-btn-panel">&#9135;</button>
+      <button class="btn" onclick="setAtlasSize('hidden')" title="Collapse map" style="padding:3px 8px;font-size:11px" id="atlas-btn-hidden">&#8681;</button>
+    </div>
+  </div>
+  <div id="atlas-body" style="position:relative"><div id="atlas-map"></div></div>
+</div>
+</div>
+
+<div id="sm">
+  <div id="sm-backdrop" onclick="closeStudy()"></div>
+  <div id="sm-inner"></div>
+</div>
+
+<div id="imp" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.7);align-items:center;justify-content:center">
+  <div style="background:var(--sas-bg2);border:1px solid var(--sas-bd2);border-radius:var(--sas-rl);padding:18px;width:480px;max-width:95vw">
+    <div style="font-size:11px;color:var(--sas-t1);margin-bottom:4px">Add Study Record</div>
+    <div style="font-size:8px;color:var(--sas-t2);margin-bottom:9px;line-height:1.5">Required: <code>asa_code</code>, <code>title</code>, <code>group_type</code>, <code>function_type</code>, <code>citation</code>. Add <code>scale</code>: "unit"|"neighbourhood"|"territorial".</div>
+    <textarea id="imp-input" style="width:100%;height:140px;background:var(--sas-bg);border:1px solid var(--sas-bd);border-radius:var(--sas-r);color:var(--sas-t2);font-size:9px;padding:8px;font-family:'Courier New',monospace;resize:vertical" placeholder='{"asa_code":"X-00-XXX","title":"...","group_type":"Hybrid","function_type":"Edge Defense","citation":"Author (2024)","scale":"neighbourhood"}'></textarea>
+    <div id="imp-notice"></div>
+    <div style="display:flex;gap:5px;margin-top:7px;justify-content:flex-end">
+      <button class="btn" onclick="closeImp()">cancel</button>
+      <button class="btn ac" onclick="doImp()">import</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ── CONSTANTS ──────────────────────────────────────────
+const GRP=['A','B','C','D','E'];
+const GN={A:'Grey',B:'Green',C:'Hybrid',D:'Amphibious',E:'LoTek'};
+const GC={A:'#1D9E75',B:'#639922',C:'#7F77DD',D:'#378ADD',E:'#EF9F27'};
+const FUN=['1','2','3','4'];
+const FN={'1':'Edge Defense','2':'Shoreline Inundation','3':'Productive Landscapes','4':'Civic Living'};
+const FC={'1':'#c0544e','2':'#378ADD','3':'#1D9E75','4':'#9F77DD'};
+const BASE_ANC=['structural','ecological','economic','social','authorship'];
+const ANC_COLORS={structural:'#7F77DD',ecological:'#1D9E75',economic:'#EF9F27',social:'#378ADD',authorship:'#9F77DD'};
+const SCALE_LABELS={unit:'1–10 m · unit',neighbourhood:'10–100 m · neighbourhood',territorial:'100 m+ · territorial'};
+const SCALE_ICONS={unit:'▪',neighbourhood:'▪▪',territorial:'▪▪▪'};
+
+// ── DATA ───────────────────────────────────────────────
+let STUDIES=[
+{
+  asa_code:'A-19-BSDH',title:'Buried Seawall–Dune Hybrid System',
+  group_type:'Hybrid',function_type:'Edge Defense',group_code:'C',func_code:'1',
+  subtype:'1C · Hybrid Edge Defense',citation:'Almarshed et al. (2019)',
+  full_citation:'Almarshed, B.; Figlus, J.; Miller, J.K.; & Verhagen, H.J. (2019). Innovative Coastal Risk Reduction through Hybrid Design. Journal of Coastal Research, 00(0), 1–33.',
+  region:'Netherlands & USA',doc_type:'Peer-reviewed Journal Article',
+  scale:'neighbourhood',
+  keywords:['hybrid coastal defense','buried seawall','dike-in-dune','sand cover','wave overtopping','dune erosion'],
+  anchors:{
+    structural:{quant:'Hs reduced by up to 40% in surf zone; erosion reduced ≈5 m vs unprotected coast.',qual:'Visual invisibility of structural core enhances perception of safety.',equations:['q = a·exp[−b·(Rc/Tm√(gHs))]','ΔV ∝ Hs²/Rc'],priority_score:9},
+    ecological:{quant:'Vegetated dune surfaces (≥60% cover) stabilize sand; sediment volume maintained >80% V₀.',qual:'Naturalized dune morphology supports nesting fauna and ecological continuity.',equations:['Vegetation cover stability threshold (60%)'],priority_score:7},
+    economic:{quant:'Hard-core volume reduction lowers construction cost ~20–30% vs conventional seawall.',qual:'Co-use of land (parking beneath dune) demonstrates cost-efficient multifunctionality.',equations:[],priority_score:6},
+    social:{quant:'',qual:'Maintains recreational beach access; visually compatible with tourism and public use.',equations:[],priority_score:5},
+    authorship:{quant:'Crest elevation and dune form emulate natural beach profiles; run-up energy reduced.',qual:'Soft, vegetated foredune creates "naturalized protection" character.',equations:['Run-up: Ru₂% = 1.6·√(Hs·L₀·tanα)'],priority_score:8}
+  },
+  key_metrics:['Hs (m)','Ru₂% (m)','q (m³/s/m)','Rc (m)','ΔV (m³/m)','V/V₀','ξ (Iribarren)','Kr'],
+  key_equations:['q = a·exp[−b·(Rc/Tm√(gHs))]','ΔV ∝ Hs²/Rc','E_eff = E₀(1−Kr)(1−ΔV/V₀)'],
+  temporalities:[
+    {scale:'Event (Days)',process:'Storm-induced erosion and run-up response',model:'XBeach + CSHORE; flume tests',finding:'Wave height ↓40%, erosion reduced 5 m vs unprotected.'},
+    {scale:'Annual (1 Yr)',process:'Model validation against field measurements',model:'SWAN / XBeach with buoy data',finding:'Mean Hs ≈1.4 m; overtopping within EurOtop limits.'},
+    {scale:'Multi-Year (3–4 Yrs)',process:'Morphodynamic adjustment; periodic re-nourishment',model:'Long-term profile monitoring',finding:'Sand volume declines >20% without re-nourishment, exposing core.'},
+    {scale:'Multi-Decadal (~40 Yrs)',process:'Progressive coastal retreat; maintenance cycles',model:'Long-term field record',finding:'Buried hard cores intact >40 years; shoreline retreat without catastrophic failure.'},
+    {scale:'Long-Term (10–50 Yrs)',process:'Adaptive design under sea-level rise',model:'Scenario analysis',finding:'ΔSLR >0.5 m without crest adaptation → run-up exceeds design limit.'}
+  ],
+  locations:[
+    {lat:52.2048,lng:4.3960,label:'Katwijk, Netherlands'},
+    {lat:52.2392,lng:4.4378,label:'Noordwijk, Netherlands'},
+    {lat:36.8340,lng:-76.0143,label:'Dam Neck, Virginia, USA'},
+    {lat:20.7984,lng:-156.3319,label:'Maui, Hawaii, USA'},
+    {lat:40.0751,lng:-74.0446,label:'Bay Head, New Jersey, USA'}
+  ],
+  _obsidian_link:'obsidian://vault/SAS/1C-BSDH',
+  _operational_logic:'Two-tier adaptive defense: sand layer as erodible buffer absorbing wave energy; hard core as stable barrier preventing total failure once sand is eroded.',
+  _societal_logic:'Multifunctional protection integrating infrastructure with recreation, maintaining public access and aesthetics.',
+  _experiential_logic:'Visually reads as a natural dune while concealing the engineered core; wave energy felt as muted rather than crashing.',
+  note:'Conceptually proven CPM, but no concrete design evaluation. Designers must integrate with caution.'
+},
+{
+  asa_code:'B-18-SF',title:'Community-Based Silvofishery System',
+  group_type:'LoTek',function_type:'Productive Landscapes',group_code:'E',func_code:'3',
+  subtype:'3E · LoTek Productive Landscapes',citation:'Basyuni et al. (2018)',
+  full_citation:'Basyuni, M., Yani, P., & Hartini, K.S. (2018). Evaluation of mangrove management through community-based silvofishery in North Sumatra, Indonesia. IOP Conference Series: Earth and Environmental Science, 122(1).',
+  region:'North Sumatra, Indonesia',doc_type:'Peer-reviewed Journal Article',
+  scale:'neighbourhood',
+  keywords:['silvofishery','mangrove rehabilitation','community-based aquaculture','productive landscapes','low-tech'],
+  anchors:{
+    structural:{quant:'Pond–mangrove ratios of 75–90% mangrove; root systems stabilize soil and pond embankments.',qual:'Mangrove roots visibly prevent embankment collapse.',equations:['Mangrove density threshold (≥1000 trees/ha)'],priority_score:7},
+    ecological:{quant:'Mangrove density 1,000–2,500 trees/ha across 4 Rhizophora and Avicennia species.',qual:'Increased plankton, nutrient cycling, reduced toxins.',equations:['P02: ↑ρₘ → ↑Yₐq (nutrient input)','P04: A.marina presence → coastal erosion ↓'],priority_score:9},
+    economic:{quant:'Monthly income USD 23.8–45.8/ha. Operational cost USD 186.5–233.2 per 6-month cycle.',qual:'Diversified livelihood from fish, shrimp, and crab.',equations:['Vₚᵣₒd = Yₐq × market price'],priority_score:8},
+    social:{quant:'Community farmer groups of 13–25 members; collective labor and shared decision-making.',qual:'Collective maintenance reinforces social cohesion; intergenerational knowledge transfer sustains resilience.',equations:[],priority_score:8},
+    authorship:{quant:'75–90% of land area is mangrove canopy; reflective ponds interspersed throughout.',qual:'Perceived as "mangrove-friendly aquaculture." Mosaic of green corridors conveys ecological beauty.',equations:[],priority_score:5}
+  },
+  key_metrics:['ρₘ — Mangrove Density (trees/ha)','Rₚₘ — Pond:Mangrove Ratio (%)','Yₐq — Aquaculture Yield (kg/6mo)','Cₒₚ — Operational Cost (USD/6mo)','Vₚᵣₒd — Production Value (USD/6mo)'],
+  key_equations:['P01: ↑ρₘ → ↑Soil stability','P02: ↑ρₘ → ↑Yₐq (via nutrient input)','P03: Rₚₘ ≥75% → balanced yield + cost','P04: A.marina presence → coastal erosion ↓'],
+  temporalities:[
+    {scale:'Event (Days)',process:'Tidal flushing and daily pond management',model:'Manual water gate operation',finding:'Daily balance between inflow/outflow maintains pond health.'},
+    {scale:'Annual (1 Yr)',process:'Aquaculture production and replanting cycle',model:'Community yield logs',finding:'Six-month cycles form one productive year.'},
+    {scale:'Multi-Year (3–5 Yrs)',process:'Mangrove maturity and yield stabilization',model:'Cumulative field observation',finding:'After 3–5 years, mangrove maturity improves nutrient cycling.'},
+    {scale:'Multi-Decadal (~20 Yrs)',process:'Transition from intensive to balanced silvofishery',model:'Historical observation; oral history',finding:'Shift from high-input to mixed systems restores ecological resilience.'},
+    {scale:'Long-Term (30–50 Yrs)',process:'Community–ecosystem co-evolution',model:'Qualitative projection',finding:'Continued stewardship expected to regenerate coastal ecosystem. (Inference only.)'}
+  ],
+  locations:[
+    {lat:3.6847,lng:98.6547,label:'Paluh Manan, Hamparan Perak, North Sumatra'},
+    {lat:3.6750,lng:98.6400,label:'Paluh Kurau, Hamparan Perak, North Sumatra'},
+    {lat:3.6900,lng:98.6680,label:'Lama Village, Hamparan Perak, North Sumatra'}
+  ],
+  _obsidian_link:'obsidian://vault/SAS/3E-SF',
+  _operational_logic:'Mangrove reforestation → sediment retention + nutrient enrichment → improved pond water quality → stable aquaculture yields → household income → reinvestment in mangrove maintenance.',
+  _societal_logic:'Farmer groups (13–25 members) coordinate maintenance using shared local knowledge. Governance is horizontal and community-based.',
+  _experiential_logic:'To inhabit the silvofishery is to occupy a moving threshold: not land, not sea, but an alternating rhythm of labor and rest.',
+  note:null
+}
+];
+
+let SPECULATIVE=[
+  {id:'sp-001',typology_id:'1C',name:'Interlocking Reef Module',author:'Lee Wei Xian',year:2024,scale:'unit',description:'Hexagonal interlocking unit speculated to attenuate wave energy through submerged stacked deployment. Geometry inspired by natural reef formations.',coastal_context:'Moderate-to-high wave energy, sandy seabed, 1–6 m water depth',location:{lat:52.155,lng:4.220,label:'South Holland Coast, Netherlands (intended)'},src:null},
+  {id:'sp-002',typology_id:'1C',name:'Porous Berm Wedge',author:'Amara Diallo',year:2024,scale:'unit',description:'Modular porous concrete wedge unit for berm construction along engineered shorelines. Promotes hydrodynamic energy dissipation and ecological colonization.',coastal_context:'High wave energy shorelines, urban coastal edges, 0–3 m depth',location:{lat:51.477,lng:1.000,label:'Thames Estuary, UK (intended)'},src:null},
+  {id:'sp-003',typology_id:'1C',name:'Sacrificial Dune Armature',author:'Priya Nair',year:2023,scale:'neighbourhood',description:'Lightweight geotextile-wrapped armature to scaffold engineered dune formation in sediment-scarce contexts. Designed to erode predictably while retaining core structural geometry.',coastal_context:'Sediment-scarce urbanized coasts, low-gradient foreshore, storm surge exposure',location:{lat:39.918,lng:-74.006,label:'Mid-Atlantic Coast, USA (intended)'},src:null},
+  {id:'sp-004',typology_id:'3E',name:'Mangrove Propagule Housing',author:'Rafael Santos',year:2024,scale:'unit',description:'Low-tech bamboo and coir mesh structure to protect and guide mangrove propagules during establishment phase. Biodegradable over 3–5 year cycle.',coastal_context:'Tropical intertidal zones, sheltered bays, estuarine margins, 0–1 m tidal range',location:{lat:1.352,lng:103.820,label:'Singapore Coast (intended)'},src:null},
+  {id:'sp-005',typology_id:'3E',name:'Tidal Gate Aquaculture Unit',author:'Nurul Ain binti Razak',year:2023,scale:'unit',description:'Modular brackish water gate unit for integration into community silvofishery embankments. Allows tidal exchange regulation without mechanical components.',coastal_context:'Tropical mangrove-adjacent ponds, estuarine tidal range 1–3 m',location:{lat:3.141,lng:101.687,label:'Strait of Malacca, Malaysia (intended)'},src:null}
+];
+
+let REALISTIC=[
+  {id:'re-001',typology_id:'1A',name:'Coastal Revetment',scale:'neighbourhood',description:'Sloped hard structure of rock, concrete blocks, or gabions placed against an embankment or shoreline to absorb and deflect wave energy. Standard hard engineering solution for erosion control.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-002',typology_id:'1A',name:'Offshore Parallel Breakwater',scale:'neighbourhood',description:'Emerged or submerged structure placed parallel to the shoreline to reduce wave energy reaching the coast. Can create tombolo formations. Common hard engineering measure for coastal protection.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-003',typology_id:'1A',name:'Storm Surge Barrier (Movable)',scale:'territorial',description:'Large-scale movable barrier that can be closed during storm surge events to protect hinterland. Examples include the Thames Barrier and the Maeslant Barrier.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-004',typology_id:'1A',name:'Dyke Raising',scale:'territorial',description:'Raising the crest height of existing dykes to increase freeboard against rising sea levels and storm surges. A standard adaptive measure in low-lying coastal areas.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-005',typology_id:'1C',name:'Flood Defence Landscape — Double Dike',scale:'territorial',description:'Two parallel dike structures creating an intermediate zone that can accommodate water inflow, reducing pressure on the inner dike. Hybrid approach combining hard structure with managed inundation.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-006',typology_id:'1C',name:'Perched Beach',scale:'neighbourhood',description:'Artificially elevated beach created by placement of sediment on a submerged platform. Combines nourishment with structural support to maintain beach width and elevation.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-007',typology_id:'2B',name:'Natural Tidal Vegetated Foreshore',scale:'neighbourhood',description:'Naturally vegetated intertidal foreshore (saltmarsh or mangrove fringe) that attenuates wave energy and provides ecological habitat. Relies on natural processes for establishment and maintenance.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-008',typology_id:'2B',name:'Constructed Foreshore — Tidal Park / Wetland',scale:'neighbourhood',description:'Engineered intertidal habitat created to provide wave attenuation, ecological benefit, and public amenity. Combines nature-based function with designed landscape.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-009',typology_id:'3B',name:'Breakwater Reefs',scale:'neighbourhood',description:'Artificial reef structures designed to reduce wave energy while promoting marine biodiversity. Can be constructed from recycled materials, concrete units, or purpose-built ecological modules.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-010',typology_id:'3E',name:'Mangrove Reforestation / Afforestation',scale:'neighbourhood',description:'Active planting and restoration of mangrove ecosystems in intertidal coastal areas. Provides wave attenuation, carbon sequestration, habitat provision, and livelihood support.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-011',typology_id:'3E',name:'Artificial Oyster Reef',scale:'unit',description:'Oyster shells or purpose-built cages positioned to create reef structure. Provides wave attenuation, water filtration, and habitat provision. Low-cost and locally producible.',source:'Adaptation Measures Catalogue (Celine)'},
+  {id:'re-012',typology_id:'3B',name:'Vegetated Sand Dune',scale:'neighbourhood',description:'Naturally or artificially established vegetated dune system providing shoreline protection through energy dissipation and sediment trapping. Requires ongoing management to maintain integrity.',source:'Adaptation Measures Catalogue (Celine)'}
+];
+
+// ── CUSTOM ANCHORS STATE ────────────────────────────────
+let CUSTOM_ANCHORS=[];
+
+// ── UI STATE ───────────────────────────────────────────
+let selCell=null,recTab='s',radarChart=null,miniCharts={};
+let briefMode=false,briefAnchors=new Set(),briefCustomAnchors=[];
+let briefCanvas=null,briefCtx=null;
+let specIdxs={},realIdxs={};
+let atlasMap=null,atlasMarkers=[],atlasFilter='all',atlasOpen=true;
+let ttTimeout=null;
+
+// ── HELPERS ────────────────────────────────────────────
+function studiesForCell(cid){return STUDIES.filter(s=>s.func_code+s.group_code===cid)}
+function specForCell(cid){return SPECULATIVE.filter(o=>o.typology_id===cid)}
+function realForCell(cid){return REALISTIC.filter(o=>o.typology_id===cid)}
+function studiesForSel(){return selCell?studiesForCell(selCell):STUDIES}
+function allAnchors(){return[...BASE_ANC,...CUSTOM_ANCHORS.map(a=>a.id)]}
+function anchorLabel(id){
+  if(BASE_ANC.includes(id))return id;
+  const ca=CUSTOM_ANCHORS.find(a=>a.id===id);
+  return ca?ca.label:id;
+}
+function cube(){return`<div class="wf-cube"><div class="wf-face wf-front"></div><div class="wf-face wf-back"></div><div class="wf-face wf-left"></div><div class="wf-face wf-right"></div><div class="wf-face wf-top"></div><div class="wf-face wf-bottom"></div></div>`;}
+
+function hexA(hex,a){
+  const r=parseInt(hex.slice(1,3),16);
+  const g=parseInt(hex.slice(3,5),16);
+  const b=parseInt(hex.slice(5,7),16);
+  return`rgba(${r},${g},${b},${a})`;
+}
+
+// ── CUSTOM ANCHORS ─────────────────────────────────────
+function addAnchor(){
+  const inp=document.getElementById('anc-input');
+  const val=inp.value.trim().toLowerCase().replace(/\s+/g,'_');
+  if(!val||CUSTOM_ANCHORS.find(a=>a.id===val)||BASE_ANC.includes(val))return;
+  CUSTOM_ANCHORS.push({id:val,label:inp.value.trim()});
+  inp.value='';
+  renderAnchorChips();
+  if(selCell)renderTypology();
+}
+
+function removeAnchor(id){
+  CUSTOM_ANCHORS=CUSTOM_ANCHORS.filter(a=>a.id!==id);
+  renderAnchorChips();
+  if(selCell)renderTypology();
+}
+
+function renderAnchorChips(){
+  const el=document.getElementById('anc-chips');
+  if(!CUSTOM_ANCHORS.length){
+    el.innerHTML=`<span style="font-size:8px;color:var(--sas-t3);font-style:italic">base anchors only — add project-specific anchors above</span>`;
+    return;
+  }
+  el.innerHTML=CUSTOM_ANCHORS.map(a=>`<div class="anc-chip"><span>${a.label}</span><span class="anc-chip-x" onclick="removeAnchor('${a.id}')">×</span></div>`).join('');
+}
+
+// ── STATS ──────────────────────────────────────────────
+function updateStats(){
+  document.getElementById('s-studies').textContent=STUDIES.length;
+  const filled=new Set(STUDIES.map(s=>s.func_code+s.group_code)).size;
+  document.getElementById('s-typos').textContent=filled;
+  document.getElementById('s-spec').textContent=SPECULATIVE.length;
+  document.getElementById('s-real').textContent=REALISTIC.length;
+  const sL=STUDIES.reduce((n,s)=>n+(s.locations||[]).length,0);
+  const oL=SPECULATIVE.filter(o=>o.location).length;
+  document.getElementById('atlas-bar-stats').textContent=`${sL} study sites · ${oL} speculative sites`;
+}
+
+// ── MATRIX ─────────────────────────────────────────────
+function renderMatrix(){
+  const body=document.getElementById('mx-body');
+  let h='<div class="mx-col-heads"><div></div>'+FUN.map(f=>`<div class="mx-col-head" style="color:${FC[f]}">${FN[f].replace(' ','<br>')}</div>`).join('')+'</div>';
+  GRP.forEach(g=>{
+    h+=`<div class="mx-row"><div class="mx-rh" style="border-color:${GC[g]}20"><div class="mx-rh-c">${g}</div><div class="mx-rh-n" style="color:${GC[g]}">${GN[g]}</div></div>`;
+    FUN.forEach(f=>{
+      const cid=f+g;
+      const sr=studiesForCell(cid).length;
+      const sp=specForCell(cid).length;
+      const re=realForCell(cid).length;
+      const sel=selCell===cid;
+      const bArr=[...briefAnchors];
+      let briefClass='';
+      if(briefMode&&bArr.length>0){
+        const td=TYPO_BRIEF_DATA.find(t=>t.id===cid);
+        if(td){
+          const covered=bArr.filter(a=>td.anchors.includes(a)).length;
+          const score=covered/bArr.length;
+          if(score>=0.6)briefClass=' brief-strong';
+          else if(score>0)briefClass=' brief-match';
+        }
+      }
+      h+=`<div class="mc${sr>0?' pop':''}${sel?' sel':''}${briefClass}" onclick="clickCell('${cid}')">
+        <div class="mc-code">${f}${g}</div>
+        ${sr?`<div class="mc-dot"></div><div class="mc-n">${sr}</div>`:''}
+        ${sp?`<div class="mc-obj">${sp}◇</div>`:''}
+        ${re?`<div style="position:absolute;top:3px;left:3px;font-size:6px;color:var(--sas-ac3);font-weight:bold">${re}▪</div>`:''}
+      </div>`;
+    });
+    h+='</div>';
+  });
+  body.innerHTML=h;
+}
+
+// ── CONSTELLATION ──────────────────────────────────────
+function drawConstellation(canvasId,studies,hex,size){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=size,H=size;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+
+  const allAnc=allAnchors();
+  const n=allAnc.length;
+  const cx=W/2,cy=H/2;
+  const ringR=Math.min(W,H)*0.32;
+  const maxR=ringR*0.28;
+  const minR=4;
+  const refR=maxR;
+  const MAX_M=10;
+
+  const isDark=matchMedia('(prefers-color-scheme: dark)').matches;
+  const labelC=isDark?'#5a5856':'#aaa9a5';
+  const emptyC=isDark?'#383636':'#d5d3d0';
+  const refC=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.06)';
+  const uvC=isDark?'rgba(127,119,221,0.25)':'rgba(127,119,221,0.3)';
+
+  // compute aggregate per anchor across studies
+  const ancData=allAnc.map(a=>{
+    const isCustom=!BASE_ANC.includes(a);
+    if(isCustom){return{equations:0,metrics:0,qualOnly:false,state:'unverified',isCustom:true};}
+    const allQ=studies.filter(s=>s.anchors&&s.anchors[a]&&s.anchors[a].equations&&s.anchors[a].equations.length>0);
+    const allQual=studies.filter(s=>s.anchors&&s.anchors[a]&&(s.anchors[a].qual||s.anchors[a].quant));
+    const totalEq=studies.reduce((t,s)=>t+(s.anchors&&s.anchors[a]&&s.anchors[a].equations?s.anchors[a].equations.length:0),0);
+    const totalM=studies.reduce((t,s)=>t+((s.anchors&&s.anchors[a]&&s.anchors[a].priority_score)?1:0),0);
+    const quant=allQ.length>0;
+    const qual=allQual.length>0&&!quant;
+    const empty=!quant&&!qual;
+    return{equations:totalEq,metrics:Math.min(studies.reduce((t,s)=>t+(s.key_metrics?s.key_metrics.length:0),0)/Math.max(studies.length,1)*0.3,MAX_M),qualOnly:qual,state:empty?'empty':'active',isCustom:false,quant,qual};
+  });
+
+  // polygon points
+  const pts=allAnc.map((_,i)=>{
+    const ang=(i/n)*Math.PI*2-Math.PI/2;
+    return{x:cx+Math.cos(ang)*ringR,y:cy+Math.sin(ang)*ringR,ang};
+  });
+
+  // connection lines between active adjacent nodes
+  for(let i=0;i<n;i++){
+    const j=(i+1)%n;
+    const di=ancData[i],dj=ancData[j];
+    const ai=(di.state==='active'||di.state==='unverified');
+    const aj=(dj.state==='active'||dj.state==='unverified');
+    if(ai&&aj){
+      ctx.beginPath();
+      ctx.moveTo(pts[i].x,pts[i].y);
+      ctx.lineTo(pts[j].x,pts[j].y);
+      ctx.strokeStyle=hexA(hex,0.15);
+      ctx.lineWidth=0.75;
+      ctx.stroke();
+    }
+  }
+
+  // nodes
+  pts.forEach((p,i)=>{
+    const d=ancData[i];
+    const nr=d.isCustom?minR+2:(d.state==='empty'?minR:Math.min(maxR,minR+(d.equations/3)*(maxR-minR)+4));
+
+    // ref ring
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,refR,0,Math.PI*2);
+    ctx.strokeStyle=refC;
+    ctx.lineWidth=0.5;
+    ctx.setLineDash([2,3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if(d.state==='unverified'){
+      // unverified custom anchor: dashed outline with ?
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,nr,0,Math.PI*2);
+      ctx.strokeStyle=uvC;
+      ctx.lineWidth=1;
+      ctx.setLineDash([2,2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font=`${Math.round(nr*0.9)}px 'Courier New',monospace`;
+      ctx.fillStyle=uvC;
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText('?',p.x,p.y);
+    } else if(d.state==='empty'){
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,minR,0,Math.PI*2);
+      ctx.strokeStyle=emptyC;
+      ctx.lineWidth=0.75;
+      ctx.setLineDash([2,2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else if(d.qual){
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,nr,0,Math.PI*2);
+      ctx.strokeStyle=hexA(hex,0.9);
+      ctx.lineWidth=1.5;
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,nr,0,Math.PI*2);
+      ctx.fillStyle=hexA(hex,0.18);
+      ctx.fill();
+      ctx.strokeStyle=hexA(hex,0.9);
+      ctx.lineWidth=1.5;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,nr*0.3,0,Math.PI*2);
+      ctx.fillStyle=hexA(hex,0.8);
+      ctx.fill();
+    }
+
+    // label
+    const lDist=ringR+size*0.1;
+    const lx=cx+Math.cos(p.ang)*lDist;
+    const ly=cy+Math.sin(p.ang)*lDist;
+    ctx.font=`${Math.round(size*0.055)}px 'Courier New',monospace`;
+    ctx.fillStyle=d.state==='empty'?emptyC:d.isCustom?uvC:labelC;
+    ctx.textAlign=lx<cx-3?'right':lx>cx+3?'left':'center';
+    ctx.textBaseline=ly<cy-3?'bottom':ly>cy+3?'top':'middle';
+    ctx.fillText(anchorLabel(allAnc[i]).slice(0,4),lx,ly);
+  });
+
+  // hover
+  canvas.onmousemove=function(e){
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(W/rect.width);
+    const my=(e.clientY-rect.top)*(H/rect.height);
+    let hit=null;
+    pts.forEach((p,i)=>{
+      const nr=Math.min(maxR,minR+4)+4;
+      if(Math.hypot(mx-p.x,my-p.y)<nr)hit=i;
+    });
+    if(hit!==null){
+      const d=ancData[hit];
+      if(d.state==='unverified'){
+        canvas.title=`${anchorLabel(allAnc[hit])} — custom anchor · no literature evidence yet`;
+      } else if(d.state==='empty'){
+        canvas.title=`${anchorLabel(allAnc[hit])} — not evidenced in contributing studies`;
+      } else {
+        canvas.title=`${anchorLabel(allAnc[hit])}: ${d.equations} equations · ${d.qual?'qualitative only':'quantitative'} evidence`;
+      }
+    } else canvas.title='';
+  };
+}
+
+// ── TYPOLOGY ───────────────────────────────────────────
+function renderTypology(){
+  const empty=document.getElementById('ty-empty'),content=document.getElementById('ty-content'),badge=document.getElementById('ty-badge');
+  if(!selCell){empty.style.display='flex';content.style.display='none';badge.textContent='–';return;}
+  const stds=studiesForCell(selCell),specs=specForCell(selCell),reals=realForCell(selCell);
+  const g=selCell.slice(1),f=selCell.slice(0,1);
+  const gc=GC[g],fc=FC[f];
+  empty.style.display='none';content.style.display='flex';badge.textContent=selCell;
+  document.getElementById('ty-code').textContent=`${selCell} · ${GN[g]} ${FN[f]}`;
+  document.getElementById('ty-name').textContent=`${GN[g]} ${FN[f]}`;
+  const confN=stds.length>=3?3:stds.length>=2?2:stds.length>=1?1:0;
+  const pips='<div class="conf-pips">'+[0,1,2].map(i=>`<div class="cp${i<confN?' on':''}"></div>`).join('')+'</div>';
+  document.getElementById('ty-badges').innerHTML=`
+    <span class="ty-badge" style="border-color:${gc}40;color:${gc}">${GN[g]}</span>
+    <span class="ty-badge" style="border-color:${fc}40;color:${fc}">${FN[f]}</span>
+    <span class="ty-badge" style="border-color:var(--sas-bd);color:var(--sas-t2)">${stds.length} ${stds.length===1?'study':'studies'}</span>
+    ${specs.length?`<span class="ty-badge" style="border-color:rgba(239,159,39,0.3);color:var(--sas-ac2)">${specs.length} speculative</span>`:''}
+    ${reals.length?`<span class="ty-badge" style="border-color:rgba(29,158,117,0.3);color:var(--sas-ac3)">${reals.length} real-world</span>`:''}
+    <div class="ty-conf">${pips}<span>${stds.length?'evidence confidence':'research gap'}</span></div>`;
+
+  if(!stds.length&&!specs.length&&!reals.length){
+    document.getElementById('ty-body').innerHTML=`
+      <div class="ty-full"><div class="gap-state"><div class="gap-code">${selCell}</div><div style="font-size:10px;color:var(--sas-t2)">${GN[g]} ${FN[f]}</div><p style="font-size:9px;line-height:1.6;margin-top:7px;opacity:0.6">No studies, speculative objects, or real-world precedents catalogued for this typology. This cell represents a gap in the current evidence base.</p><div class="gap-note">Empty cells are findings — they signal where research and design attention has not yet focused.</div></div></div>`;
+    return;
+  }
+
+  // aggregate anchor scores
+  const aggScores={};
+  BASE_ANC.forEach(a=>{
+    const sc=stds.filter(s=>s.anchors&&s.anchors[a]).map(s=>s.anchors[a].priority_score||0);
+    aggScores[a]=sc.length?sc.reduce((x,y)=>x+y,0)/sc.length:0;
+  });
+
+  // metrics by anchor
+  const metricsSection=BASE_ANC.map(a=>{
+    const color=ANC_COLORS[a]||'var(--sas-ac)';
+    const score=aggScores[a];
+    const studiesWithAnchor=stds.filter(s=>s.anchors&&s.anchors[a]);
+    const eqSet={};
+    studiesWithAnchor.forEach(s=>{
+      (s.anchors[a].equations||[]).forEach(eq=>{
+        if(!eqSet[eq])eqSet[eq]=[];
+        if(!eqSet[eq].includes(s.asa_code))eqSet[eq].push(s.asa_code);
+      });
+    });
+    const eqRows=Object.entries(eqSet).length?
+      Object.entries(eqSet).map(([eq,srcs])=>`<div style="display:flex;gap:6px;align-items:flex-start;padding:3px 0 3px 12px;border-bottom:1px solid var(--sas-bd)"><span style="font-size:8px;color:var(--sas-ac);font-family:'Courier New',monospace;border:1px dashed rgba(127,119,221,0.28);padding:1px 5px;border-radius:3px;flex:1">${eq}</span><div style="display:flex;gap:3px;flex-shrink:0">${srcs.map(s=>`<span style="font-size:7px;padding:1px 4px;border-radius:3px;border:1px solid rgba(127,119,221,0.25);color:var(--sas-ac);background:rgba(127,119,221,0.06)">${s}</span>`).join('')}</div></div>`).join(''):'';
+    return`<div style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+        <div style="width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <div style="font-size:10px;color:var(--sas-t1);font-weight:bold">${a}</div>
+        <div style="font-size:8px;color:var(--sas-t3);margin-left:auto">${score.toFixed(1)}/10 · ${studiesWithAnchor.length} ${studiesWithAnchor.length===1?'study':'studies'}</div>
+      </div>
+      ${eqRows||`<div style="font-size:8px;color:var(--sas-t3);padding-left:12px;font-style:italic">No equations recorded for this anchor</div>`}
+    </div>`;
+  }).join('');
+
+  const ancRows=BASE_ANC.map(a=>{
+    const score=aggScores[a];const n=stds.filter(s=>s.anchors&&s.anchors[a]).length;
+    const conf=n>=3?'hi':n>=2?'md':n>=1?'lo':'na';
+    const confLabels={hi:'strong',md:'moderate',lo:'limited',na:'none'};
+    return`<tr><td><div class="an-name"><div class="an-dot" style="background:${ANC_COLORS[a]||'var(--sas-ac)'}"></div>${a}</div></td>
+      <td><div style="display:flex;align-items:center;gap:5px"><div class="bar-wrap"><div class="bar-fill" style="width:${score*10}%;background:${ANC_COLORS[a]||'var(--sas-ac)'}"></div></div><span style="font-size:8px;color:var(--sas-t2);min-width:22px;text-align:right">${score.toFixed(1)}</span></div></td>
+      <td><span class="ctag ${conf}">${confLabels[conf]} (${n})</span></td></tr>`;
+  }).join('');
+
+  // custom anchor rows
+  const customAncRows=CUSTOM_ANCHORS.map(ca=>{
+    return`<tr><td><div class="an-name"><div class="an-dot" style="background:rgba(127,119,221,0.3);border:1px dashed rgba(127,119,221,0.4)"></div>${ca.label}</div></td>
+      <td style="font-style:italic"><span style="font-size:8px;color:var(--sas-t3)">project anchor</span></td>
+      <td><span class="ctag uv">unverified</span></td></tr>`;
+  }).join('');
+
+  document.getElementById('ty-body').innerHTML=`
+    <!-- Left: Constellation + anchor scores -->
+    <div>
+      <div class="sec-title" onclick="toggleSec(this)">Anchor Constellation<span>&#9662;</span></div>
+      <div class="sec-body" style="max-height:700px">
+        <div style="display:flex;justify-content:center;margin-bottom:10px">
+          <canvas id="tyConst" style="max-width:180px;max-height:180px"></canvas>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px;font-size:8px;color:var(--sas-t3)">
+          <span>&#9679; quantitative</span>
+          <span>&#9711; qualitative only</span>
+          <span style="opacity:0.5">&#8729; not evidenced</span>
+          ${CUSTOM_ANCHORS.length?`<span style="color:rgba(127,119,221,0.5)">? unverified</span>`:''}
+        </div>
+        <table class="atbl"><thead><tr><th>Anchor</th><th>Mean score /10</th><th>Evidence</th></tr></thead>
+        <tbody>${ancRows}${customAncRows}</tbody></table>
+        <div style="font-size:7px;color:var(--sas-t3);margin-top:7px;line-height:1.5;border-left:2px solid var(--sas-bd2);padding-left:7px">Node size = equation count. Reference ring = maximum possible. Scores reflect researcher interpretation of anchor emphasis (1–10). <span style="color:rgba(127,119,221,0.6);display:block;margin-top:4px">Authorship anchor: whether communities within the site have had their cultural identifiers embedded in how the CPM is designed and deployed.</span></div>
+      </div>
+    </div>
+
+    <!-- Right: Speculative objects -->
+    <div>
+      <div class="sec-title" onclick="toggleSec(this)">Speculative Objects (${specs.length})<span>&#9662;</span></div>
+      <div class="sec-body" style="max-height:500px" id="spec-sec-${selCell}">${renderSpecHTML(selCell,specs)}</div>
+    </div>
+
+    <!-- Full: Real-world precedents -->
+    <div class="ty-full">
+      <div class="sec-title" onclick="toggleSec(this)">Real-World Precedents (${reals.length})<span>&#9662;</span></div>
+      <div class="sec-body" style="max-height:500px" id="real-sec-${selCell}">${renderRealHTML(selCell,reals)}</div>
+    </div>
+
+    <!-- Full: Metrics & equations by anchor -->
+    <div class="ty-full">
+      <div class="sec-title" onclick="toggleSec(this)">Metrics &amp; Equations by Anchor<span>&#9662;</span></div>
+      <div class="sec-body" style="max-height:800px">
+        <div style="font-size:8px;color:var(--sas-t3);margin-bottom:10px;font-style:italic;line-height:1.5">All equations across contributing studies, organised by anchor. Use to identify what has been measured and which studies to reference.</div>
+        ${metricsSection}
+      </div>
+    </div>
+
+    <!-- Full: Temporal coverage -->
+    <div class="ty-full">
+      <div class="sec-title" onclick="toggleSec(this)">Temporal Evidence Coverage<span>&#9662;</span></div>
+      <div class="sec-body" style="max-height:300px">${renderTemporalCoverage(stds)}</div>
+    </div>
+
+    <!-- Full: Contributing studies -->
+    <div class="ty-full">
+      <div class="sec-title" onclick="toggleSec(this)">Contributing Studies (${stds.length})<span>&#9662;</span></div>
+      <div class="sec-body" style="max-height:300px">
+        ${stds.map(s=>`<div class="spl" onclick="openStudy('${s.asa_code}')">
+          <span class="spl-asa">${s.asa_code}</span>
+          <span class="spl-title">${s.title}</span>
+          <span class="scale-badge">${SCALE_ICONS[s.scale]||''} ${s.scale||''}</span>
+          <span class="spl-arr">&#8594; full record</span>
+        </div>`).join('')||`<div class="no-rec">No studies catalogued yet.</div>`}
+      </div>
+    </div>`;
+
+  setTimeout(()=>{
+    drawConstellation('tyConst',stds,GC[g]||'#7F77DD',180);
+    // Draw scale grids for visible objects
+    const visSpec=specForCell(selCell);const visSpecIdx=specIdxs[selCell]||0;
+    if(visSpec[visSpecIdx]&&visSpec[visSpecIdx].scale){
+      drawScaleGrid(`sg-spec-${visSpec[visSpecIdx].id}`,visSpec[visSpecIdx].scale,'#7F77DD',90,70);
+    }
+    const visReal=realForCell(selCell);const visRealIdx=realIdxs[selCell]||0;
+    if(visReal[visRealIdx]&&visReal[visRealIdx].scale){
+      drawScaleGrid(`sg-real-${visReal[visRealIdx].id}`,visReal[visRealIdx].scale,'#1D9E75',100,80);
+    }
+  },30);
+}
+
+function renderTemporalCoverage(stds){
+  const scales=['Event','Annual','Multi-Year','Multi-Decadal','Long-Term'];
+  const fullLabels=['Event (Days)','Annual (1 Yr)','Multi-Year (3–5 Yrs)','Multi-Decadal (~20–40 Yrs)','Long-Term (10–50 Yrs)'];
+  return`<div style="display:flex;flex-direction:column;gap:4px">${scales.map((sc,i)=>{
+    const matchingStudies=stds.filter(s=>(s.temporalities||[]).some(t=>t.scale.toLowerCase().startsWith(sc.toLowerCase())));
+    const covered=matchingStudies.length>0;
+    return`<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:var(--sas-r);background:${covered?'rgba(127,119,221,0.06)':'rgba(255,255,255,0.02)'};border:1px solid ${covered?'rgba(127,119,221,0.2)':'var(--sas-bd)'}">
+      <div style="width:7px;height:7px;border-radius:50%;background:${covered?'var(--sas-ac)':'var(--sas-bg4)'};border:1px solid ${covered?'var(--sas-ac)':'var(--sas-bd2)'};flex-shrink:0"></div>
+      <div style="font-size:9px;color:${covered?'var(--sas-t2)':'var(--sas-t3)'};flex:1">${fullLabels[i]}</div>
+      <div>${covered?matchingStudies.map(s=>`<span style="font-size:7px;padding:1px 4px;border-radius:3px;border:1px solid rgba(127,119,221,0.25);color:var(--sas-ac);background:rgba(127,119,221,0.06)">${s.asa_code}</span>`).join(' '):'<span style="font-size:8px;font-style:italic;color:var(--sas-t3);opacity:0.5">not evidenced</span>'}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── SPECULATIVE OBJECTS ────────────────────────────────
+function renderSpecHTML(cid,objs){
+  if(!objs||!objs.length){
+    return`<div class="obj-carousel"><div class="obj-vis" style="min-height:90px;flex-direction:column"><div class="wf-scene">${cube()}</div></div>
+      <div style="text-align:center;padding:10px 12px"><div style="font-size:9px;color:var(--sas-t3);margin-bottom:3px">No speculative objects linked yet</div><div class="future-tag">add via SPECULATIVE array in source</div></div></div>`;
+  }
+  const idx=specIdxs[cid]||0;const obj=objs[idx];
+  const vis=obj.src?`<img class="obj-img" src="${obj.src}" alt="${obj.name}">`:`<div style="display:flex;flex-direction:column;align-items:center;padding:6px 0"><div class="wf-scene">${cube()}</div><div style="font-size:7px;color:var(--sas-t3);margin-top:2px">set src to activate GIF</div></div>`;
+  const nav=objs.length>1?`<div class="obj-nav"><button class="obj-nav-btn" onclick="prevSpec('${cid}')">&#8592;</button><button class="obj-nav-btn" onclick="nextSpec('${cid}')">&#8594;</button></div>`:'';
+  const dots=objs.map((_,i)=>`<div class="obj-dot${i===idx?' on':''}" onclick="goToSpec('${cid}',${i})"></div>`).join('');
+  return`<div class="obj-carousel">
+    <div class="obj-vis">${vis}${nav}</div>
+    <div class="obj-meta">
+      <div class="obj-name">${obj.name}</div>
+      <div class="obj-byline">${obj.author} &middot; ${obj.year}</div>
+      <div class="obj-desc">${obj.description}</div>
+      <span class="obj-ctx">${obj.coastal_context}</span>
+      <span class="scale-tag">${SCALE_ICONS[obj.scale]||''} ${SCALE_LABELS[obj.scale]||obj.scale}</span>
+      ${obj.location?`<div style="font-size:8px;color:var(--sas-t3);margin-top:5px">&#9679; ${obj.location.label}</div>`:''}
+    </div>
+    ${obj.scale?`<div style="padding:8px 11px 0;border-top:1px solid var(--sas-bd)">
+      <div style="font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:5px">Scale footprint</div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:7px">
+        <canvas id="sg-spec-${obj.id}" width="90" height="70" style="flex-shrink:0"></canvas>
+        <div style="display:flex;flex-direction:column;gap:3px;padding-top:2px">
+          <div style="font-size:10px;color:var(--sas-t1)">${obj.scale} scale</div>
+          <div style="font-size:8px;color:var(--sas-t2)">${SCALE_LABELS[obj.scale]||obj.scale}</div>
+          <div style="font-size:8px;color:var(--sas-t3);font-style:italic;line-height:1.4">Shaded area = approx. ground coverage. Each cell = 1 m.</div>
+        </div>
+      </div>
+    </div>`:``}
+    <div class="obj-foot">
+      <div class="obj-dots">${dots}</div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="font-size:8px;color:var(--sas-t3)">${idx+1}/${objs.length}</span><span class="obj-spec-tag">speculative</span></div>
+    </div>
+  </div>`;
+}
+
+function updateSpec(cid){
+  const sec=document.getElementById(`spec-sec-${cid}`);
+  if(sec){
+    sec.innerHTML=renderSpecHTML(cid,specForCell(cid));
+    const objs=specForCell(cid);const idx=specIdxs[cid]||0;
+    if(objs[idx]&&objs[idx].scale){setTimeout(()=>drawScaleGrid(`sg-spec-${objs[idx].id}`,objs[idx].scale,'#7F77DD',90,70),20);}
+  } else renderTypology();
+}
+function prevSpec(cid){const o=specForCell(cid);if(!o.length)return;specIdxs[cid]=((specIdxs[cid]||0)-1+o.length)%o.length;updateSpec(cid);}
+function nextSpec(cid){const o=specForCell(cid);if(!o.length)return;specIdxs[cid]=((specIdxs[cid]||0)+1)%o.length;updateSpec(cid);}
+function goToSpec(cid,i){specIdxs[cid]=i;updateSpec(cid);}
+
+// ── REALISTIC OBJECTS ──────────────────────────────────
+function renderRealHTML(cid,reals){
+  if(!reals||!reals.length){
+    return`<div style="font-size:9px;color:var(--sas-t3);font-style:italic;padding:8px 0">No real-world precedents tagged to this typology yet. Tag items from the REALISTIC array with typology_id: '${cid}'.</div>`;
+  }
+  const idx=realIdxs[cid]||0;const obj=reals[idx];
+  const nav=reals.length>1?`<div style="display:flex;gap:5px;margin-top:6px">
+    <button class="obj-nav-btn" style="position:static;transform:none;font-size:9px;padding:2px 8px" onclick="prevReal('${cid}')">&#8592;</button>
+    <button class="obj-nav-btn" style="position:static;transform:none;font-size:9px;padding:2px 8px" onclick="nextReal('${cid}')">&#8594;</button>
+  </div>`:'';
+  const dots=reals.map((_,i)=>`<div class="obj-dot${i===idx?' real':''}" onclick="goToReal('${cid}',${i})"></div>`).join('');
+  return`<div class="obj-carousel" style="border-color:rgba(29,158,117,0.2)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;min-height:140px">
+      <div style="background:var(--sas-bg3);border-right:1px solid var(--sas-bd);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:5px">
+        ${obj.src?`<img style="max-width:100%;max-height:100px;object-fit:contain" src="${obj.src}" alt="${obj.name}">`:
+        `<div style="font-size:18px;opacity:0.2;color:var(--sas-ac3)">&#9632;</div>
+        <div style="font-size:8px;color:var(--sas-t3);text-align:center;line-height:1.4">2D / 3D reference<br>image via src field</div>
+        <div class="future-tag">OBJ · GIF · PNG</div>`}
+        ${nav}
+      </div>
+      <div style="padding:12px 13px;display:flex;flex-direction:column;justify-content:flex-start">
+        <div style="font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:5px">Scale footprint</div>
+        <canvas id="sg-real-${obj.id}" width="100" height="80" style="display:block;margin-bottom:6px"></canvas>
+        <div style="font-size:10px;color:var(--sas-t1)">${obj.scale} scale</div>
+        <div style="font-size:8px;color:var(--sas-t2)">${SCALE_LABELS[obj.scale]||obj.scale}</div>
+        <div style="font-size:8px;color:var(--sas-t3);font-style:italic;line-height:1.4;margin-top:3px">Each cell = 1 m. Shaded area shows approx. ground coverage.</div>
+      </div>
+    </div>
+    <div class="obj-meta" style="border-top:1px solid var(--sas-bd)">
+      <div class="obj-name">${obj.name}</div>
+      <div style="font-size:8px;color:var(--sas-ac3);opacity:0.8;margin-bottom:4px">${obj.source}</div>
+      <div class="obj-desc">${obj.description}</div>
+    </div>
+    <div class="obj-foot">
+      <div class="obj-dots">${dots}</div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="font-size:8px;color:var(--sas-t3)">${idx+1}/${reals.length}</span><span class="obj-real-tag">real-world</span></div>
+    </div>
+  </div>`;
+}
+
+function updateReal(cid){
+  const sec=document.getElementById(`real-sec-${cid}`);
+  if(sec){
+    sec.innerHTML=renderRealHTML(cid,realForCell(cid));
+    const reals=realForCell(cid);const idx=realIdxs[cid]||0;
+    if(reals[idx]&&reals[idx].scale){setTimeout(()=>drawScaleGrid(`sg-real-${reals[idx].id}`,reals[idx].scale,'#1D9E75',100,80),20);}
+  } else renderTypology();
+}
+function prevReal(cid){const o=realForCell(cid);if(!o.length)return;realIdxs[cid]=((realIdxs[cid]||0)-1+o.length)%o.length;updateReal(cid);}
+function nextReal(cid){const o=realForCell(cid);if(!o.length)return;realIdxs[cid]=((realIdxs[cid]||0)+1)%o.length;updateReal(cid);}
+function goToReal(cid,i){realIdxs[cid]=i;updateReal(cid);}
+
+function toggleSec(el){const b=el.nextElementSibling,t=el.querySelector('span');const col=b.classList.toggle('col');t.textContent=col?'▸':'▾';if(!col)b.style.maxHeight=b.scrollHeight+'px';}
+
+// ── RECORDS ────────────────────────────────────────────
+function renderRecords(){
+  const stds=studiesForSel(),body=document.getElementById('rec-body');
+  const ctx=document.getElementById('rec-ctx-label'),clr=document.getElementById('rec-clr');
+  ctx.textContent=selCell?`cell ${selCell} · ${stds.length} ${stds.length===1?'study':'studies'}`:`all studies · ${stds.length}`;
+  clr.style.display=selCell?'inline':'none';
+  if(recTab==='s'){
+    if(!stds.length){body.innerHTML=`<div class="no-rec">No studies catalogued<br>for this typology yet.</div>`;return;}
+    body.innerHTML=stds.map(s=>{
+      const gc=GC[s.group_code]||'#888',fc=FC[s.func_code]||'#888';
+      const pips=BASE_ANC.map(a=>`<div class="sc-pip ${s.anchors&&s.anchors[a]&&s.anchors[a].priority_score>0?'on':'off'}" title="${a}">${a[0].toUpperCase()}</div>`).join('');
+      return`<div class="sc" onclick="openStudy('${s.asa_code}')">
+        <div class="sc-asa" style="color:${gc}">${s.asa_code}</div>
+        <div class="sc-title">${s.title}</div>
+        <div class="sc-cite">${s.citation}</div>
+        <div class="sc-row">
+          <span class="sc-tag" style="border-color:${gc}30;color:${gc}">${s.group_type}</span>
+          <span class="sc-tag" style="border-color:${fc}30;color:${fc}">${s.function_type}</span>
+          ${s.region?`<span class="sc-tag">${s.region}</span>`:''}
+          ${s.scale?`<span class="scale-badge">${SCALE_ICONS[s.scale]||''} ${s.scale}</span>`:''}
+        </div>
+        <div class="sc-pips">${pips}</div>
+      </div>`;
+    }).join('');
+  } else renderMiniAnalytics(body);
+}
+
+function renderMiniAnalytics(body){
+  const all=STUDIES,filled=new Set(all.map(s=>s.func_code+s.group_code)).size;
+  let t=0;all.forEach(s=>BASE_ANC.forEach(a=>{if(s.anchors&&s.anchors[a]&&s.anchors[a].priority_score>0)t++;}));
+  body.innerHTML=`
+    <div class="mini-stat-grid">
+      <div class="mini-stat"><div class="mini-stat-label">Studies</div><div class="mini-stat-val">${all.length}</div></div>
+      <div class="mini-stat"><div class="mini-stat-label">Typologies</div><div class="mini-stat-val">${filled}/20</div></div>
+      <div class="mini-stat"><div class="mini-stat-label">Speculative</div><div class="mini-stat-val">${SPECULATIVE.length}</div></div>
+      <div class="mini-stat"><div class="mini-stat-label">Real-world</div><div class="mini-stat-val">${REALISTIC.length}</div></div>
+    </div>
+    <div class="mini-chart-title">Mean anchor scores (all studies)</div>
+    <canvas id="ancChart" style="max-height:110px"></canvas>
+    <div class="mini-chart-title" style="margin-top:12px">Studies by group type</div>
+    <canvas id="grpChart" style="max-height:100px"></canvas>`;
+  setTimeout(()=>{
+    if(miniCharts.anc)miniCharts.anc.destroy();
+    const ac=document.getElementById('ancChart');
+    if(ac)miniCharts.anc=new Chart(ac,{type:'bar',data:{labels:['Struct.','Ecol.','Econ.','Social','Auth.'],datasets:[{data:BASE_ANC.map(a=>{const sc=all.map(s=>s.anchors&&s.anchors[a]?s.anchors[a].priority_score:0);return sc.length?sc.reduce((x,y)=>x+y,0)/sc.length:0;}),backgroundColor:BASE_ANC.map(a=>ANC_COLORS[a]+'99'),borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#4e4d4a',font:{size:8,family:'Courier New'}},grid:{display:false}},y:{min:0,max:10,ticks:{color:'#4e4d4a',font:{size:8},stepSize:2},grid:{color:'rgba(255,255,255,0.04)'}}},animation:{duration:300}}});
+    if(miniCharts.grp)miniCharts.grp.destroy();
+    const gc=document.getElementById('grpChart');
+    if(gc)miniCharts.grp=new Chart(gc,{type:'bar',data:{labels:GRP.map(g=>GN[g]),datasets:[{data:GRP.map(g=>all.filter(s=>s.group_code===g).length),backgroundColor:GRP.map(g=>GC[g]+'99'),borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#4e4d4a',font:{size:8},stepSize:1},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#4e4d4a',font:{size:8,family:'Courier New'}},grid:{display:false}}},animation:{duration:300}}});
+  },30);
+}
+
+// ── INTERACTIONS ───────────────────────────────────────
+function clickCell(cid){selCell=(selCell===cid)?null:cid;renderMatrix();renderTypology();renderRecords();updateAtlasSelection();}
+function clearSel(){selCell=null;renderMatrix();renderTypology();renderRecords();updateAtlasSelection();}
+function setRTab(tab,el){recTab=tab;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('on'));el.classList.add('on');renderRecords();}
+
+// ── STUDY MODAL ────────────────────────────────────────
+function openStudy(asa){
+  const s=STUDIES.find(x=>x.asa_code===asa);if(!s)return;
+  const gc=GC[s.group_code]||'#888',fc=FC[s.func_code]||'#888';
+  const ancRows=BASE_ANC.map(a=>{
+    const d=s.anchors&&s.anchors[a];if(!d)return`<tr><td style="color:var(--sas-t1)">${a}</td><td colspan="3" style="color:var(--sas-t3)">–</td></tr>`;
+    return`<tr><td><div style="display:flex;align-items:center;gap:4px"><div style="width:4px;height:4px;border-radius:50%;background:${ANC_COLORS[a]||'var(--sas-ac)'};flex-shrink:0"></div>${a}</div></td><td style="font-size:8px">${d.quant||'–'}</td><td style="font-size:8px">${d.qual||'–'}</td><td style="text-align:center;font-weight:bold;color:${ANC_COLORS[a]||'var(--sas-ac)'}">${d.priority_score||'–'}/10</td></tr>`;
+  }).join('');
+  const tlHtml=(s.temporalities||[]).map(t=>`<div class="tl-item"><div class="tl-scale">${t.scale}</div><div class="tl-text"><strong style="color:var(--sas-t1);font-size:8px">${t.process}</strong>${t.model?` — ${t.model}`:''}<br><em style="color:var(--sas-t3)">${t.finding}</em></div></div>`).join('');
+  const locHtml=(s.locations||[]).length?`<div class="ms"><div class="ms-title" onclick="toggleMs(this)">Site Locations<span class="ms-tog">&#9662;</span></div><div class="ms-body" style="max-height:200px">${s.locations.map(l=>`<div style="font-size:9px;color:var(--sas-t2);padding:3px 0;border-bottom:1px solid var(--sas-bd);display:flex;align-items:center;gap:8px"><span style="color:var(--sas-t3)">&#9679;</span>${l.label}<span style="font-size:8px;color:var(--sas-t3);margin-left:auto">${l.lat.toFixed(3)}&deg;, ${l.lng.toFixed(3)}&deg;</span></div>`).join('')}</div></div>`:'';
+
+  document.getElementById('sm-inner').innerHTML=`
+    <div class="sm-close-bar"><div><div class="sm-asa">${s.asa_code} &middot; ${s.subtype}</div></div><button class="sm-close-btn" onclick="closeStudy()">&times; close</button></div>
+    <div class="sm-title">${s.title}</div><div class="sm-cite">${s.citation}</div>
+    ${s.note?`<div class="warn">&#9651; ${s.note}</div>`:''}
+    <div class="sm-badges">
+      <span class="sm-badge" style="border-color:${gc}40;color:${gc}">${s.group_type}</span>
+      <span class="sm-badge" style="border-color:${fc}40;color:${fc}">${s.function_type}</span>
+      ${s.region?`<span class="sm-badge" style="border-color:var(--sas-bd);color:var(--sas-t2)">${s.region}</span>`:''}
+      ${s.scale?`<span class="sm-badge" style="border-color:var(--sas-bd2);color:var(--sas-t2)">${SCALE_ICONS[s.scale]||''} ${SCALE_LABELS[s.scale]||s.scale}</span>`:''}
+    </div>
+    ${(s.keywords||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px">${s.keywords.map(k=>`<span style="font-size:7px;padding:2px 5px;border-radius:3px;border:1px solid var(--sas-bd);color:var(--sas-t2)">${k}</span>`).join('')}</div>`:''}
+
+    <div class="ms"><div class="ms-title" onclick="toggleMs(this)">Anchor Matrix — Priority Scores<span class="ms-tog">&#9662;</span></div>
+    <div class="ms-body" style="max-height:600px">
+      <canvas id="smConst" style="max-width:160px;max-height:160px;margin:0 auto 12px;display:block"></canvas>
+      <table class="atbl2"><thead><tr><th>Anchor</th><th>Quantitative</th><th>Qualitative</th><th>Score</th></tr></thead><tbody>${ancRows}</tbody></table>
+    </div></div>
+
+    <div class="ms"><div class="ms-title" onclick="toggleMs(this)">Key Metrics &amp; Equations<span class="ms-tog">&#9662;</span></div>
+    <div class="ms-body" style="max-height:400px">
+      ${(s.key_metrics||[]).length?`<div style="margin-bottom:10px"><div style="font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:5px">Metrics</div><div style="display:flex;flex-wrap:wrap;gap:3px">${s.key_metrics.map(m=>`<span style="font-size:9px;padding:2px 6px;border-radius:3px;border:1px solid var(--sas-bd);color:var(--sas-t2);background:var(--sas-bg3)">${m}</span>`).join('')}</div></div>`:''}
+      ${(s.key_equations||[]).length?`<div><div style="font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:5px">Equations</div><div style="display:flex;flex-direction:column;gap:3px">${s.key_equations.map(e=>`<span style="font-size:9px;padding:2px 7px;border-radius:3px;border:1px dashed rgba(127,119,221,0.3);color:var(--sas-ac);background:var(--sas-bg3);font-family:'Courier New',monospace">${e}</span>`).join('')}</div></div>`:''} 
+    </div></div>
+
+    <div class="ms"><div class="ms-title" onclick="toggleMs(this)">Temporalities<span class="ms-tog">&#9662;</span></div>
+    <div class="ms-body" style="max-height:500px"><div class="tl">${tlHtml}</div></div></div>
+
+    ${s._operational_logic||s._societal_logic||s._experiential_logic?`<div class="ms"><div class="ms-title" onclick="toggleMs(this)">Research Logics (from Obsidian)<span class="ms-tog">&#9662;</span></div>
+    <div class="ms-body" style="max-height:500px">
+      <div style="font-size:8px;color:var(--sas-t3);margin-bottom:9px;font-style:italic">Captured during authoring in Obsidian. Inform the typology synthesis but are not displayed in the main database view.</div>
+      ${s._operational_logic?`<div class="hidden-sec"><div class="hidden-sec-label">Operational Logic</div><div class="hidden-sec-text">${s._operational_logic}</div></div>`:''}
+      ${s._societal_logic?`<div class="hidden-sec"><div class="hidden-sec-label">Societal Logic</div><div class="hidden-sec-text">${s._societal_logic}</div></div>`:''}
+      ${s._experiential_logic?`<div class="hidden-sec"><div class="hidden-sec-label">Experiential Logic</div><div class="hidden-sec-text">${s._experiential_logic}</div></div>`:''}
+    </div></div>`:''}
+
+    ${locHtml}
+    <div class="ms"><div class="ms-title" onclick="toggleMs(this)">Full Citation<span class="ms-tog">&#9662;</span></div>
+    <div class="ms-body" style="max-height:200px"><div style="font-size:9px;color:var(--sas-t2);line-height:1.7;font-style:italic">${s.full_citation||'–'}</div></div></div>
+    ${s._obsidian_link?`<a style="display:inline-flex;align-items:center;gap:6px;font-size:9px;color:var(--sas-ac);border:1px solid rgba(127,119,221,0.3);border-radius:var(--sas-r);padding:4px 10px;margin-top:10px;text-decoration:none;opacity:0.8" href="${s._obsidian_link}">&#9650; Open in Obsidian</a>`:''}
+  `;
+  document.getElementById('sm').classList.add('open');
+  setTimeout(()=>drawConstellation('smConst',[s],GC[s.group_code]||'#7F77DD',160),30);
+}
+function closeStudy(){document.getElementById('sm').classList.remove('open');}
+function toggleMs(el){const b=el.nextElementSibling,t=el.querySelector('.ms-tog');const col=b.classList.toggle('col');t.textContent=col?'▸':'▾';if(!col)b.style.maxHeight=b.scrollHeight+'px';}
+
+// ── ATLAS ──────────────────────────────────────────────
+function initAtlas(){
+  if(!window.L)return;
+  atlasMap=L.map('atlas-map',{center:[25,10],zoom:2,zoomControl:true,attributionControl:true});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OSM &copy; CARTO',subdomains:'abcd',maxZoom:18}).addTo(atlasMap);
+  plotAtlasMarkers();
+}
+function plotAtlasMarkers(){
+  if(!atlasMap)return;
+  atlasMarkers.forEach(m=>atlasMap.removeLayer(m));atlasMarkers=[];
+  const showS=atlasFilter==='all'||atlasFilter==='studies';
+  const showO=atlasFilter==='all'||atlasFilter==='objects';
+  if(showS){STUDIES.forEach(s=>{(s.locations||[]).forEach(loc=>{
+    const gc=GC[s.group_code]||'#7F77DD';
+    const m=L.circleMarker([loc.lat,loc.lng],{radius:7,fillColor:gc,color:'rgba(255,255,255,0.4)',weight:1,opacity:1,fillOpacity:0.85});
+    m.typologyId=s.func_code+s.group_code;m.markerType='study';
+    m.bindPopup(`<div style="font-size:9px;color:#4e4d4a;margin-bottom:4px">${s.asa_code}</div><div style="font-size:11px;color:#dedad0;margin-bottom:3px;line-height:1.3">${s.title}</div><div style="font-size:9px;color:#4e4d4a;margin-bottom:6px;font-style:italic">${loc.label}</div><div style="font-size:9px;color:#9b95f0;cursor:pointer" onclick="clickCell('${s.func_code+s.group_code}')">&#8594; view typology</div>`);
+    m.on('click',()=>clickCell(m.typologyId));m.addTo(atlasMap);atlasMarkers.push(m);
+  });});}
+  if(showO){SPECULATIVE.forEach(o=>{if(!o.location)return;
+    const m=L.circleMarker([o.location.lat,o.location.lng],{radius:5,fillColor:'#EF9F27',color:'rgba(255,255,255,0.3)',weight:1,opacity:1,fillOpacity:0.75,dashArray:'3,3'});
+    m.typologyId=o.typology_id;m.markerType='object';
+    m.bindPopup(`<div style="font-size:8px;color:#EF9F27;margin-bottom:5px">speculative object</div><div style="font-size:11px;color:#dedad0;margin-bottom:3px;line-height:1.3">${o.name}</div><div style="font-size:9px;color:#4e4d4a;font-style:italic;margin-bottom:5px">${o.location.label}</div><div style="font-size:8px;color:#9b95f0;cursor:pointer" onclick="clickCell('${o.typology_id}')">&#8594; view typology</div>`);
+    m.on('click',()=>clickCell(m.typologyId));m.addTo(atlasMap);atlasMarkers.push(m);
+  });}
+  updateAtlasSelection();
+}
+function updateAtlasSelection(){
+  if(!atlasMap)return;
+  atlasMarkers.forEach(m=>{
+    const active=!selCell||m.typologyId===selCell;
+    if(m.markerType==='study'){const gc=GC[(m.typologyId||'').slice(1)]||'#7F77DD';m.setStyle({fillOpacity:active?0.85:0.12,opacity:active?1:0.18,radius:active?7:5,fillColor:active?gc:'#444'});}
+    else{m.setStyle({fillOpacity:active?0.75:0.1,opacity:active?1:0.15,radius:active?5:4,fillColor:active?'#EF9F27':'#444'});}
+  });
+}
+function setAtlasSize(mode){
+  const body=document.getElementById('atlas-body');
+  const main=document.getElementById('main');
+  const panels=document.getElementById('panels');
+  ['atlas-btn-full','atlas-btn-panel','atlas-btn-hidden'].forEach(id=>{
+    document.getElementById(id).style.color='var(--sas-t3)';
+  });
+  if(mode==='full'){
+    body.style.height='calc(100vh - 84px)';
+    panels.style.display='none';
+    document.getElementById('atlas-btn-full').style.color='var(--sas-ac)';
+  } else if(mode==='panel'){
+    body.style.height='200px';
+    panels.style.display='flex';
+    document.getElementById('atlas-btn-panel').style.color='var(--sas-ac)';
+  } else {
+    body.style.height='0';
+    panels.style.display='flex';
+    document.getElementById('atlas-btn-hidden').style.color='var(--sas-ac)';
+  }
+  if(mode!=='hidden'&&atlasMap)setTimeout(()=>atlasMap.invalidateSize(),220);
+}
+function toggleAtlas(){setAtlasSize('panel');}
+function setAtlasFilter(f,el){atlasFilter=f;document.querySelectorAll('.af-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');plotAtlasMarkers();}
+
+// ── IMPORT ─────────────────────────────────────────────
+function openImp(){document.getElementById('imp').style.display='flex';}
+function closeImp(){document.getElementById('imp').style.display='none';document.getElementById('imp-notice').innerHTML='';}
+function doImp(){
+  const raw=document.getElementById('imp-input').value.trim(),n=document.getElementById('imp-notice');
+  try{
+    const rec=JSON.parse(raw);
+    const miss=['asa_code','title','group_type','function_type','citation'].filter(k=>!rec[k]);
+    if(miss.length){n.innerHTML=`<div style="font-size:9px;padding:5px 9px;border-radius:var(--sas-r);margin-top:5px;background:rgba(192,84,78,0.1);border:1px solid rgba(192,84,78,0.3);color:#f09595">Missing: ${miss.join(', ')}</div>`;return;}
+    const gE=Object.entries(GN).find(([,v])=>v===rec.group_type),fE=Object.entries(FN).find(([,v])=>v===rec.function_type);
+    if(!gE||!fE){n.innerHTML=`<div style="font-size:9px;padding:5px 9px;border-radius:var(--sas-r);margin-top:5px;background:rgba(192,84,78,0.1);border:1px solid rgba(192,84,78,0.3);color:#f09595">Invalid group_type or function_type.</div>`;return;}
+    rec.group_code=gE[0];rec.func_code=fE[0];
+    const idx=STUDIES.findIndex(x=>x.asa_code===rec.asa_code);
+    if(idx>=0)STUDIES[idx]=rec;else STUDIES.push(rec);
+    updateStats();renderMatrix();renderTypology();renderRecords();plotAtlasMarkers();
+    n.innerHTML=`<div style="font-size:9px;padding:5px 9px;border-radius:var(--sas-r);margin-top:5px;background:rgba(29,158,117,0.1);border:1px solid rgba(29,158,117,0.3);color:#5DCAA5">Record ${rec.asa_code} imported.</div>`;
+    setTimeout(closeImp,700);
+  }catch(e){n.innerHTML=`<div style="font-size:9px;padding:5px 9px;border-radius:var(--sas-r);margin-top:5px;background:rgba(192,84,78,0.1);border:1px solid rgba(192,84,78,0.3);color:#f09595">JSON parse error: ${e.message}</div>`;}
+}
+
+
+// ── SCALE GRID ────────────────────────────────────────
+function drawScaleGrid(canvasId, scale, color, W, H){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+  const cellSize=scale==='unit'?9:scale==='neighbourhood'?6:4;
+  const cols=Math.floor((W-4)/cellSize);
+  const rows=Math.floor((H-12)/cellSize);
+  const ox=2,oy=2;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      ctx.beginPath();
+      ctx.arc(ox+c*cellSize+cellSize/2,oy+r*cellSize+cellSize/2,0.8,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,0.1)';
+      ctx.fill();
+    }
+  }
+  let footW,footH;
+  if(scale==='unit'){footW=Math.min(2,cols);footH=Math.min(2,rows);}
+  else if(scale==='neighbourhood'){footW=Math.min(8,cols-1);footH=Math.min(5,rows-1);}
+  else{footW=cols-1;footH=rows-1;}
+  const startC=Math.floor((cols-footW)/2);
+  const startR=Math.floor((rows-footH)/2);
+  const r=parseInt(color.slice(1,3),16),g=parseInt(color.slice(3,5),16),b=parseInt(color.slice(5,7),16);
+  ctx.fillStyle=`rgba(${r},${g},${b},0.15)`;
+  ctx.strokeStyle=`rgba(${r},${g},${b},0.7)`;
+  ctx.lineWidth=0.75;
+  ctx.beginPath();
+  ctx.rect(ox+startC*cellSize,oy+startR*cellSize,footW*cellSize,footH*cellSize);
+  ctx.fill();ctx.stroke();
+  for(let rr=startR;rr<startR+footH;rr++){
+    for(let cc=startC;cc<startC+footW;cc++){
+      ctx.beginPath();
+      ctx.arc(ox+cc*cellSize+cellSize/2,oy+rr*cellSize+cellSize/2,1.1,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${r},${g},${b},0.6)`;
+      ctx.fill();
+    }
+  }
+  ctx.font=`6px 'Courier New',monospace`;
+  ctx.fillStyle='rgba(255,255,255,0.18)';
+  ctx.textAlign='right';
+  ctx.fillText('1 cell = 1 m',W-2,H-1);
+}
+
+function getScaleColor(objType){return objType==='real'?'#1D9E75':'#7F77DD';}
+
+
+// ── TYPOLOGY BRIEF DATA (for recommendations) ─────────────────────────
+const TYPO_BRIEF_DATA=[
+  {id:'1A',group:'A',anchors:['structural','economic']},
+  {id:'1B',group:'B',anchors:['structural','ecological','social']},
+  {id:'1C',group:'C',anchors:['structural','ecological','economic','social','authorship']},
+  {id:'1D',group:'D',anchors:['structural','ecological','economic']},
+  {id:'1E',group:'E',anchors:['ecological','social','authorship']},
+  {id:'2A',group:'A',anchors:['structural']},
+  {id:'2B',group:'B',anchors:['ecological','social']},
+  {id:'2C',group:'C',anchors:['structural','ecological','economic']},
+  {id:'2D',group:'D',anchors:['structural','ecological']},
+  {id:'2E',group:'E',anchors:['ecological','social','authorship']},
+  {id:'3A',group:'A',anchors:['economic']},
+  {id:'3B',group:'B',anchors:['ecological','economic','social']},
+  {id:'3C',group:'C',anchors:['structural','ecological','economic']},
+  {id:'3D',group:'D',anchors:['ecological','social']},
+  {id:'3E',group:'E',anchors:['structural','ecological','economic','social','authorship']},
+  {id:'4A',group:'A',anchors:['economic']},
+  {id:'4B',group:'B',anchors:['social','authorship']},
+  {id:'4C',group:'C',anchors:['social','authorship','economic']},
+  {id:'4D',group:'D',anchors:['ecological','social']},
+  {id:'4E',group:'E',anchors:['ecological','social','authorship']},
+];
+
+const TYPO_NAMES={
+  '1A':'Grey Edge Defense','1B':'Green Edge Defense','1C':'Hybrid Edge Defense',
+  '1D':'Amphibious Edge Defense','1E':'LoTek Edge Defense',
+  '2A':'Grey Shoreline','2B':'Green Shoreline','2C':'Hybrid Shoreline',
+  '2D':'Amphibious Shoreline','2E':'LoTek Shoreline',
+  '3A':'Grey Productive','3B':'Green Productive','3C':'Hybrid Productive',
+  '3D':'Amphibious Productive','3E':'LoTek Productive',
+  '4A':'Grey Civic','4B':'Green Civic','4C':'Hybrid Civic',
+  '4D':'Amphibious Civic','4E':'LoTek Civic',
+};
+
+function dismissOverlay(mode){
+  const ov=document.getElementById('opening-overlay');
+  ov.classList.add('hidden');
+  setTimeout(()=>ov.style.display='none',300);
+  if(mode==='build')activateBriefBuilder();
+}
+
+function activateBriefBuilder(){
+  briefMode=true;
+  document.getElementById('ty-empty-default').style.display='none';
+  document.getElementById('brief-builder').style.display='flex';
+  document.getElementById('brief-builder').style.flexDirection='column';
+  document.getElementById('brief-builder').style.alignItems='center';
+  renderBriefBuilder();
+}
+
+function deactivateBriefBuilder(){
+  briefMode=false;
+  briefAnchors=new Set();
+  briefCustomAnchors=[];
+  document.getElementById('ty-empty-default').style.display='flex';
+  document.getElementById('brief-builder').style.display='none';
+  renderMatrix();
+}
+
+function renderBriefBuilder(){
+  const el=document.getElementById('brief-builder');
+  const allAnc=[...BASE_ANC,...briefCustomAnchors];
+  const toggles=allAnc.map(a=>{
+    const on=briefAnchors.has(a);
+    const isCustom=!BASE_ANC.includes(a);
+    return`<button class="anc-tog${on?(isCustom?' custom-on':' on'):''}" onclick="toggleBriefAnc('${a}')">${a}</button>`;
+  }).join('');
+
+  const recHTML=briefAnchors.size>0?renderBriefRecs():'';
+
+  el.innerHTML=`
+    <div class="bb-title">Build a Hybrid Constellation</div>
+    <div class="bb-sub">Toggle the anchors your coastal strategy needs to address. Add custom anchors relevant to your site. We'll identify which typology combinations complement your brief.</div>
+    <div style="display:flex;justify-content:center;margin:4px 0">
+      <canvas id="briefCanvas" width="200" height="200" style="max-width:200px;max-height:200px"></canvas>
+    </div>
+    <div class="bb-toggles">${toggles}</div>
+    <div class="bb-add-row">
+      <input class="bb-input" id="brief-anc-input" placeholder="add anchor (e.g. health, biodiversity...)" maxlength="24"
+        onkeydown="if(event.key==='Enter')addBriefAnchor()">
+      <button class="bb-add-btn" onclick="addBriefAnchor()">add</button>
+    </div>
+    ${recHTML}
+    <div class="bb-switch" onclick="deactivateBriefBuilder()">← back to catalogue</div>
+  `;
+  drawBriefConstellation();
+}
+
+function toggleBriefAnc(a){
+  if(briefAnchors.has(a))briefAnchors.delete(a);else briefAnchors.add(a);
+  renderBriefBuilder();
+  renderMatrix();
+}
+
+function addBriefAnchor(){
+  const inp=document.getElementById('brief-anc-input');
+  const val=inp.value.trim().toLowerCase();
+  if(!val||briefCustomAnchors.includes(val)||BASE_ANC.includes(val))return;
+  briefCustomAnchors.push(val);
+  briefAnchors.add(val);
+  renderBriefBuilder();
+  renderMatrix();
+}
+
+function renderBriefRecs(){
+  const briefArr=[...briefAnchors];
+  const scored=TYPO_BRIEF_DATA.map(t=>{
+    const covered=briefArr.filter(a=>t.anchors.includes(a)).length;
+    const score=briefArr.length?covered/briefArr.length:0;
+    return{...t,score,covered};
+  }).filter(t=>t.score>0).sort((a,b)=>b.score-a.score).slice(0,8);
+
+  if(!scored.length)return`<div class="bb-note">No typologies in the database currently evidence these anchors. This may be a research gap worth investigating.</div>`;
+
+  const cells=scored.map(t=>{
+    const gc=GC[t.group]||'#888';
+    const pct=Math.round(t.score*100);
+    const strong=t.score>=0.6;
+    return`<div class="bb-cell ${strong?'bb-strong':'bb-match'}" style="${strong?`border-color:${gc}88;background:${gc}0f`:''}" onclick="clickCell('${t.id[0]}${t.id[1]}')">
+      <div class="bb-cell-code" style="color:${gc}">${t.id}</div>
+      <div class="bb-cell-name">${TYPO_NAMES[t.id]||''}</div>
+      <div class="bb-cell-pct" style="color:${gc}">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  const top=scored[0];
+  return`
+    <div class="bb-rec-title" style="width:100%">Typologies complementing this brief</div>
+    <div class="bb-rec-grid">${cells}</div>
+    <div class="bb-note">${top.id} covers ${top.covered} of ${briefArr.length} brief anchor${briefArr.length!==1?'s':''}. Combine typologies to approach full coverage.</div>
+  `;
+}
+
+function drawBriefConstellation(){
+  const canvas=document.getElementById('briefCanvas');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=200,H=200,cx=100,cy=100;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+
+  const allAnc=[...BASE_ANC,...briefCustomAnchors];
+  const n=allAnc.length;
+  const ringR=68;
+
+  function hexA(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
+
+  const pts=allAnc.map((_,i)=>{
+    const ang=(i/n)*Math.PI*2-Math.PI/2;
+    return{x:cx+Math.cos(ang)*ringR,y:cy+Math.sin(ang)*ringR,ang,a:allAnc[i]};
+  });
+
+  // lines between active adjacent nodes
+  for(let i=0;i<n;i++){
+    const j=(i+1)%n;
+    if(briefAnchors.has(pts[i].a)&&briefAnchors.has(pts[j].a)){
+      ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+      ctx.strokeStyle='rgba(127,119,221,0.2)';ctx.lineWidth=1;ctx.stroke();
+    }
+  }
+
+  // centre glow
+  if(briefAnchors.size>0){
+    const grd=ctx.createRadialGradient(cx,cy,0,cx,cy,ringR*0.5);
+    grd.addColorStop(0,'rgba(127,119,221,0.1)');grd.addColorStop(1,'rgba(127,119,221,0)');
+    ctx.beginPath();ctx.arc(cx,cy,ringR*0.5,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
+  }
+
+  pts.forEach(p=>{
+    const active=briefAnchors.has(p.a);
+    const isCustom=!BASE_ANC.includes(p.a);
+    const color=isCustom?'#EF9F27':(ANC_COLORS[p.a]||'#7F77DD');
+    if(active){
+      ctx.beginPath();ctx.arc(p.x,p.y,13,0,Math.PI*2);ctx.fillStyle=hexA(color,0.1);ctx.fill();
+      ctx.beginPath();ctx.arc(p.x,p.y,8,0,Math.PI*2);ctx.fillStyle=hexA(color,0.18);ctx.fill();
+      ctx.strokeStyle=hexA(color,0.9);ctx.lineWidth=1.5;ctx.stroke();
+      ctx.beginPath();ctx.arc(p.x,p.y,2.8,0,Math.PI*2);ctx.fillStyle=hexA(color,0.9);ctx.fill();
+    } else {
+      ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=0.75;ctx.setLineDash([2,2]);ctx.stroke();ctx.setLineDash([]);
+    }
+    const lDist=ringR+13;
+    const lx=cx+Math.cos(p.ang)*lDist,ly=cy+Math.sin(p.ang)*lDist;
+    ctx.font=`8px 'Courier New',monospace`;ctx.fillStyle=active?'#8a8880':'#4e4d4a';
+    ctx.textAlign=lx<cx-4?'right':lx>cx+4?'left':'center';
+    ctx.textBaseline=ly<cy-4?'bottom':ly>cy+4?'top':'middle';
+    ctx.fillText(p.a.slice(0,5),lx,ly);
+  });
+
+  if(briefAnchors.size===0){
+    ctx.font=`9px 'Courier New',monospace`;ctx.fillStyle='rgba(255,255,255,0.12)';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('toggle anchors',cx,cy-5);ctx.fillText('to build your brief',cx,cy+8);
+  } else {
+    ctx.font=`9px 'Courier New',monospace`;ctx.fillStyle='rgba(127,119,221,0.5)';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(`${briefAnchors.size} anchor${briefAnchors.size!==1?'s':''}`,cx,cy-4);ctx.fillText('defined',cx,cy+8);
+  }
+}
+
+// ── BOOT ───────────────────────────────────────────────
+renderAnchorChips();
+updateStats();
+renderMatrix();
+renderTypology();
+renderRecords();
+setTimeout(initAtlas,150);
+</script>
+</body>
+</html>
