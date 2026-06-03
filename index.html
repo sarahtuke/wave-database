@@ -218,6 +218,31 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .sc-pip{width:16px;height:16px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:bold;border:1px solid rgba(255,255,255,0.06)}
 .sc-pip.on{background:rgba(127,119,221,0.16);border-color:rgba(127,119,221,0.32);color:#9b95f0}
 .sc-pip.off{background:var(--sas-bg,#0c0f1c);color:var(--sas-t3,#4e4d4a)}
+
+/* ANCHOR TABLE (inside constellation) */
+.anc-tbl-wrap{padding-top:2px}
+.anc-legend-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:7px}
+.anl-item{font-size:8px;color:var(--sas-t2,#8a8880);display:flex;align-items:center;gap:3px}
+.anc-note{font-size:7.5px;color:var(--sas-t3,#4e4d4a);margin-top:8px;line-height:1.6;font-style:italic}
+
+/* METRICS BY ANCHOR */
+.meq-group{margin-bottom:7px;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-r,5px);overflow:hidden}
+.meq-head{display:flex;align-items:center;justify-content:space-between;padding:5px 9px;background:var(--sas-bg3,#171c2e);border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07))}
+.meq-anchor{font-size:8px;color:var(--sas-ac,#7F77DD);letter-spacing:0.05em;font-weight:bold}
+.meq-meta{font-size:7px;color:var(--sas-t3,#4e4d4a)}
+.meq-body{padding:6px 9px;background:var(--sas-bg,#0c0f1c)}
+.meq-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;padding-bottom:5px;border-bottom:1px dashed var(--sas-bd,rgba(255,255,255,0.07))}
+.meq-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.meq-text{font-size:8.5px;color:var(--sas-t2,#8a8880);line-height:1.5;flex:1}
+.meq-src{font-size:7px;color:var(--sas-ac,#7F77DD);letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;border:1px solid rgba(127,119,221,0.25);border-radius:3px;padding:1px 4px}
+
+/* TEMPORAL EVIDENCE COVERAGE */
+.tec-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07))}
+.tec-row:last-child{border-bottom:none}
+.tec-dot{width:7px;height:7px;border-radius:50%;background:var(--sas-ac,#7F77DD);flex-shrink:0}
+.tec-label{font-size:9px;color:var(--sas-t2,#8a8880);flex:1}
+.tec-studies{display:flex;gap:3px;flex-wrap:wrap}
+.tec-src{font-size:7px;color:var(--sas-ac,#7F77DD);letter-spacing:0.05em;border:1px solid rgba(127,119,221,0.25);border-radius:3px;padding:1px 4px}
 .no-rec{padding:20px 0;text-align:center;color:var(--sas-t3,#4e4d4a);font-size:9px;line-height:1.6}
 .mini-chart-title{font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);margin-bottom:6px;margin-top:10px}
 .mini-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
@@ -226,8 +251,10 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .mini-stat-val{font-size:16px;font-weight:bold;color:var(--sas-t2,#8a8880)}
 
 /* ── ATLAS ─────────────────────────────────────────── */
-#atlas-toggle{height:28px;flex-shrink:0;background:var(--sas-bg2,#10152a);border-top:1px solid var(--sas-bd,rgba(255,255,255,0.07));display:flex;align-items:center;padding:0 12px;gap:8px;cursor:pointer;user-select:none;transition:background 0.12s}
-#atlas-toggle:hover{background:var(--sas-bg3,#171c2e)}
+#atlas-toggle{height:28px;flex-shrink:0;background:var(--sas-bg2,#10152a);border-top:1px solid var(--sas-bd,rgba(255,255,255,0.07));display:flex;align-items:center;padding:0 12px;gap:8px;user-select:none}
+.atl-size-btn{font-size:7px;padding:2px 7px;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:3px;background:transparent;color:var(--sas-t3,#4e4d4a);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.05em;transition:all 0.12s}
+.atl-size-btn:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13));color:var(--sas-t2,#8a8880)}
+.atl-size-btn.on{border-color:rgba(127,119,221,0.4);color:var(--sas-ac,#7F77DD);background:rgba(127,119,221,0.07)}
 #atlas-toggle-title{font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a)}
 #atlas-toggle-stats{font-size:8px;color:var(--sas-t3,#4e4d4a);flex:1}
 #atlas-toggle-filters{display:flex;gap:4px;margin-right:8px}
@@ -301,6 +328,13 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .imp-note{font-size:8px;padding:5px 9px;border-radius:var(--sas-r,5px);margin-top:5px}
 .imp-err{background:rgba(192,84,78,0.1);border:1px solid rgba(192,84,78,0.3);color:#f09595}
 .imp-ok{background:rgba(29,158,117,0.1);border:1px solid rgba(29,158,117,0.3);color:#5DCAA5}
+
+/* OBJECT TYPE TOOLTIP */
+[data-tip-kws]{cursor:help;border-bottom:1px dotted rgba(255,255,255,0.18);padding-bottom:1px}
+#sas-tip{display:none;position:fixed;z-index:999;background:var(--sas-bg2,#10152a);border:1px solid var(--sas-bd2,rgba(255,255,255,0.13));border-radius:var(--sas-rl,9px);padding:10px 12px;max-width:240px;pointer-events:none;box-shadow:0 6px 24px rgba(0,0,0,0.55)}
+.st-kws{font-size:7px;color:var(--sas-t3,#4e4d4a);letter-spacing:0.06em;line-height:1.6;margin-bottom:5px}
+.st-desc{font-size:8px;color:var(--sas-t2,#8a8880);line-height:1.6;margin-bottom:5px}
+.st-cta{font-size:7px;color:var(--sas-ac,#7F77DD);letter-spacing:0.04em}
 </style>
 </head>
 <body>
@@ -382,7 +416,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
   </div>
 
   <!-- ATLAS TOGGLE BAR -->
-  <div id="atlas-toggle" onclick="toggleAtlas()">
+  <div id="atlas-toggle">
     <span id="atlas-toggle-title">Atlas</span>
     <span id="atlas-toggle-stats" style="margin-left:10px"></span>
     <div id="atlas-toggle-filters" onclick="event.stopPropagation()">
@@ -390,7 +424,11 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
       <button class="af-btn" id="af-studies" onclick="setAtlasFilter('studies',this)">Studies</button>
       <button class="af-btn obj" id="af-objects" onclick="setAtlasFilter('objects',this)">Objects</button>
     </div>
-    <span id="atlas-chevron" class="up">&#9660;</span>
+    <div style="display:flex;gap:3px;margin-left:auto" onclick="event.stopPropagation()">
+      <button class="atl-size-btn" id="atl-full" onclick="setAtlasSize('full')" title="Full screen">full ↑</button>
+      <button class="atl-size-btn on" id="atl-def" onclick="setAtlasSize('default')" title="Default height">default</button>
+      <button class="atl-size-btn" id="atl-hide" onclick="setAtlasSize('hidden')" title="Hide atlas">hide ↓</button>
+    </div>
   </div>
 
   <!-- ATLAS MAP BODY -->
@@ -424,7 +462,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="data/studies.js"></script>
 <script src="data/speculative.js"></script>
-<script src="data/realistic.js"></script>
+<script src="data/standard.js"></script>
 <script>
 // ── CONSTANTS ───────────────────────────────────────────
 const GRP=['A','B','C','D','E'];
@@ -433,7 +471,7 @@ const GC={A:'#1D9E75',B:'#639922',C:'#7F77DD',D:'#378ADD',E:'#EF9F27'};
 const FUN=['1','2','3','4'];
 const FN={'1':'Edge Defense','2':'Shoreline Inundation','3':'Productive Landscapes','4':'Civic Living'};
 const FC={'1':'#c0544e','2':'#378ADD','3':'#1D9E75','4':'#9F77DD'};
-const ANC=['structural','ecological','economic','social','aesthetic'];
+const ANC=['structural','ecological','economic','social','authorship'];
 
 // ── STATE ────────────────────────────────────────────────
 let selCell=null,recTab='s',radarChart=null,miniCharts={};
@@ -445,7 +483,7 @@ function objectsForCell(cid){return [...SPECULATIVE,...REALISTIC].filter(o=>o.ty
 function studiesForSelected(){return selCell?studiesForCell(selCell):STUDIES}
 function anchorScore(studies,anchor){
   if(!studies.length)return{score:0,conf:'na'};
-  let pts=0;studies.forEach(s=>{const a=s.anchors&&s.anchors[anchor];if(!a)return;if(a.quant&&a.qual)pts+=1;else if(a.quant||a.qual)pts+=0.5;});
+  let pts=0;studies.forEach(s=>{const a=s.anchors&&s.anchors[anchor];if(!a||!a.has)return;if(a.score!=null)pts+=a.score/10;else if(a.quant&&a.qual)pts+=1;else if(a.quant||a.qual)pts+=0.5;});
   return{score:pts/studies.length,conf:studies.length>=3?'hi':studies.length>=2?'md':'lo'};
 }
 function confTag(conf,n){
@@ -482,6 +520,47 @@ function renderMatrix(){
   body.innerHTML=h;
 }
 
+// ── ANCHOR TABLE ─────────────────────────────────────────
+function renderAnchorTable(stds,ancData){
+  if(!stds.length)return'';
+  const rows=ANC.map((a,i)=>{
+    const{score,conf}=ancData[i];
+    let evType='none';
+    stds.forEach(s=>{const anc=s.anchors&&s.anchors[a];if(!anc||!anc.has)return;if(anc.quant)evType='quant';else if(anc.qual&&evType!=='quant')evType='qual';});
+    const dot=evType==='quant'?'●':evType==='qual'?'○':'·';
+    const dotCol=evType==='quant'?'var(--sas-ac,#7F77DD)':evType==='qual'?'var(--sas-t2,#8a8880)':'var(--sas-t3,#4e4d4a)';
+    const scoreStr=score>0?(score*10).toFixed(1):'–';
+    const barW=Math.round(score*100);
+    return`<tr><td><span style="color:${dotCol};margin-right:5px">${dot}</span>${a}</td><td><div class="bar-wrap" style="width:60px"><div class="bar-fill" style="width:${barW}%"></div></div></td><td style="font-size:9px;color:var(--sas-t2,#8a8880)">${scoreStr}</td><td>${confTag(conf,stds.length)}</td></tr>`;
+  }).join('');
+  return`<div class="anc-tbl-wrap"><div class="anc-legend-row"><span class="anl-item"><span style="color:var(--sas-ac,#7F77DD)">●</span>&nbsp;quantitative</span><span class="anl-item"><span style="color:var(--sas-t2,#8a8880)">○</span>&nbsp;qualitative only</span><span class="anl-item"><span style="color:var(--sas-t3,#4e4d4a)">·</span>&nbsp;not evidenced</span></div><table class="atbl"><thead><tr><th>Anchor</th><th>Mean Score</th><th>/10</th><th>Evidence</th></tr></thead><tbody>${rows}</tbody></table><div class="anc-note">Node size = equation count. Reference ring = maximum possible. Scores reflect researcher interpretation of anchor emphasis (1–10).</div></div>`;
+}
+
+// ── METRICS BY ANCHOR ─────────────────────────────────────
+function renderMetricsByAnchor(stds){
+  if(!stds.length)return`<div style="font-size:9px;color:var(--sas-t3,#4e4d4a);padding:8px 0">No study data to organise by anchor.</div>`;
+  const groups=ANC.map(a=>{
+    const{score}=anchorScore(stds,a);
+    const scoreStr=(score*10).toFixed(1);
+    const studiesWithA=stds.filter(s=>s.anchors&&s.anchors[a]&&s.anchors[a].has);
+    let items=studiesWithA.map(s=>{const anc=s.anchors[a];return anc.quant?`<div class="meq-row"><span class="meq-text">${anc.quant}</span><span class="meq-src">${s.asa_code}</span></div>`:''}).filter(Boolean).join('');
+    if(!items)items=`<div style="font-size:8px;color:var(--sas-t3,#4e4d4a);font-style:italic;padding:4px 0">No equations recorded for this anchor</div>`;
+    return`<div class="meq-group"><div class="meq-head"><span class="meq-anchor">● ${a}</span><span class="meq-meta">${scoreStr}/10 &middot; ${studiesWithA.length} ${studiesWithA.length===1?'study':'studies'}</span></div><div class="meq-body">${items}</div></div>`;
+  }).join('');
+  const allEqs=[...new Set(stds.flatMap(s=>s.key_equations||[]))];
+  const eqSection=allEqs.length?`<div style="margin-top:10px"><div style="font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);margin-bottom:5px">Key Equations / Relations</div><div class="mlist">${stds.flatMap(s=>(s.key_equations||[]).map(e=>`<span class="mchip eq" title="${s.asa_code}">${e}</span>`)).join('')}</div></div>`:'';
+  return groups+eqSection;
+}
+
+// ── TEMPORAL EVIDENCE COVERAGE ────────────────────────────
+function renderTemporalCoverage(stds){
+  if(!stds.length)return`<div style="font-size:9px;color:var(--sas-t3,#4e4d4a);padding:8px 0">No temporal evidence data.</div>`;
+  const scaleMap={};
+  stds.forEach(s=>{(s.temporalities||[]).forEach(t=>{if(!scaleMap[t.scale])scaleMap[t.scale]=[];scaleMap[t.scale].push(s.asa_code);});});
+  if(!Object.keys(scaleMap).length)return`<div style="font-size:9px;color:var(--sas-t3,#4e4d4a);padding:8px 0">No temporal scales recorded.</div>`;
+  return Object.entries(scaleMap).map(([scale,asas])=>`<div class="tec-row"><div class="tec-dot"></div><span class="tec-label">${scale}</span><span class="tec-studies">${[...new Set(asas)].map(a=>`<span class="tec-src">${a}</span>`).join('')}</span></div>`).join('');
+}
+
 // ── TYPOLOGY ─────────────────────────────────────────────
 function renderTypology(){
   const empty=document.getElementById('ty-empty'),content=document.getElementById('ty-content'),badge=document.getElementById('ty-badge');
@@ -500,8 +579,8 @@ function renderTypology(){
     <span class="ty-badge" style="border-color:${gc}40;color:${gc}">${GN[g]}</span>
     <span class="ty-badge" style="border-color:${fc}40;color:${fc}">${FN[f]}</span>
     <span class="ty-badge" style="border-color:var(--sas-bd,rgba(255,255,255,0.07));color:var(--sas-t2,#8a8880)">${stds.length} ${stds.length===1?'study':'studies'}</span>
-    ${specObjs.length?`<span class="ty-badge" style="border-color:rgba(127,119,221,0.3);color:var(--sas-ac,#7F77DD)">${specObjs.length} speculative</span>`:''}
-    ${realObjs.length?`<span class="ty-badge" style="border-color:rgba(239,159,39,0.3);color:var(--sas-ac2,#EF9F27)">${realObjs.length} standard objects</span>`:''}
+    ${specObjs.length?`<span class="ty-badge" style="border-color:rgba(127,119,221,0.3);color:var(--sas-ac,#7F77DD)">${specObjs.length} Speculative Objects</span>`:''}
+    ${realObjs.length?`<span class="ty-badge" style="border-color:rgba(239,159,39,0.3);color:var(--sas-ac2,#EF9F27)">${realObjs.length} Standard Objects</span>`:''}
     <div class="ty-conf">${pips}<span>${stds.length?'evidence confidence':'research gap'}</span></div>`;
 
   const allEmpty=!stds.length&&!realObjs.length&&!specObjs.length;
@@ -512,90 +591,96 @@ function renderTypology(){
     if(radarChart){radarChart.destroy();radarChart=null;}return;
   }
   const ancData=ANC.map(a=>anchorScore(stds,a));
-  const allMetrics=[...new Set(stds.flatMap(s=>s.key_metrics||[]))];
-  const allEqs=[...new Set(stds.flatMap(s=>s.key_equations||[]))];
   const opLogic=stds.length&&stds[0].operational_logic?`<div class="ty-full"><div class="ty-sec-title" onclick="toggleSec(this)">Operational Logic<span>&#9662;</span></div><div class="sec-body" style="max-height:300px"><div class="lbox">${stds[0].operational_logic}</div></div></div>`:'';
   document.getElementById('ty-body').innerHTML=`
     <div class="ty-full">
       <div class="ty-sec-title" onclick="toggleSec(this)">Anchor Constellation<span>&#9662;</span></div>
-      <div class="sec-body" style="max-height:700px">
-        <div class="constellation-wrap" id="cons-${selCell}"></div>
+      <div class="sec-body" style="max-height:400px">
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div id="cons-${selCell}" style="flex:0 0 300px"></div>
+          <div style="flex:1;min-width:0">${renderAnchorTable(stds,ancData)}</div>
+        </div>
       </div>
     </div>
     <div class="ty-full">
       <div class="ty-sec-title" onclick="toggleSec(this)">Browse by Object<span>&#9662;</span></div>
       <div class="sec-body" style="max-height:500px">${renderBrowseSection(selCell,stds,realObjs,specObjs)}</div>
     </div>
+    ${specObjs.length?`
     <div class="ty-full">
-      <div class="ty-sec-title" onclick="toggleSec(this)">Metrics &amp; Equations<span>&#9662;</span></div>
-      <div class="sec-body" style="max-height:400px">
-        <div class="mlist" style="margin-bottom:7px">${allMetrics.length?allMetrics.map(m=>`<span class="mchip">${m}</span>`).join(''):'<span style="font-size:8px;color:var(--sas-t3,#4e4d4a)">–</span>'}</div>
-        ${allEqs.length?`<div style="margin-top:5px"><div style="font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);margin-bottom:4px">Equations / Relations</div><div class="mlist">${allEqs.map(e=>`<span class="mchip eq">${e}</span>`).join('')}</div></div>`:''}
+      <div class="ty-sec-title" onclick="toggleSec(this)">Speculative Objects (${specObjs.length})<span>&#9662;</span></div>
+      <div class="sec-body" style="max-height:700px"><div class="obj-carousel" id="scar-${selCell}"></div></div>
+    </div>`:''}
+    <div class="ty-full">
+      <div class="ty-sec-title" onclick="toggleSec(this)">Metrics &amp; Equations by Anchor<span>&#9662;</span></div>
+      <div class="sec-body" style="max-height:600px">
+        <div style="font-size:8px;color:var(--sas-t3,#4e4d4a);margin-bottom:8px;font-style:italic;line-height:1.5">All equations across contributing studies, organised by anchor. Use to identify what has been measured and which studies to reference.</div>
+        ${renderMetricsByAnchor(stds)}
+      </div>
+    </div>
+    <div class="ty-full">
+      <div class="ty-sec-title" onclick="toggleSec(this)">Temporal Evidence Coverage<span>&#9662;</span></div>
+      <div class="sec-body" style="max-height:300px">
+        ${renderTemporalCoverage(stds)}
       </div>
     </div>
     ${opLogic}
     <div class="ty-full">
       <div class="ty-sec-title" onclick="toggleSec(this)">Contributing Studies (${stds.length})<span>&#9662;</span></div>
       <div class="sec-body" style="max-height:300px">
-        ${stds.length?stds.map(s=>`<div class="spl" onclick="openStudy('${s.asa_code}')"><span class="spl-asa">${s.asa_code}</span><span class="spl-title">${s.title}</span><span class="spl-arr">&#8594;</span></div>`).join(''):'<div style="font-size:9px;color:var(--sas-t3,#4e4d4a);padding:8px 0">No contributing studies yet.</div>'}
+        ${stds.length?stds.map(s=>`<div class="spl" onclick="openStudy('${s.asa_code}')"><span class="spl-asa">${s.asa_code}</span><span class="spl-title">${s.title}</span>${s.region?`<span class="sc-tag" style="font-size:7px;white-space:nowrap;flex-shrink:0">${s.region}</span>`:''}<span class="spl-arr">&#8594; full record</span></div>`).join(''):'<div style="font-size:9px;color:var(--sas-t3,#4e4d4a);padding:8px 0">No contributing studies yet.</div>'}
       </div>
     </div>`;
   setTimeout(()=>{
     const wrap=document.getElementById(`cons-${selCell}`);
     if(wrap)wrap.innerHTML=renderConstellation(stds,ancData);
     if(radarChart){radarChart.destroy();radarChart=null;}
+    const scarId=`scar-${selCell}`;if(document.getElementById(scarId))initSpecCar(scarId,selCell);
   },30);
 }
 
 // ── CONSTELLATION ────────────────────────────────────────
 function renderConstellation(stds,ancData){
-  const cx=190,cy=120,r=82;
+  const cx=100,cy=90,r=60;
   const degs=[-90,-18,54,126,198];
-  const shortL=['stru','eco','econ','soci','aesth'];
+  const shortL=['stru','eco','econ','soci','auth'];
   const pts=degs.map(d=>({x:cx+r*Math.cos(d*Math.PI/180),y:cy+r*Math.sin(d*Math.PI/180)}));
-  const pentPath=pts.map((p,i)=>`${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')+'Z';
-  const scorePts=degs.map((d,i)=>{const s=Math.max(ancData[i].score,0.04);return{x:cx+r*s*Math.cos(d*Math.PI/180),y:cy+r*s*Math.sin(d*Math.PI/180)};});
-  const scorePath=scorePts.map((p,i)=>`${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')+'Z';
-  let svg=`<svg width="100%" viewBox="0 0 380 240" xmlns="http://www.w3.org/2000/svg">`;
-  [0.25,0.5,0.75,1].forEach(fr=>{
-    const rp=degs.map(d=>({x:cx+r*fr*Math.cos(d*Math.PI/180),y:cy+r*fr*Math.sin(d*Math.PI/180)}));
-    svg+=`<path d="${rp.map((p,i)=>`${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}Z" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="0.8"/>`;
-  });
-  pts.forEach(p=>{svg+=`<line x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="0.8"/>`;});
-  svg+=`<path d="${scorePath}" fill="rgba(127,119,221,0.13)" stroke="rgba(127,119,221,0.55)" stroke-width="1.5"/>`;
+  let svg=`<svg width="100%" viewBox="0 0 200 174" xmlns="http://www.w3.org/2000/svg">`;
+  // Pentagon edge lines — the emergent shape connecting the star points
+  for(let i=0;i<5;i++){
+    const a=pts[i],b=pts[(i+1)%5];
+    svg+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="rgba(127,119,221,0.16)" stroke-width="0.6" stroke-dasharray="2,4"/>`;
+  }
+  // Faint center node
+  svg+=`<circle cx="${cx}" cy="${cy}" r="1.5" fill="rgba(255,255,255,0.07)"/>`;
+  // Star nodes
   pts.forEach((p,i)=>{
-    const{score,conf}=ancData[i];
-    const nr=score>0?7+score*7:5;
-    const fill=score>0?'rgba(127,119,221,0.82)':'rgba(255,255,255,0.06)';
-    const stroke=score>0?'rgba(127,119,221,0.9)':'rgba(255,255,255,0.18)';
-    svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${nr.toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
-    if(score>0)svg+=`<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="6.5" font-family="Courier New,monospace">${Math.round(score*10)}</text>`;
-    const lr=r+20,lx=cx+lr*Math.cos(degs[i]*Math.PI/180),ly=cy+lr*Math.sin(degs[i]*Math.PI/180);
-    svg+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="rgba(139,136,128,0.75)" font-size="8" font-family="Courier New,monospace">${shortL[i]}</text>`;
+    const{score}=ancData[i];
+    const has=score>0;
+    if(has){
+      svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(7+score*16).toFixed(1)}" fill="rgba(127,119,221,0.04)"/>`;
+      svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(4+score*9).toFixed(1)}" fill="rgba(127,119,221,0.09)"/>`;
+    }
+    const nr=has?(3+score*5).toFixed(1):'2.2';
+    const fill=has?`rgba(127,119,221,${(0.55+score*0.4).toFixed(2)})`:'rgba(255,255,255,0.06)';
+    const stroke=has?'rgba(160,154,240,0.85)':'rgba(255,255,255,0.11)';
+    svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${nr}" fill="${fill}" stroke="${stroke}" stroke-width="${has?'0.8':'0.5'}"/>`;
+    if(has)svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="1.3" fill="rgba(210,207,255,0.92)"/>`;
+    const lr=r+17,lx=cx+lr*Math.cos(degs[i]*Math.PI/180),ly=cy+lr*Math.sin(degs[i]*Math.PI/180);
+    svg+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="rgba(138,136,128,0.52)" font-size="6.5" font-family="Courier New,monospace">${shortL[i]}</text>`;
   });
-  svg+=`<circle cx="${cx}" cy="${cy}" r="2.5" fill="rgba(255,255,255,0.12)"/>`;
-  // Legend right side
-  const lx0=300,ly0=60;
-  svg+=`<text x="${lx0}" y="${ly0-12}" fill="rgba(78,77,74,0.8)" font-size="7" font-family="Courier New,monospace" letter-spacing="1">ANCHOR SCORES</text>`;
-  ANC.forEach((a,i)=>{
-    const{score,conf}=ancData[i];const barW=Math.round(score*60);const y=ly0+i*22;
-    const cc={'hi':'#5DCAA5','md':'#EF9F27','lo':'#f09595','na':'#4e4d4a'}[conf]||'#4e4d4a';
-    svg+=`<text x="${lx0}" y="${y}" fill="#4e4d4a" font-size="7.5" font-family="Courier New,monospace" dominant-baseline="middle">${a}</text>`;
-    svg+=`<rect x="${lx0}" y="${y+5}" width="60" height="3" rx="1.5" fill="rgba(255,255,255,0.05)"/>`;
-    svg+=`<rect x="${lx0}" y="${y+5}" width="${barW}" height="3" rx="1.5" fill="rgba(127,119,221,0.6)"/>`;
-    svg+=`<text x="${lx0+65}" y="${y+7}" fill="${cc}" font-size="7" font-family="Courier New,monospace" dominant-baseline="middle">${conf==='na'?'–':Math.round(score*10)}</text>`;
-  });
-  if(!stds.length)svg+=`<text x="${cx}" y="${cy+r+36}" text-anchor="middle" fill="rgba(78,77,74,0.5)" font-size="8" font-family="Courier New,monospace">no study data — constellation unfilled</text>`;
+  if(!stds.length)svg+=`<text x="${cx}" y="${cy+r+24}" text-anchor="middle" fill="rgba(78,77,74,0.35)" font-size="7" font-family="Courier New,monospace">no study data</text>`;
   svg+='</svg>';
   return svg;
 }
 
 // ── BROWSE BY OBJECT ─────────────────────────────────────
 function renderBrowseSection(cid,stds,realObjs,specObjs){
-  function card(type,label,color,borderColor,item,count,onclick){
+  function card(type,label,color,borderColor,item,count,onclick,tt){
+    const tipAttr=tt?` data-tip-kws="${tt.kws}" data-tip-desc="${tt.desc}" data-tip-cta="${tt.cta}"`:'';
     if(!item){
       return`<div class="browse-card bc-disabled">
-        <div class="bc-head"><span class="bc-label" style="color:${color}">${label}</span><span class="bc-count">0</span></div>
+        <div class="bc-head"><span class="bc-label" style="color:${color}"${tipAttr}>${label}</span><span class="bc-count">0</span></div>
         <div class="bc-vis"><div style="font-size:8px;color:var(--sas-t3,#4e4d4a)">–</div></div>
         <div class="bc-meta"><div class="bc-empty">none catalogued yet</div></div>
       </div>`;}
@@ -619,15 +704,58 @@ function renderBrowseSection(cid,stds,realObjs,specObjs){
       arrow=`browse all ${count} →`;
     }
     return`<div class="browse-card" style="border-color:${borderColor}" onclick="${onclick}">
-      <div class="bc-head"><span class="bc-label" style="color:${color}">${label}</span><span class="bc-count">${count}</span></div>
+      <div class="bc-head"><span class="bc-label" style="color:${color}"${tipAttr}>${label}</span><span class="bc-count">${count}</span></div>
       <div class="bc-vis">${vis}</div>
       <div class="bc-meta"><div class="bc-name">${name}</div><div class="bc-sub">${sub}</div><div class="bc-tags">${tags}</div></div>
       <div class="bc-arrow">${arrow}</div>
     </div>`;}
-  const c1=card('study','Research-Grounded','#7F77DD','rgba(127,119,221,0.25)',stds[0]||null,stds.length,stds[0]?`openStudy('${stds[0].asa_code}')`:'void(0)');
-  const c2=card('realistic','Standard Objects','#EF9F27','rgba(239,159,39,0.25)',realObjs[0]||null,realObjs.length,realObjs.length?`openObjBrowse('${cid}','realistic')`:'void(0)');
-  const c3=card('speculative','Speculative','#9F77DD','rgba(159,119,221,0.25)',specObjs[0]||null,specObjs.length,specObjs.length?`openObjBrowse('${cid}','speculative')`:'void(0)');
-  return`<div style="font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:8px;font-style:italic;letter-spacing:0.04em">researched precedent &nbsp;&#8594;&nbsp; real-world &nbsp;&#8594;&nbsp; speculative imagination</div><div class="browse-strip">${c1}${c2}${c3}</div>`;
+  const tt1={kws:'peer-reviewed · analytically evidenced · SAS-examined',desc:'CPMs documented through research with full multi-dimensional evidence records across all five anchors.',cta:'→ open study record'};
+  const tt2={kws:'established · deployed · institutionally trusted',desc:'CPMs embedded in coastal engineering practice. Real and widely built — but not yet subjected to the full evaluative rigour of this framework.',cta:'→ browse standard objects'};
+  const tt3={kws:'unbuilt · projective · design imaginaries',desc:'CPMs that do not yet exist as built works. Propositions for what coastal protection could become.',cta:'→ browse speculative objects'};
+  const c1=card('study','Studied Objects','#7F77DD','rgba(127,119,221,0.25)',stds[0]||null,stds.length,stds[0]?`openStudy('${stds[0].asa_code}')`:'void(0)',tt1);
+  const c2=card('realistic','Standard Objects','#EF9F27','rgba(239,159,39,0.25)',realObjs[0]||null,realObjs.length,realObjs.length?`openObjBrowse('${cid}','realistic')`:'void(0)',tt2);
+  const c3=card('speculative','Speculative Objects','#9F77DD','rgba(159,119,221,0.25)',specObjs[0]||null,specObjs.length,specObjs.length?`openObjBrowse('${cid}','speculative')`:'void(0)',tt3);
+  return`<div style="font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:8px;font-style:italic;letter-spacing:0.04em">Studied Objects &nbsp;&#8594;&nbsp; Standard Objects &nbsp;&#8594;&nbsp; Speculative Objects</div><div class="browse-strip">${c1}${c2}${c3}</div>`;
+}
+
+// ── SPECULATIVE CAROUSEL ─────────────────────────────────
+let _scs={};
+function initSpecCar(id,tid){_scs[id]={tid,idx:0};_redrawSpecCar(id);}
+function stepSpecCar(id,d){const s=_scs[id];if(!s)return;const n=SPECULATIVE.filter(o=>o.typology_id===s.tid).length;s.idx=(s.idx+d+n)%n;_redrawSpecCar(id);}
+function goSpecCar(id,i){const s=_scs[id];if(!s)return;s.idx=i;_redrawSpecCar(id);}
+function _redrawSpecCar(id){
+  const s=_scs[id];if(!s)return;
+  const objs=SPECULATIVE.filter(o=>o.typology_id===s.tid);
+  const o=objs[s.idx];if(!o)return;
+  const fp=o.footprint||{rows:2,cols:3};const gs=9;
+  const grid=Array.from({length:gs*gs},(_,i)=>{const r=Math.floor(i/gs),c=i%gs;const f=r<fp.rows&&c<fp.cols;return`<div style="width:7px;height:7px;border-radius:1px;background:${f?'rgba(127,119,221,0.45)':'rgba(255,255,255,0.04)'}"></div>`;}).join('');
+  const vis=o.src?`<img src="${o.src}" alt="${o.name}" style="max-height:120px;max-width:100%;object-fit:contain">`:`<div style="text-align:center;padding:4px 0"><div style="font-size:7px;color:rgba(127,119,221,0.3);margin-bottom:4px">set src to activate GIF</div>${cube()}</div>`;
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=`
+    <div class="obj-car-vis">${vis}<div class="obj-car-nav"><button class="obj-nav-btn" onclick="stepSpecCar('${id}',-1)">&#8592;</button><button class="obj-nav-btn" onclick="stepSpecCar('${id}',1)">&#8594;</button></div></div>
+    <div class="obj-car-meta">
+      <div class="obj-car-name">${o.name}</div>
+      <div class="obj-car-byline">${o.author} &middot; ${o.year}</div>
+      <div class="obj-car-desc">${o.description}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px">
+        ${o.coastal_context?`<span class="obj-car-ctx">${o.coastal_context}</span>`:''}
+        ${o.scale?`<span style="font-size:7px;padding:2px 6px;border-radius:3px;border:1px solid rgba(255,255,255,0.12);color:var(--sas-t2,#8a8880)">&#9679; ${o.scale}</span>`:''}
+      </div>
+      ${o.location?`<div style="font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:8px">&#9679; ${o.location.label}</div>`:''}
+      <div style="font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);margin-bottom:5px">Scale Footprint</div>
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="display:inline-grid;grid-template-columns:repeat(${gs},8px);gap:1px;flex-shrink:0">${grid}</div>
+        <div>
+          <div style="font-size:8px;font-weight:bold;color:var(--sas-t2,#8a8880);margin-bottom:3px">${o.scale||'unit scale'}</div>
+          <div style="font-size:7px;color:var(--sas-t3,#4e4d4a);font-style:italic;line-height:1.5">Shaded area = approx. ground coverage. Each cell = 1 m.</div>
+          <div style="font-size:7px;color:var(--sas-t3,#4e4d4a);margin-top:8px;border-top:1px solid rgba(255,255,255,0.05);padding-top:4px">1 cell = 1 m</div>
+        </div>
+      </div>
+    </div>
+    <div class="obj-car-foot">
+      <div class="obj-dots">${objs.map((_,j)=>`<div class="obj-dot ${j===s.idx?'on':''}" onclick="goSpecCar('${id}',${j})"></div>`).join('')}</div>
+      <div style="display:flex;align-items:center;gap:6px"><span class="obj-count">${s.idx+1}/${objs.length}</span><span class="obj-spec-tag">speculative</span></div>
+    </div>`;
 }
 
 // ── OBJECT BROWSE MODAL ──────────────────────────────────
@@ -706,7 +834,7 @@ function renderMiniAnalytics(body){
   setTimeout(()=>{
     if(miniCharts.anc)miniCharts.anc.destroy();
     const ac=document.getElementById('ancChart');
-    if(ac)miniCharts.anc=new Chart(ac,{type:'bar',data:{labels:['Struct.','Ecol.','Econ.','Social','Aesth.'],datasets:[{data:ANC.map(a=>all.filter(s=>s.anchors&&s.anchors[a]&&s.anchors[a].has).length),backgroundColor:'rgba(127,119,221,0.55)',borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#4e4d4a',font:{size:7,family:'Courier New'}},grid:{display:false}},y:{ticks:{color:'#4e4d4a',font:{size:8},stepSize:1},grid:{color:'rgba(255,255,255,0.04)'}}},animation:{duration:300}}});
+    if(ac)miniCharts.anc=new Chart(ac,{type:'bar',data:{labels:['Struct.','Ecol.','Econ.','Social','Auth.'],datasets:[{data:ANC.map(a=>all.filter(s=>s.anchors&&s.anchors[a]&&s.anchors[a].has).length),backgroundColor:'rgba(127,119,221,0.55)',borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#4e4d4a',font:{size:7,family:'Courier New'}},grid:{display:false}},y:{ticks:{color:'#4e4d4a',font:{size:8},stepSize:1},grid:{color:'rgba(255,255,255,0.04)'}}},animation:{duration:300}}});
     if(miniCharts.grp)miniCharts.grp.destroy();
     const gc=document.getElementById('grpChart');
     if(gc)miniCharts.grp=new Chart(gc,{type:'bar',data:{labels:GRP.map(g=>GN[g]),datasets:[{data:GRP.map(g=>all.filter(s=>s.group_code===g).length),backgroundColor:GRP.map(g=>GC[g]+'99'),borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#4e4d4a',font:{size:8},stepSize:1},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#4e4d4a',font:{size:8,family:'Courier New'}},grid:{display:false}}},animation:{duration:300}}});
@@ -716,7 +844,10 @@ function renderMiniAnalytics(body){
 // ── ATLAS ────────────────────────────────────────────────
 function initAtlas(){
   if(!window.L)return;
-  atlasMap=L.map('atlas-map',{center:[25,10],zoom:2,zoomControl:true,attributionControl:true});
+  atlasMap=L.map('atlas-map',{center:[25,10],zoom:2,zoomControl:true,attributionControl:true,
+    worldCopyJump:true,
+    maxBounds:[[-85,-240],[85,240]],
+    maxBoundsViscosity:0.6});
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
     attribution:'&copy; <a href="https://openstreetmap.org">OSM</a> &copy; <a href="https://carto.com">CARTO</a>',
     subdomains:'abcd',maxZoom:18,
@@ -753,7 +884,7 @@ function plotAtlasMarkers(){
       const m=L.circleMarker([o.location.lat,o.location.lng],{radius:5,fillColor:'#EF9F27',color:'rgba(255,255,255,0.3)',weight:1,opacity:1,fillOpacity:0.75,dashArray:'3,3'});
       m.typologyId=o.typology_id;
       m.markerType='object';
-      m.bindPopup(`<div style="font-size:7px;padding:1px 6px;border-radius:3px;border:1px solid rgba(239,159,39,0.3);color:#EF9F27;display:inline-block;margin-bottom:5px;letter-spacing:0.05em">speculative object</div><div style="font-size:10px;color:var(--sas-t1,#dedad0);margin-bottom:2px;line-height:1.3">${o.name}</div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);margin-bottom:4px">${o.author} &middot; ${o.year}</div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);font-style:italic;margin-bottom:5px">${o.location.label}</div><div style="font-size:8px;color:var(--sas-t2,#8a8880);margin-bottom:6px;line-height:1.4">${o.coastal_context}</div><div style="font-size:8px;color:#9b95f0;cursor:pointer" onclick="clickCell('${o.typology_id}')">&#8594; view typology</div>`,{className:'sas-popup'});
+      m.bindPopup(`<div style="font-size:7px;padding:1px 6px;border-radius:3px;border:1px solid rgba(239,159,39,0.3);color:#EF9F27;display:inline-block;margin-bottom:5px;letter-spacing:0.05em">Speculative Object</div><div style="font-size:10px;color:var(--sas-t1,#dedad0);margin-bottom:2px;line-height:1.3">${o.name}</div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);margin-bottom:4px">${o.author} &middot; ${o.year}</div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);font-style:italic;margin-bottom:5px">${o.location.label}</div><div style="font-size:8px;color:var(--sas-t2,#8a8880);margin-bottom:6px;line-height:1.4">${o.coastal_context}</div><div style="font-size:8px;color:#9b95f0;cursor:pointer" onclick="clickCell('${o.typology_id}')">&#8594; view typology</div>`,{className:'sas-popup'});
       m.on('click',()=>{clickCell(m.typologyId);});
       m.addTo(atlasMap);
       atlasMarkers.push(m);
@@ -775,11 +906,18 @@ function updateAtlasSelection(){
   });
 }
 
-function toggleAtlas(){
-  atlasOpen=!atlasOpen;
-  document.getElementById('atlas-body').classList.toggle('collapsed',!atlasOpen);
-  document.getElementById('atlas-chevron').classList.toggle('up',atlasOpen);
-  if(atlasOpen&&atlasMap)setTimeout(()=>atlasMap.invalidateSize(),220);
+function toggleAtlas(){setAtlasSize(atlasOpen?'hidden':'default');}
+function setAtlasSize(mode){
+  const body=document.getElementById('atlas-body');
+  body.classList.remove('collapsed');
+  body.style.height='';
+  if(mode==='full'){body.style.height=(window.innerHeight-68)+'px';}
+  else if(mode==='hidden'){body.classList.add('collapsed');}
+  atlasOpen=(mode!=='hidden');
+  ['atl-full','atl-def','atl-hide'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
+  const activeId=mode==='full'?'atl-full':mode==='hidden'?'atl-hide':'atl-def';
+  const activeEl=document.getElementById(activeId);if(activeEl)activeEl.classList.add('on');
+  if(atlasOpen&&atlasMap)setTimeout(()=>atlasMap.invalidateSize(),240);
 }
 
 function setAtlasFilter(f,el){
@@ -832,7 +970,7 @@ function openStudy(asa){
   document.getElementById('sm').classList.add('open');
   setTimeout(()=>{
     const ctx=document.getElementById('smRadar');if(!ctx)return;
-    new Chart(ctx,{type:'radar',data:{labels:['Structural','Ecological','Economic','Social','Aesthetic'],datasets:[{data:ANC.map(a=>(s.anchors&&s.anchors[a]&&s.anchors[a].has?1:0)),backgroundColor:'rgba(127,119,221,0.15)',borderColor:'rgba(127,119,221,0.65)',borderWidth:1.5,pointBackgroundColor:'rgba(127,119,221,0.85)',pointRadius:3}]},options:{animation:{duration:300},scales:{r:{min:0,max:1,ticks:{display:false},grid:{color:'rgba(255,255,255,0.05)'},pointLabels:{color:'#4e4d4a',font:{size:8,family:'Courier New'}},angleLines:{color:'rgba(255,255,255,0.04)'}}},plugins:{legend:{display:false}}}});
+    new Chart(ctx,{type:'radar',data:{labels:['Structural','Ecological','Economic','Social','Authorship'],datasets:[{data:ANC.map(a=>(s.anchors&&s.anchors[a]&&s.anchors[a].has?1:0)),backgroundColor:'rgba(127,119,221,0.15)',borderColor:'rgba(127,119,221,0.65)',borderWidth:1.5,pointBackgroundColor:'rgba(127,119,221,0.85)',pointRadius:3}]},options:{animation:{duration:300},scales:{r:{min:0,max:1,ticks:{display:false},grid:{color:'rgba(255,255,255,0.05)'},pointLabels:{color:'#4e4d4a',font:{size:8,family:'Courier New'}},angleLines:{color:'rgba(255,255,255,0.04)'}}},plugins:{legend:{display:false}}}});
   },30);
 }
 
@@ -882,6 +1020,29 @@ function doImp(){
     if(!dragging)return;
     dragging=false;handle.classList.remove('dragging');
     document.body.style.cursor='';document.body.style.userSelect='';
+  });
+})();
+
+// ── OBJECT TYPE TOOLTIP ──────────────────────────────────
+(function(){
+  const T=document.createElement('div');
+  T.id='sas-tip';
+  document.body.appendChild(T);
+  function pos(e){
+    const w=T.offsetWidth||240,h=T.offsetHeight||80;
+    T.style.left=Math.min(e.clientX+14,window.innerWidth-w-8)+'px';
+    T.style.top=Math.max(8,e.clientY-h-8)+'px';
+  }
+  document.addEventListener('mouseover',e=>{
+    const el=e.target.closest('[data-tip-kws]');
+    if(!el)return;
+    T.innerHTML=`<div class="st-kws">${el.dataset.tipKws}</div><div class="st-desc">${el.dataset.tipDesc}</div><div class="st-cta">${el.dataset.tipCta}</div>`;
+    T.style.display='block';pos(e);
+  });
+  document.addEventListener('mousemove',e=>{if(T.style.display!=='none')pos(e);});
+  document.addEventListener('mouseout',e=>{
+    const el=e.target.closest('[data-tip-kws]');
+    if(el&&!el.contains(e.relatedTarget))T.style.display='none';
   });
 })();
 

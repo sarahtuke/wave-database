@@ -95,8 +95,11 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 .ds.off{background:transparent;border-color:var(--bd);opacity:.25}.ds.off .ds-lbl{color:var(--t3)}
 
 /* ── DETAIL DRAWER ── */
-#drawer{position:fixed;right:0;top:0;bottom:0;width:360px;background:var(--bg2);border-left:1px solid var(--bd2);transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);z-index:200;display:flex;flex-direction:column;overflow:hidden}
+#drawer{position:fixed;right:0;top:0;bottom:0;width:360px;min-width:260px;max-width:90vw;background:var(--bg2);border-left:1px solid var(--bd2);transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);z-index:200;display:flex;flex-direction:column;overflow:hidden}
 #drawer.open{transform:translateX(0)}
+#drawer.resizing{transition:none;user-select:none}
+#drawer-handle{position:absolute;left:0;top:0;bottom:0;width:6px;cursor:ew-resize;z-index:10;background:transparent}
+#drawer-handle:hover,#drawer-handle:active{background:rgba(127,119,221,0.18)}
 .dr-head{padding:14px 16px 12px;border-bottom:1px solid var(--bd);flex-shrink:0}
 .dr-close{position:absolute;top:12px;right:14px;background:none;border:1px solid var(--bd);color:var(--t2);cursor:pointer;font-size:9px;padding:2px 8px;border-radius:3px;font-family:'Courier New',monospace;letter-spacing:.04em}
 .dr-close:hover{border-color:var(--bd2);color:var(--t1)}
@@ -157,6 +160,7 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 <div id="grid"></div>
 
 <div id="drawer">
+  <div id="drawer-handle"></div>
   <div class="dr-head">
     <button class="dr-close" onclick="closeDrawer()">close &times;</button>
     <div class="dr-id" id="dr-id"></div>
@@ -362,6 +366,28 @@ function setFn(f,btn){
 function applyFilters(){render()}
 
 render();
+
+// ── DRAWER RESIZE ──────────────────────────────────────────────────────
+(function(){
+  const handle=document.getElementById('drawer-handle');
+  const drawer=document.getElementById('drawer');
+  let dragging=false;
+  handle.addEventListener('mousedown',function(e){
+    dragging=true;
+    drawer.classList.add('resizing');
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!dragging)return;
+    const w=window.innerWidth-e.clientX;
+    const min=parseInt(getComputedStyle(drawer).minWidth)||260;
+    const max=window.innerWidth*0.9;
+    drawer.style.width=Math.max(min,Math.min(max,w))+'px';
+  });
+  document.addEventListener('mouseup',function(){
+    if(dragging){dragging=false;drawer.classList.remove('resizing');}
+  });
+})();
 </script>
 </body>
 </html>

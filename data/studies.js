@@ -18,11 +18,11 @@ var STUDIES=[
   societal_logic:'Multifunctional protection integrating infrastructure with recreation, maintaining public access and aesthetics, reducing economic loss through dual protection layers.',
   experiential_logic:'Visually reads as a natural dune while concealing the engineered core; wave energy felt as muted rather than crashing; landscape continuity promotes coexistence between human and coastal processes.',
   anchors:{
-    structural:{quant:'Hs reduced by up to 40% in surf zone; erosion reduced ≈5 m vs unprotected coast (Bay Head).',qual:'Visual invisibility of structural core enhances perception of safety; public infrastructure seamlessly integrated behind dunes.',has:true},
-    ecological:{quant:'Vegetated dune surfaces (≥60% cover) stabilize sand; sediment volume maintained >80% V₀ → system stability.',qual:'Naturalized dune morphology supports nesting fauna and ecological continuity.',has:true},
-    economic:{quant:'Hard-core volume reduction reduces construction cost ~20–30% vs conventional seawall.',qual:'Co-use of land (e.g., parking beneath dune) demonstrates cost-efficient multifunctionality.',has:true},
-    social:{quant:'Dual protection reduces flood-risk exposure for urban and military infrastructure.',qual:'Maintains recreational beach access; visually compatible with tourism and public use.',has:true},
-    aesthetic:{quant:'Crest elevation and dune form emulate natural beach profiles; run-up energy reduced.',qual:'Landscape continuity—soft, vegetated foredune—creates "naturalized protection" character.',has:true}
+    structural:{score:9,quant:'Hs reduced by up to 40% in surf zone; erosion reduced ≈5 m vs unprotected coast (Bay Head).',qual:'Visual invisibility of structural core enhances perception of safety; public infrastructure seamlessly integrated behind dunes.',has:true},
+    ecological:{score:7,quant:'Vegetated dune surfaces (≥60% cover) stabilize sand; sediment volume maintained >80% V₀ → system stability.',qual:'Naturalized dune morphology supports nesting fauna and ecological continuity.',has:true},
+    economic:{score:6,quant:'Hard-core volume reduction reduces construction cost ~20–30% vs conventional seawall.',qual:'Co-use of land (e.g., parking beneath dune) demonstrates cost-efficient multifunctionality.',has:true},
+    social:{score:5,quant:'Dual protection reduces flood-risk exposure for urban and military infrastructure.',qual:'Maintains recreational beach access; visually compatible with tourism and public use.',has:true},
+    authorship:{score:8,quant:'Crest elevation and dune form emulate natural beach profiles; run-up energy reduced.',qual:'Landscape continuity—soft, vegetated foredune—creates "naturalized protection" character.',has:true}
   },
   key_metrics:['Hs (m)','Ru₂% (m)','q (m³/s/m)','Rc (m)','ΔV (m³/m)','V/V₀','ξ (Iribarren)','Kr'],
   key_equations:['q = a·exp[−b·(Rc/Tm√(gHs))]','ΔV ∝ Hs²/Rc','E_eff = E₀(1−Kr)(1−ΔV/V₀)'],
@@ -68,11 +68,11 @@ var STUDIES=[
   societal_logic:'Farmer groups (13–25 members) coordinate maintenance using shared local knowledge. Governance is horizontal and community-based. Collective labor and intergenerational knowledge sustain system resilience.',
   experiential_logic:'To inhabit the silvofishery is to occupy a moving threshold: not land, not sea, but an alternating rhythm of labor and rest. Each tide brings change. The landscape teaches endurance through repetition.',
   anchors:{
-    structural:{quant:'Pond–mangrove ratios of 75–90% mangrove; root systems stabilize soil and pond embankments.',qual:'Mangrove roots visibly prevent embankment collapse; living structure replaces engineered infrastructure.',has:true},
-    ecological:{quant:'Mangrove density 1,000–2,500 trees/ha across 4 Rhizophora and Avicennia species.',qual:'Increased plankton, nutrient cycling, reduced toxins. Mosaic of green corridors and reflective ponds.',has:true},
-    economic:{quant:'Monthly income USD 23.8–45.8/ha. Operational cost USD 186.5–233.2 / 6-month cycle.',qual:'Diversified livelihood from fish, shrimp, and crab. Small-scale profitability without large capital inputs.',has:true},
-    social:{quant:'Community farmer groups of 13–25 members; collective labor and shared decision-making.',qual:'Collective maintenance reinforces social cohesion; intergenerational knowledge transfer sustains system resilience.',has:true},
-    aesthetic:{quant:'75–90% of land area is mangrove canopy; reflective ponds interspersed throughout.',qual:'Perceived as "mangrove-friendly aquaculture." Mosaic of green corridors and reflective ponds conveys ecological beauty.',has:true}
+    structural:{score:6,quant:'Pond–mangrove ratios of 75–90% mangrove; root systems stabilize soil and pond embankments.',qual:'Mangrove roots visibly prevent embankment collapse; living structure replaces engineered infrastructure.',has:true},
+    ecological:{score:9,quant:'Mangrove density 1,000–2,500 trees/ha across 4 Rhizophora and Avicennia species.',qual:'Increased plankton, nutrient cycling, reduced toxins. Mosaic of green corridors and reflective ponds.',has:true},
+    economic:{score:8,quant:'Monthly income USD 23.8–45.8/ha. Operational cost USD 186.5–233.2 / 6-month cycle.',qual:'Diversified livelihood from fish, shrimp, and crab. Small-scale profitability without large capital inputs.',has:true},
+    social:{score:8,quant:'Community farmer groups of 13–25 members; collective labor and shared decision-making.',qual:'Collective maintenance reinforces social cohesion; intergenerational knowledge transfer sustains system resilience.',has:true},
+    authorship:{score:7,quant:'75–90% of land area is mangrove canopy; reflective ponds interspersed throughout.',qual:'Perceived as "mangrove-friendly aquaculture." Mosaic of green corridors and reflective ponds conveys ecological beauty.',has:true}
   },
   key_metrics:['ρₘ — Mangrove Density (trees/ha)','Rₚₘ — Pond:Mangrove Ratio (%)','Yₐq — Aquaculture Yield (kg/6mo)','Cₒₚ — Operational Cost (USD/6mo)','Vₚᵣₒd — Production Value (USD/6mo)'],
   key_equations:['P01: ↑ρₘ → ↑Soil stability','P02: ↑ρₘ → ↑Yₐq (via nutrient input)','P03: Rₚₘ ≥75% → balanced yield + cost','P04: A.marina presence → coastal erosion ↓'],

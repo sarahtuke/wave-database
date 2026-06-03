@@ -1,5 +1,5 @@
 /**
- * WAVE CATALOGUE — data/realistic.js
+ * WAVE CATALOGUE — data/standard.js
  * Real-world CPM objects from Adaptation Measures Catalogue (Celine)
  * Matrix assignments: Sarah Luposo Tuké-Shongwe (final call, June 2026)
  *
