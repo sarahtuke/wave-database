@@ -46,7 +46,12 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 ::-webkit-scrollbar-thumb{background:var(--sas-bg4,#1e2438);border-radius:2px}
 
 /* MATRIX */
-#panel-m{width:218px;min-width:218px}
+#panel-m{width:218px;min-width:160px;max-width:480px}
+.vdiv.resizable{width:5px;cursor:col-resize;background:transparent;transition:background 0.12s;flex-shrink:0}
+.vdiv.resizable:hover,.vdiv.resizable.dragging{background:rgba(127,119,221,0.28)}
+.mx-browse-wrap{padding:8px 10px;border-top:1px solid var(--sas-bd,rgba(255,255,255,0.07));flex-shrink:0}
+.mx-browse-btn{width:100%;font-size:9px;padding:7px 10px;border:1px solid rgba(239,159,39,0.3);border-radius:var(--sas-r,5px);background:rgba(239,159,39,0.05);color:var(--sas-ac2,#EF9F27);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.05em;transition:all 0.12s;text-align:left;display:block}
+.mx-browse-btn:hover{border-color:rgba(239,159,39,0.55);background:rgba(239,159,39,0.1)}
 .mx-col-heads{display:grid;grid-template-columns:44px repeat(4,1fr);gap:2px;margin-bottom:2px}
 .mx-col-head{font-size:7px;color:var(--sas-t3,#4e4d4a);text-align:center;letter-spacing:0.05em;padding:3px 1px;line-height:1.3}
 .mx-row{display:grid;grid-template-columns:44px repeat(4,1fr);gap:2px;margin-bottom:2px}
@@ -307,7 +312,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
   <div class="tb-stat"><strong id="s-studies">0</strong> studies</div>
   <div class="tb-stat"><strong id="s-typos">0</strong>/20 typologies</div>
   <div class="tb-stat"><strong id="s-spec">0</strong> speculative</div>
-  <div class="tb-stat"><strong id="s-real">0</strong> real-world</div>
+  <div class="tb-stat"><strong id="s-real">0</strong> standard objects</div>
   <div class="tb-stat"><strong id="s-anc">&ndash;</strong> anchor coverage</div>
   <div class="tb-actions">
     <button class="btn ac" onclick="openImp()">+ add study</button>
@@ -333,9 +338,12 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
         <div class="mxk-item"><div class="mxk-s"></div>studies</div>
         <div class="mxk-item"><div class="mxk-o"></div>objects</div>
       </div>
+      <div class="mx-browse-wrap">
+        <button class="mx-browse-btn" onclick="window.open('standard-objects.html','_blank')">browse standard objects &nbsp;&#8594;</button>
+      </div>
     </div>
 
-    <div class="vdiv"></div>
+    <div class="vdiv resizable" id="vdiv-m"></div>
 
     <!-- TYPOLOGY -->
     <div id="panel-t" class="panel">
@@ -493,7 +501,7 @@ function renderTypology(){
     <span class="ty-badge" style="border-color:${fc}40;color:${fc}">${FN[f]}</span>
     <span class="ty-badge" style="border-color:var(--sas-bd,rgba(255,255,255,0.07));color:var(--sas-t2,#8a8880)">${stds.length} ${stds.length===1?'study':'studies'}</span>
     ${specObjs.length?`<span class="ty-badge" style="border-color:rgba(127,119,221,0.3);color:var(--sas-ac,#7F77DD)">${specObjs.length} speculative</span>`:''}
-    ${realObjs.length?`<span class="ty-badge" style="border-color:rgba(239,159,39,0.3);color:var(--sas-ac2,#EF9F27)">${realObjs.length} real-world</span>`:''}
+    ${realObjs.length?`<span class="ty-badge" style="border-color:rgba(239,159,39,0.3);color:var(--sas-ac2,#EF9F27)">${realObjs.length} standard objects</span>`:''}
     <div class="ty-conf">${pips}<span>${stds.length?'evidence confidence':'research gap'}</span></div>`;
 
   const allEmpty=!stds.length&&!realObjs.length&&!specObjs.length;
@@ -617,7 +625,7 @@ function renderBrowseSection(cid,stds,realObjs,specObjs){
       <div class="bc-arrow">${arrow}</div>
     </div>`;}
   const c1=card('study','Research-Grounded','#7F77DD','rgba(127,119,221,0.25)',stds[0]||null,stds.length,stds[0]?`openStudy('${stds[0].asa_code}')`:'void(0)');
-  const c2=card('realistic','Real-World','#EF9F27','rgba(239,159,39,0.25)',realObjs[0]||null,realObjs.length,realObjs.length?`openObjBrowse('${cid}','realistic')`:'void(0)');
+  const c2=card('realistic','Standard Objects','#EF9F27','rgba(239,159,39,0.25)',realObjs[0]||null,realObjs.length,realObjs.length?`openObjBrowse('${cid}','realistic')`:'void(0)');
   const c3=card('speculative','Speculative','#9F77DD','rgba(159,119,221,0.25)',specObjs[0]||null,specObjs.length,specObjs.length?`openObjBrowse('${cid}','speculative')`:'void(0)');
   return`<div style="font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:8px;font-style:italic;letter-spacing:0.04em">researched precedent &nbsp;&#8594;&nbsp; real-world &nbsp;&#8594;&nbsp; speculative imagination</div><div class="browse-strip">${c1}${c2}${c3}</div>`;
 }
@@ -629,7 +637,7 @@ function openObjBrowse(cid,type){
   const g=cid.slice(1),f=cid.slice(0,1);
   const objs=type==='realistic'?REALISTIC.filter(o=>o.typology_id===cid):SPECULATIVE.filter(o=>o.typology_id===cid);
   const color=type==='realistic'?'#EF9F27':'#9F77DD';
-  const typeLabel=type==='realistic'?'Real-World Objects':'Speculative Objects';
+  const typeLabel=type==='realistic'?'Standard Objects':'Speculative Objects';
   document.getElementById('ob-inner').innerHTML=`
     <div class="sm-close-bar">
       <div><div class="sm-asa" style="color:${color}">${cid} · ${GN[g]} ${FN[f]}</div><div style="font-size:13px;color:var(--sas-t1,#dedad0);margin:4px 0 3px">${typeLabel} (${objs.length})</div></div>
@@ -852,6 +860,30 @@ function doImp(){
     setTimeout(closeImp,700);
   }catch(e){n.innerHTML=`<div class="imp-note imp-err">JSON parse error: ${e.message}</div>`;}
 }
+
+// ── PANEL RESIZE ──────────────────────────────────────────
+(function(){
+  const handle=document.getElementById('vdiv-m');
+  const panel=document.getElementById('panel-m');
+  let dragging=false,startX=0,startW=0;
+  handle.addEventListener('mousedown',e=>{
+    dragging=true;startX=e.clientX;startW=panel.offsetWidth;
+    handle.classList.add('dragging');
+    document.body.style.cursor='col-resize';
+    document.body.style.userSelect='none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    const w=Math.min(480,Math.max(160,startW+(e.clientX-startX)));
+    panel.style.width=w+'px';
+  });
+  document.addEventListener('mouseup',()=>{
+    if(!dragging)return;
+    dragging=false;handle.classList.remove('dragging');
+    document.body.style.cursor='';document.body.style.userSelect='';
+  });
+})();
 
 // ── BOOT ─────────────────────────────────────────────────
 updateStats();renderMatrix();renderTypology();renderRecords();

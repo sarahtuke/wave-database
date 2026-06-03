@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wave Catalogue · Standard Objects</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e1015;--bg2:#141720;--bg3:#1a1d25;--bg4:#21252e;--bg5:#262a34;
+  --bd:rgba(255,255,255,0.07);--bd2:rgba(255,255,255,0.13);--bd3:rgba(255,255,255,0.22);
+  --t1:#dedad0;--t2:#8a8880;--t3:#4e4d4a;--t4:#2b2a28;
+  --ac:#7F77DD;--ac2:#EF9F27;
+  --cA:#888780;--cB:#639922;--cC:#7F77DD;--cD:#378ADD;--cE:#EF9F27;
+  --pulse:#EF9F27;--sustained:#378ADD;--press:#7F77DD;--ramp:#D85A30;
+}
+html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospace;font-size:12px;min-height:100vh}
+
+/* ── TOPBAR ── */
+#topbar{height:42px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 18px;gap:14px;position:sticky;top:0;z-index:100}
+.logo{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--t1)}
+.logo em{color:var(--t3);font-style:normal}
+.tb-div{width:1px;height:16px;background:var(--bd);flex-shrink:0}
+.tb-stat{font-size:9px;color:var(--t3);white-space:nowrap}
+.tb-stat strong{color:var(--t2)}
+.tb-right{margin-left:auto;display:flex;gap:4px;align-items:center}
+.flt{font-size:9px;padding:3px 10px;border:1px solid var(--bd);border-radius:4px;background:transparent;color:var(--t3);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:.04em;transition:all .12s;white-space:nowrap}
+.flt:hover{border-color:var(--bd2);color:var(--t2)}
+.flt.on{border-color:rgba(127,119,221,.5);color:var(--ac);background:rgba(127,119,221,.07)}
+.search-wrap{position:relative}
+#search{background:var(--bg3);border:1px solid var(--bd);color:var(--t1);font-family:'Courier New',monospace;font-size:9px;padding:3px 10px 3px 24px;border-radius:4px;width:160px;outline:none;letter-spacing:.03em}
+#search::placeholder{color:var(--t3)}
+#search:focus{border-color:var(--bd2)}
+.search-icon{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--t3);pointer-events:none}
+.back-btn{font-size:9px;padding:3px 10px;border:1px solid var(--bd);border-radius:4px;background:transparent;color:var(--t3);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:.04em;transition:all .12s;text-decoration:none;display:flex;align-items:center;gap:5px}
+.back-btn:hover{border-color:var(--bd2);color:var(--t2)}
+
+/* ── SUBBAR ── */
+#subbar{height:34px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 18px;gap:8px;position:sticky;top:42px;z-index:99}
+.fn-flt{font-size:8px;padding:2px 8px;border:1px solid var(--bd);border-radius:3px;background:transparent;color:var(--t3);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:.04em;transition:all .12s}
+.fn-flt:hover{border-color:var(--bd2);color:var(--t2)}
+.fn-flt.on{border-color:var(--fn-col,var(--bd2));color:var(--fn-col,var(--t2));background:var(--fn-bg,transparent)}
+.fn-1{--fn-col:rgba(136,135,128,0.8);--fn-bg:rgba(136,135,128,0.06)}
+.fn-2{--fn-col:rgba(55,138,221,0.8);--fn-bg:rgba(55,138,221,0.06)}
+.fn-3{--fn-col:rgba(99,153,34,0.8);--fn-bg:rgba(99,153,34,0.06)}
+.fn-4{--fn-col:rgba(159,119,221,0.8);--fn-bg:rgba(159,119,221,0.06)}
+#result-count{margin-left:auto;font-size:9px;color:var(--t3)}
+
+/* ── GRID ── */
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--bd);min-height:200px}
+.cell-bg{background:var(--bg)}
+
+/* ── CARD ── */
+.cpm-card{background:var(--bg3);display:flex;flex-direction:column;height:100%;cursor:pointer;transition:background .12s}
+.cpm-card:hover{background:var(--bg4)}
+.cpm-card.active{background:var(--bg4);outline:1px solid var(--ac)}
+
+/* diagram zone */
+.dz{height:148px;background:var(--bg2);border-bottom:1px solid var(--bd);position:relative;overflow:hidden;flex-shrink:0}
+.dz svg{width:100%;height:100%}
+.scale-pips{position:absolute;bottom:8px;right:8px;display:flex;gap:2px}
+.sp{width:5px;height:5px;border-radius:50%;background:var(--t4);transition:background .2s}
+.sp.on{background:var(--ac2)}
+.cell-badge{position:absolute;top:8px;left:8px;font-size:7px;letter-spacing:.07em;padding:2px 6px;border-radius:3px;border:1px solid;background:var(--bg)}
+
+/* card body */
+.cb{padding:11px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.card-name{font-size:10px;font-weight:bold;color:var(--t1);line-height:1.35;flex:1}
+.card-id{font-size:8px;color:var(--t3);flex-shrink:0;margin-top:1px;letter-spacing:.04em}
+.card-tags{display:flex;gap:3px;flex-wrap:wrap}
+.tag{font-size:8px;padding:2px 6px;border-radius:3px;border:1px solid;letter-spacing:.04em}
+.tag-A{border-color:rgba(136,135,128,.3);color:#888780}
+.tag-B{border-color:rgba(99,153,34,.3);color:#639922}
+.tag-C{border-color:rgba(127,119,221,.3);color:#7F77DD}
+.tag-D{border-color:rgba(55,138,221,.3);color:#378ADD}
+.tag-E{border-color:rgba(239,159,39,.3);color:#EF9F27}
+.tag-fn{border-color:var(--bd2);color:var(--t2)}
+.card-desc{font-size:9px;color:var(--t2);line-height:1.6}
+.scale-label{font-size:8px;color:var(--t3)}
+.scale-label span{color:var(--ac2)}
+
+/* disturbance strip */
+.dis-strip{display:flex;gap:3px;margin-top:auto;padding-top:8px;border-top:1px solid var(--bd)}
+.ds{flex:1;height:20px;border-radius:3px;border:1px solid;display:flex;align-items:center;justify-content:center}
+.ds-lbl{font-size:7px;letter-spacing:.02em}
+.ds.pulse-p{background:rgba(239,159,39,.1);border-color:rgba(239,159,39,.5)}.ds.pulse-p .ds-lbl{color:#EF9F27}
+.ds.pulse-s{background:transparent;border-color:rgba(239,159,39,.25)}.ds.pulse-s .ds-lbl{color:rgba(239,159,39,.5)}
+.ds.sustained-p{background:rgba(55,138,221,.1);border-color:rgba(55,138,221,.5)}.ds.sustained-p .ds-lbl{color:#378ADD}
+.ds.sustained-s{background:transparent;border-color:rgba(55,138,221,.25)}.ds.sustained-s .ds-lbl{color:rgba(55,138,221,.5)}
+.ds.press-p{background:rgba(127,119,221,.1);border-color:rgba(127,119,221,.5)}.ds.press-p .ds-lbl{color:#7F77DD}
+.ds.press-s{background:transparent;border-color:rgba(127,119,221,.25)}.ds.press-s .ds-lbl{color:rgba(127,119,221,.5)}
+.ds.ramp-p{background:rgba(216,90,48,.1);border-color:rgba(216,90,48,.5)}.ds.ramp-p .ds-lbl{color:#D85A30}
+.ds.ramp-s{background:transparent;border-color:rgba(216,90,48,.25)}.ds.ramp-s .ds-lbl{color:rgba(216,90,48,.5)}
+.ds.off{background:transparent;border-color:var(--bd);opacity:.25}.ds.off .ds-lbl{color:var(--t3)}
+
+/* ── DETAIL DRAWER ── */
+#drawer{position:fixed;right:0;top:0;bottom:0;width:360px;background:var(--bg2);border-left:1px solid var(--bd2);transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);z-index:200;display:flex;flex-direction:column;overflow:hidden}
+#drawer.open{transform:translateX(0)}
+.dr-head{padding:14px 16px 12px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.dr-close{position:absolute;top:12px;right:14px;background:none;border:1px solid var(--bd);color:var(--t2);cursor:pointer;font-size:9px;padding:2px 8px;border-radius:3px;font-family:'Courier New',monospace;letter-spacing:.04em}
+.dr-close:hover{border-color:var(--bd2);color:var(--t1)}
+.dr-id{font-size:8px;letter-spacing:.1em;color:var(--t3);margin-bottom:4px}
+.dr-name{font-size:14px;color:var(--t1);line-height:1.3;margin-bottom:8px;padding-right:60px}
+.dr-tags{display:flex;gap:3px;flex-wrap:wrap}
+.dr-body{flex:1;overflow-y:auto;padding:14px 16px}
+.dr-diagram{height:160px;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:12px}
+.dr-diagram svg{width:100%;height:100%}
+.dr-section{margin-bottom:14px}
+.dr-sec-title{font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--bd)}
+.dr-desc{font-size:9px;color:var(--t2);line-height:1.65}
+.dr-meta-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:9px}
+.dr-meta-label{color:var(--t3);width:72px;flex-shrink:0;font-size:8px;letter-spacing:.04em}
+.dr-meta-val{color:var(--t2)}
+.dr-dis-strip{display:flex;gap:3px}
+.dr-source{font-size:8px;color:var(--t3);font-style:italic;border-top:1px solid var(--bd);padding-top:10px;margin-top:2px}
+.dr-tags-section{display:flex;flex-wrap:wrap;gap:3px}
+.dr-tag-chip{font-size:8px;padding:2px 7px;border-radius:3px;background:var(--bg3);border:1px solid var(--bd);color:var(--t3)}
+
+/* ── EMPTY STATE ── */
+#empty{display:none;padding:60px 20px;text-align:center;color:var(--t3);font-size:10px;letter-spacing:.06em;grid-column:1/-1}
+#empty span{display:block;font-size:24px;opacity:.15;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <a href="index.html" class="back-btn">&#8592; catalogue</a>
+  <div class="tb-div"></div>
+  <span class="logo">Wave Catalogue <em>&middot;</em> Standard Objects</span>
+  <div class="tb-div"></div>
+  <span class="tb-stat">standard objects &middot; <strong id="ct">63</strong></span>
+  <div class="tb-right">
+    <div class="search-wrap">
+      <span class="search-icon">&#9906;</span>
+      <input id="search" type="text" placeholder="search objects..." oninput="applyFilters()">
+    </div>
+    <div class="tb-div"></div>
+    <button class="flt on" onclick="setGroup('all',this)">All</button>
+    <button class="flt" onclick="setGroup('A',this)">Grey</button>
+    <button class="flt" onclick="setGroup('B',this)">Green</button>
+    <button class="flt" onclick="setGroup('C',this)">Hybrid</button>
+    <button class="flt" onclick="setGroup('D',this)">Amph.</button>
+    <button class="flt" onclick="setGroup('E',this)">LoTek</button>
+  </div>
+</div>
+
+<div id="subbar">
+  <button class="fn-flt fn-1 on" onclick="setFn('all',this)">All functions</button>
+  <button class="fn-flt fn-1" onclick="setFn('1',this)">1 &middot; Edge Defense</button>
+  <button class="fn-flt fn-2" onclick="setFn('2',this)">2 &middot; Shoreline Inundation</button>
+  <button class="fn-flt fn-3" onclick="setFn('3',this)">3 &middot; Productive Landscapes</button>
+  <button class="fn-flt fn-4" onclick="setFn('4',this)">4 &middot; Civic Living</button>
+  <span id="result-count"></span>
+</div>
+
+<div id="grid"></div>
+
+<div id="drawer">
+  <div class="dr-head">
+    <button class="dr-close" onclick="closeDrawer()">close &times;</button>
+    <div class="dr-id" id="dr-id"></div>
+    <div class="dr-name" id="dr-name"></div>
+    <div class="dr-tags" id="dr-tags"></div>
+  </div>
+  <div class="dr-body">
+    <div class="dr-diagram" id="dr-diagram"></div>
+    <div class="dr-section">
+      <div class="dr-sec-title">description</div>
+      <div class="dr-desc" id="dr-desc"></div>
+    </div>
+    <div class="dr-section">
+      <div class="dr-sec-title">context</div>
+      <div class="dr-meta-row"><span class="dr-meta-label">scale</span><span class="dr-meta-val" id="dr-scale"></span></div>
+      <div class="dr-meta-row"><span class="dr-meta-label">typology</span><span class="dr-meta-val" id="dr-cell"></span></div>
+      <div class="dr-meta-row"><span class="dr-meta-label">disturbance</span>
+        <div class="dr-dis-strip" id="dr-dis"></div>
+      </div>
+    </div>
+    <div class="dr-section">
+      <div class="dr-sec-title">tags</div>
+      <div class="dr-tags-section" id="dr-tag-chips"></div>
+    </div>
+    <div class="dr-source" id="dr-source"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────
+var REALISTIC=[{id:'re-001',name:'Coastal Revetment',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'revetment',disturbance:{primary:'pulse',secondary:'sustained'},desc:'Sloped or stepped hard structure of rock armour, concrete units, or gabions placed on a shoreline to dissipate wave energy and resist erosion.',source:'Adaptation Measures Catalogue (Celine)',tags:['rock armour','hard engineering','wave attenuation']},{id:'re-002',name:'Offshore Parallel Breakwater',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'breakwater',disturbance:{primary:'pulse',secondary:null},desc:'Structure placed parallel to the shoreline to reduce wave energy reaching the coast. Emerged or submerged; can induce tombolo formation over time.',source:'Adaptation Measures Catalogue (Celine)',tags:['breakwater','offshore','wave energy']},{id:'re-003',name:'Nearshore Parallel Breakwater (Tombolo)',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'tombolo',disturbance:{primary:'pulse',secondary:'sustained'},desc:'Nearshore breakwater positioned to induce sediment accumulation and tombolo formation, creating a sheltered beach landform.',source:'Adaptation Measures Catalogue (Celine)',tags:['tombolo','nearshore','sediment']},{id:'re-004',name:'Storm Surge Barrier (Movable)',typology_id:'1A',group:'A',fn:'1',scale:'territorial',diagram:'surge_barrier',disturbance:{primary:'pulse',secondary:'sustained'},desc:'Large-scale movable barrier that closes during storm surge events to protect hinterland. Remains open under normal tidal conditions.',source:'Adaptation Measures Catalogue (Celine)',tags:['surge barrier','movable','territorial']},{id:'re-005',name:'Offshore Closure Dam',typology_id:'1A',group:'A',fn:'1',scale:'territorial',diagram:'closure_dam',disturbance:{primary:'ramp',secondary:'pulse'},desc:'Permanent emerged impervious dam closing off a bay or estuary from the sea. Provides absolute protection but eliminates tidal exchange.',source:'Adaptation Measures Catalogue (Celine)',tags:['closure dam','permanent','hard engineering']},{id:'re-006',name:'Dyke Raising',typology_id:'1A',group:'A',fn:'1',scale:'territorial',diagram:'dyke',disturbance:{primary:'ramp',secondary:'sustained'},desc:'Raising the crest height of existing dykes to increase freeboard against rising sea levels and storm surges. Standard adaptive measure in low-lying deltas.',source:'Adaptation Measures Catalogue (Celine)',tags:['dyke','adaptive raising','SLR']},{id:'re-007',name:'Wave Wall',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'wave_wall',disturbance:{primary:'pulse',secondary:null},desc:'Vertical or recurved concrete wall placed at the top of a beach or revetment to deflect wave overtopping.',source:'Adaptation Measures Catalogue (Celine)',tags:['wave wall','overtopping','recurved']},{id:'re-008',name:'Watertight Flood Dyke / Embankment',typology_id:'1A',group:'A',fn:'1',scale:'territorial',diagram:'dyke',disturbance:{primary:'sustained',secondary:'press'},desc:'Impermeable earthen or concrete embankment forming a continuous flood defence line along a shoreline or riverbank.',source:'Adaptation Measures Catalogue (Celine)',tags:['dyke','embankment','impermeable']},{id:'re-009',name:'Perpendicular Groynes',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'groynes',disturbance:{primary:'pulse',secondary:'ramp'},desc:'Shore-perpendicular structures interrupting longshore sediment transport to retain beach material.',source:'Adaptation Measures Catalogue (Celine)',tags:['groynes','longshore drift','sediment']},{id:'re-010',name:'Setback Flood Defence Wall',typology_id:'1A',group:'A',fn:'1',scale:'territorial',diagram:'setback_wall',disturbance:{primary:'sustained',secondary:'ramp'},desc:'Flood defence line set back from the active shoreline, allowing a buffer zone to absorb initial wave energy.',source:'Adaptation Measures Catalogue (Celine)',tags:['setback','flood wall','buffer zone']},{id:'re-011',name:'Permanent Standing Flood Walls',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'flood_wall',disturbance:{primary:'pulse',secondary:'sustained'},desc:'Fixed vertical walls of concrete or sheet piling providing permanent flood protection to urban waterfronts.',source:'Adaptation Measures Catalogue (Celine)',tags:['flood wall','permanent','sheet piling']},{id:'re-012',name:'Mobile Flood Walls',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'mobile_wall',disturbance:{primary:'pulse',secondary:'sustained'},desc:'Demountable wall systems deployed ahead of flood events. Provides flexible protection where permanent walls are not feasible.',source:'Adaptation Measures Catalogue (Celine)',tags:['mobile','deployable','demountable']},{id:'re-013',name:'Operable Flood Barrier',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'operable_barrier',disturbance:{primary:'pulse',secondary:'sustained'},desc:'Fixed barrier with operable gate sections allowing normal access while providing closure capacity during flood events.',source:'Adaptation Measures Catalogue (Celine)',tags:['operable','gate','flood control']},{id:'re-014',name:'Deployable Flood Barrier',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'mobile_wall',disturbance:{primary:'pulse',secondary:null},desc:'Rapid-deployment barrier system stored off-site and assembled at flood entry points for irregular flood events.',source:'Adaptation Measures Catalogue (Celine)',tags:['deployable','rapid response','temporary']},{id:'re-015',name:'Self-raising Barrier',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'operable_barrier',disturbance:{primary:'pulse',secondary:'sustained'},desc:'Automated barrier that rises in response to rising water levels without manual intervention.',source:'Adaptation Measures Catalogue (Celine)',tags:['automatic','self-raising','passive activation']},{id:'re-016',name:'Retrofit Flood Barrier',typology_id:'1A',group:'A',fn:'1',scale:'unit',diagram:'flood_wall',disturbance:{primary:'pulse',secondary:'sustained'},desc:'Property-level barrier applied to existing door and window openings to resist floodwater entry.',source:'Adaptation Measures Catalogue (Celine)',tags:['retrofit','property-level','unit scale']},{id:'re-017',name:'Temporary Flood Barrier',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'mobile_wall',disturbance:{primary:'pulse',secondary:null},desc:'Rapidly deployable temporary barriers — sandbags, water-filled tubes, or modular panels — for emergency response.',source:'Adaptation Measures Catalogue (Celine)',tags:['temporary','sandbags','emergency']},{id:'re-018',name:'Sluice Gates',typology_id:'1A',group:'A',fn:'1',scale:'neighbourhood',diagram:'sluice',disturbance:{primary:'sustained',secondary:'press'},desc:'Controlled openings in flood defences allowing managed water flow under normal conditions with closure capacity during floods.',source:'Adaptation Measures Catalogue (Celine)',tags:['sluice','tidal gate','controlled opening']},{id:'re-019',name:'Saddle Dam',typology_id:'1A',group:'A',fn:'1',scale:'territorial',diagram:'dyke',disturbance:{primary:'sustained',secondary:'pulse'},desc:'Subsidiary dam closing a topographic low point adjacent to a main water body to prevent flanking during flood events.',source:'Adaptation Measures Catalogue (Celine)',tags:['saddle dam','flanking protection']},{id:'re-020',name:'Coastal Nourishment',typology_id:'1B',group:'B',fn:'1',scale:'territorial',diagram:'nourishment',disturbance:{primary:'pulse',secondary:'ramp'},desc:'Addition of sand or sediment to an eroding beach or dune system to restore natural wave attenuation capacity and ecological habitat.',source:'Adaptation Measures Catalogue (Celine)',tags:['nourishment','sediment','erosion management','NbS']},{id:'re-021',name:'Breakwater Reefs',typology_id:'1B',group:'B',fn:'1',scale:'neighbourhood',diagram:'reef',disturbance:{primary:'pulse',secondary:'press'},desc:'Artificial reef structures designed to reduce wave energy while promoting marine biodiversity.',source:'Adaptation Measures Catalogue (Celine)',tags:['reef','biodiversity','wave attenuation','NbS']},{id:'re-022',name:'Vegetated Sand Dune',typology_id:'1B',group:'B',fn:'1',scale:'neighbourhood',diagram:'dune',disturbance:{primary:'pulse',secondary:'ramp'},desc:'Naturally or artificially established sand dune system stabilised by coastal vegetation. Functions as a flexible energy-absorbing barrier.',source:'Adaptation Measures Catalogue (Celine)',tags:['dune','sand','vegetation','NbS']},{id:'re-023',name:'Artificial Reef Unit',typology_id:'1B',group:'B',fn:'1',scale:'neighbourhood',diagram:'reef_unit',disturbance:{primary:'pulse',secondary:'press'},desc:'Prefabricated modular reef unit placed on the seabed to attenuate waves and provide structured habitat for marine colonisation.',source:'Adaptation Measures Catalogue (Celine)',tags:['modular reef','habitat','wave reduction']},{id:'re-024',name:'Eco Tiles',typology_id:'1B',group:'B',fn:'1',scale:'unit',diagram:'eco_tiles',disturbance:{primary:'press',secondary:'pulse'},desc:'Textured tiles applied to hard coastal surfaces to provide ecological habitat for intertidal organisms while maintaining flood protection function.',source:'Adaptation Measures Catalogue (Celine)',tags:['eco tiles','intertidal','retrofit ecology']},{id:'re-025',name:'Artificial Reefs',typology_id:'1B',group:'B',fn:'1',scale:'neighbourhood',diagram:'reef',disturbance:{primary:'pulse',secondary:'press'},desc:'Submerged structures placed offshore to modify wave energy and create marine habitat at neighbourhood scale.',source:'Adaptation Measures Catalogue (Celine)',tags:['artificial reef','habitat','submerged']},{id:'re-026',name:'Flood Defence Landscape — Double Dike',typology_id:'1C',group:'C',fn:'1',scale:'territorial',diagram:'double_dike',disturbance:{primary:'ramp',secondary:'sustained'},desc:'Two parallel dike structures with an inter-dike zone accommodating tidal inflow, reducing hydraulic load on the inner dike while creating ecological value.',source:'Adaptation Measures Catalogue (Celine)',tags:['double dike','inter-dike','tidal','hybrid']},{id:'re-027',name:'Perched Beach',typology_id:'1C',group:'C',fn:'1',scale:'neighbourhood',diagram:'perched_beach',disturbance:{primary:'pulse',secondary:'ramp'},desc:'Artificially elevated beach created by placing sediment on a submerged sill. Combines structural support with beach nourishment to maintain elevation.',source:'Adaptation Measures Catalogue (Celine)',tags:['perched beach','nourishment','sill','hybrid']},{id:'re-028',name:'Offshore Barrier Island',typology_id:'1C',group:'C',fn:'1',scale:'territorial',diagram:'barrier_island',disturbance:{primary:'pulse',secondary:'ramp'},desc:'Natural or engineered island placed offshore to attenuate wave energy and provide ecological habitat. Acts as a living coastal buffer.',source:'Adaptation Measures Catalogue (Celine)',tags:['barrier island','offshore','island ecology']},{id:'re-029',name:'Rich Ecological Hard Coastal Enhancement',typology_id:'1C',group:'C',fn:'1',scale:'neighbourhood',diagram:'eco_revetment',disturbance:{primary:'pulse',secondary:'press'},desc:'Enhancement of existing hard coastal structures with ecological features — pools, textures, biodiversity habitats — layered onto revetments and seawalls.',source:'Adaptation Measures Catalogue (Celine)',tags:['ecological enhancement','hard structures','biodiversity','hybrid']},{id:'re-030',name:'Land Reclamation',typology_id:'2A',group:'A',fn:'2',scale:'territorial',diagram:'reclamation',disturbance:{primary:'ramp',secondary:'press'},desc:'Creation of new land areas by filling coastal waters or tidal flats. Raises ground elevation above flood risk levels and expands developable land.',source:'Adaptation Measures Catalogue (Celine)',tags:['reclamation','infill','land creation','territorial']},{id:'re-031',name:'Land Raising / Embankment',typology_id:'2A',group:'A',fn:'2',scale:'territorial',diagram:'land_raise',disturbance:{primary:'ramp',secondary:'press'},desc:'Raising ground levels through earthworks to bring areas above projected flood levels. Applied at district to territorial scale.',source:'Adaptation Measures Catalogue (Celine)',tags:['land raising','earthworks','SLR adaptation']},{id:'re-032',name:'Levees',typology_id:'2A',group:'A',fn:'2',scale:'territorial',diagram:'dyke',disturbance:{primary:'sustained',secondary:'press'},desc:'Earthen embankments along riverbanks or shorelines designed to contain floodwater within defined channels.',source:'Adaptation Measures Catalogue (Celine)',tags:['levee','earthen embankment','delta']},{id:'re-033',name:'Local Land Raising',typology_id:'2A',group:'A',fn:'2',scale:'neighbourhood',diagram:'land_raise',disturbance:{primary:'press',secondary:'ramp'},desc:'Localised raising of ground levels in specific neighbourhoods to elevate buildings and infrastructure above projected flood levels.',source:'Adaptation Measures Catalogue (Celine)',tags:['local land raising','neighbourhood','ground raising']},{id:'re-034',name:'Building Platform / Floor Raising',typology_id:'2A',group:'A',fn:'2',scale:'unit',diagram:'elevated',disturbance:{primary:'press',secondary:'ramp'},desc:'Raising finished floor levels above design flood levels as part of new construction or retrofit.',source:'Adaptation Measures Catalogue (Celine)',tags:['floor raising','platform','unit','retrofit']},{id:'re-035',name:'Bypass / Diversion Channel',typology_id:'2A',group:'A',fn:'2',scale:'territorial',diagram:'channel',disturbance:{primary:'sustained',secondary:'pulse'},desc:'Engineered channel that diverts excess flood flows away from protected areas, reducing peak water levels in vulnerable zones.',source:'Adaptation Measures Catalogue (Celine)',tags:['bypass channel','diversion','flood routing']},{id:'re-036',name:'Natural Tidal Vegetated Foreshore',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'foreshore',disturbance:{primary:'sustained',secondary:'press'},desc:'Naturally established saltmarsh or mangrove foreshore that attenuates wave energy and provides ecological habitat through natural succession.',source:'Adaptation Measures Catalogue (Celine)',tags:['saltmarsh','mangrove','foreshore','NbS','tidal']},{id:'re-037',name:'Constructed Foreshore — Tidal Park / Wetland',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'tidal_park',disturbance:{primary:'sustained',secondary:'press'},desc:'Engineered intertidal landscape combining wave attenuation, ecological habitat, and public programming.',source:'Adaptation Measures Catalogue (Celine)',tags:['tidal park','wetland','civic','NbS']},{id:'re-038',name:'Coastal Realignment',typology_id:'2B',group:'B',fn:'2',scale:'territorial',diagram:'realignment',disturbance:{primary:'ramp',secondary:'press'},desc:'Deliberate breaching or removal of existing coastal defences to allow natural shoreline migration inland and create new intertidal habitat.',source:'Adaptation Measures Catalogue (Celine)',tags:['managed realignment','retreat','shoreline migration']},{id:'re-039',name:'Restoring Salinity Gradients / Tidal Dynamics',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'tidal_restoration',disturbance:{primary:'press',secondary:'sustained'},desc:'Restoration of tidal exchange and salinity gradients in impounded or degraded coastal wetlands.',source:'Adaptation Measures Catalogue (Celine)',tags:['tidal restoration','salinity','estuarine']},{id:'re-040',name:'Restoration Measures for Seagrass',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'seagrass',disturbance:{primary:'press',secondary:'ramp'},desc:'Active restoration of seagrass beds providing sediment stabilisation, wave attenuation, carbon sequestration, and marine habitat.',source:'Adaptation Measures Catalogue (Celine)',tags:['seagrass','blue carbon','marine habitat']},{id:'re-041',name:'Fresh Water Wetland',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'wetland',disturbance:{primary:'sustained',secondary:'press'},desc:'Freshwater wetland system providing flood storage, water quality treatment, and ecological habitat in coastal catchment areas.',source:'Adaptation Measures Catalogue (Celine)',tags:['freshwater wetland','flood storage','water quality']},{id:'re-042',name:'Gravel Trench (French Drain)',typology_id:'2B',group:'B',fn:'2',scale:'unit',diagram:'gravel_trench',disturbance:{primary:'sustained',secondary:'press'},desc:'Subsurface infiltration trench filled with gravel to intercept and disperse surface or subsurface water flows.',source:'Adaptation Measures Catalogue (Celine)',tags:['french drain','infiltration','subsurface','SUDS']},{id:'re-043',name:'Water Absorbent Cell',typology_id:'2B',group:'B',fn:'2',scale:'unit',diagram:'absorbent_cell',disturbance:{primary:'sustained',secondary:null},desc:'Modular subsurface cell system for stormwater storage and infiltration beneath paved surfaces.',source:'Adaptation Measures Catalogue (Celine)',tags:['modular','subsurface storage','infiltration','SUDS']},{id:'re-044',name:'Percolation System (community-scale)',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'percolation',disturbance:{primary:'sustained',secondary:null},desc:'Community-scale subsurface infiltration infrastructure to disperse surface water and reduce coastal flood peaks.',source:'Adaptation Measures Catalogue (Celine)',tags:['percolation','infiltration','community scale','SUDS']},{id:'re-045',name:'Constructed Wetland',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'wetland',disturbance:{primary:'sustained',secondary:'press'},desc:'Engineered wetland system for water quality treatment, flood attenuation, and ecological habitat creation.',source:'Adaptation Measures Catalogue (Celine)',tags:['constructed wetland','water quality','ecological design']},{id:'re-046',name:'ABC Waters Design Features',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'abc_waters',disturbance:{primary:'sustained',secondary:'press'},desc:"Singapore's Active, Beautiful, Clean Waters approach integrating drainage channels into landscape features. Combines flood management with civic amenity.",source:'Adaptation Measures Catalogue (Celine)',tags:['ABC Waters','Singapore','PUB','blue-green infrastructure']},{id:'re-047',name:'Retention Pond',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'retention_pond',disturbance:{primary:'sustained',secondary:'pulse'},desc:'Permanent or seasonal water body designed to retain stormwater and attenuate flood peaks. Can double as ecological and amenity landscape.',source:'Adaptation Measures Catalogue (Celine)',tags:['retention pond','stormwater','attenuation','SUDS']},{id:'re-048',name:'Bioswale',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'bioswale',disturbance:{primary:'sustained',secondary:null},desc:'Vegetated drainage channel designed to slow, filter, and infiltrate surface runoff. Reduces peak flows and improves water quality.',source:'Adaptation Measures Catalogue (Celine)',tags:['bioswale','vegetated channel','filtration','green infrastructure']},{id:'re-049',name:'Rain Garden',typology_id:'2B',group:'B',fn:'2',scale:'unit',diagram:'rain_garden',disturbance:{primary:'sustained',secondary:null},desc:'Shallow planted depression collecting and infiltrating stormwater from impervious surfaces.',source:'Adaptation Measures Catalogue (Celine)',tags:['rain garden','infiltration','SUDS','unit scale']},{id:'re-050',name:'Percolation System',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'percolation',disturbance:{primary:'sustained',secondary:null},desc:'Network of subsurface infiltration structures to manage stormwater at neighbourhood scale.',source:'Adaptation Measures Catalogue (Celine)',tags:['percolation','subsurface','neighbourhood','stormwater']},{id:'re-051',name:'Water Plaza',typology_id:'2B',group:'B',fn:'2',scale:'neighbourhood',diagram:'water_plaza',disturbance:{primary:'sustained',secondary:'press'},desc:"Multi-use public space designed to flood temporarily during rain events, functioning as both civic amenity and flood storage. Exemplified by Rotterdam's Benthemplein.",source:'Adaptation Measures Catalogue (Celine)',tags:['water plaza','Rotterdam','Benthemplein','civic flooding']},{id:'re-052',name:'Flood Defence Landscape — Coastal Realignment',typology_id:'2C',group:'C',fn:'2',scale:'territorial',diagram:'hybrid_realignment',disturbance:{primary:'ramp',secondary:'sustained'},desc:'Hybrid approach combining managed retreat of hard defences with active creation of intertidal habitat zones.',source:'Adaptation Measures Catalogue (Celine)',tags:['managed realignment','hybrid','retreat','intertidal']},{id:'re-053',name:'Seabed Biodiversity (Landscaping Dredging)',typology_id:'2C',group:'C',fn:'2',scale:'neighbourhood',diagram:'seabed',disturbance:{primary:'press',secondary:'ramp'},desc:'Strategic dredging and reshaping of the seabed to create varied bathymetric conditions promoting biodiversity and modifying wave propagation.',source:'Adaptation Measures Catalogue (Celine)',tags:['seabed','bathymetry','dredging','biodiversity']},{id:'re-054',name:'Blue Green Roof (district-scale)',typology_id:'2C',group:'C',fn:'2',scale:'neighbourhood',diagram:'blue_green_roof',disturbance:{primary:'sustained',secondary:'ramp'},desc:'District-scale integration of blue and green roof systems to attenuate stormwater and reduce urban flood peaks.',source:'Adaptation Measures Catalogue (Celine)',tags:['blue roof','green roof','district','stormwater retention']},{id:'re-055',name:'Stormwater Detention Tank',typology_id:'2C',group:'C',fn:'2',scale:'neighbourhood',diagram:'detention_tank',disturbance:{primary:'sustained',secondary:'pulse'},desc:'Subsurface storage tank that temporarily holds stormwater during peak events, releasing it slowly to prevent downstream flooding.',source:'Adaptation Measures Catalogue (Celine)',tags:['detention tank','storage','stormwater','peak attenuation']},{id:'re-056',name:'Mangrove Reforestation / Afforestation',typology_id:'3B',group:'B',fn:'3',scale:'neighbourhood',diagram:'mangrove',disturbance:{primary:'sustained',secondary:'ramp'},desc:'Active planting and restoration of mangrove ecosystems in intertidal areas. Provides wave attenuation, carbon sequestration, habitat, and livelihood support.',source:'Adaptation Measures Catalogue (Celine)',tags:['mangrove','blue carbon','tropical','livelihood','NbS']},{id:'re-057',name:'Tidal Pools',typology_id:'3B',group:'B',fn:'3',scale:'unit',diagram:'tidal_pools',disturbance:{primary:'pulse',secondary:'press'},desc:'Naturally occurring or engineered rock pools in the intertidal zone supporting rich biodiversity and contributing to coastal ecological resilience.',source:'Adaptation Measures Catalogue (Celine)',tags:['tidal pools','intertidal','ecology','biodiversity']},{id:'re-058',name:'Artificial Oyster Reef',typology_id:'3B',group:'B',fn:'3',scale:'neighbourhood',diagram:'oyster_reef',disturbance:{primary:'pulse',secondary:'press'},desc:'Caged oyster shell structures to attenuate wave energy, filter water, and rebuild native oyster reef habitat.',source:'Adaptation Measures Catalogue (Celine)',tags:['oyster reef','shellfish','water quality','habitat restoration']},{id:'re-059',name:'Floodable Park',typology_id:'4B',group:'B',fn:'4',scale:'neighbourhood',diagram:'floodable_park',disturbance:{primary:'sustained',secondary:'pulse'},desc:'Public park designed to accommodate temporary flooding as part of its normal function, providing flood storage while maintaining civic amenity.',source:'Adaptation Measures Catalogue (Celine)',tags:['floodable park','multi-use','civic','flood storage']},{id:'re-060',name:'Blue Green Roof (small-scale)',typology_id:'4B',group:'B',fn:'4',scale:'unit',diagram:'blue_green_roof',disturbance:{primary:'sustained',secondary:null},desc:'Building-scale integrated blue-green roof combining water retention capacity with planted vegetation. Attenuates roof runoff and provides urban greening.',source:'Adaptation Measures Catalogue (Celine)',tags:['blue roof','green roof','unit','runoff']},{id:'re-061',name:'Rain Garden (community LoTek)',typology_id:'4B',group:'B',fn:'4',scale:'neighbourhood',diagram:'rain_garden',disturbance:{primary:'sustained',secondary:null},desc:'Community-maintained planted depression collecting and infiltrating runoff. Low-technology, high-ecological-value urban water management.',source:'Adaptation Measures Catalogue (Celine)',tags:['rain garden','community','LoTek','low-tech']},{id:'re-062',name:'Dry Pond',typology_id:'4B',group:'B',fn:'4',scale:'neighbourhood',diagram:'dry_pond',disturbance:{primary:'pulse',secondary:'sustained'},desc:'Normally dry depression designed to temporarily store floodwater during peak events. Doubles as open space or ecological habitat when dry.',source:'Adaptation Measures Catalogue (Celine)',tags:['dry pond','detention','temporary storage','multi-use']},{id:'re-063',name:'Floodable Park (amphibious variant)',typology_id:'4D',group:'D',fn:'4',scale:'neighbourhood',diagram:'amphibious_park',disturbance:{primary:'press',secondary:'ramp'},desc:'Amphibious civic landscape designed to rise or transition with floodwaters rather than resist them. Accommodates sustained or gradual inundation.',source:'Adaptation Measures Catalogue (Celine)',tags:['amphibious','floodable','civic','adaptive landscape']}];
+
+// ── CONSTANTS ──────────────────────────────────────────────────────────
+const GN={A:'Grey',B:'Green',C:'Hybrid',D:'Amphibious',E:'LoTek'};
+const FN={'1':'Edge Defense','2':'Shoreline Inundation','3':'Productive Landscapes','4':'Civic Living'};
+const SL={unit:'unit · 1–10 m',neighbourhood:'neighbourhood · 10–100 m',territorial:'territorial · 100 m+'};
+const SP={unit:1,neighbourhood:2,territorial:3};
+
+let activeGroup='all', activeFn='all', activeCard=null;
+
+// ── SVG DIAGRAMS ───────────────────────────────────────────────────────
+function svgDiagram(t,W,H){
+  W=W||290; H=H||148;
+  const nat='rgba(99,153,34,0.72)',str='rgba(127,119,221,0.72)',
+        wf='rgba(55,138,221,0.16)',wl='rgba(55,138,221,0.45)',
+        gf='rgba(136,135,128,0.2)',lc='rgba(120,118,112,0.85)';
+  function lbl(x,y,txt,a){return `<text x="${x}" y="${y}" font-family="Courier New" font-size="${W>250?7:6}" fill="${lc}" text-anchor="${a||'middle'}" letter-spacing="0.04em">${txt}</text>`}
+  function water(y1,y2){return `<rect x="0" y="${y1}" width="${W}" height="${y2-y1}" fill="${wf}"/>`}
+  function gnd(y){return `<rect x="0" y="${y}" width="${W}" height="${H-y}" fill="${gf}"/>`}
+  function wline(y){return `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="${wl}" stroke-width="0.5" stroke-dasharray="4 3"/>`}
+  const pre=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  const suf=`</svg>`;
+  const diagrams={
+    revetment:()=>pre+water(58,108)+wline(58)+gnd(108)+`<polygon points="38,108 108,108 92,58 48,58" fill="${str}" opacity="0.75"/>`+lbl(75,48,'revetment face')+lbl(190,76,'sea level')+suf,
+    breakwater:()=>pre+water(40,130)+wline(40)+gnd(130)+`<path d="M90,130 L108,70 L178,70 L196,130 Z" fill="${str}" opacity="0.75"/>`+lbl(144,62,'breakwater')+lbl(44,55,'sea')+lbl(238,55,'sheltered')+suf,
+    tombolo:()=>pre+water(40,125)+wline(40)+gnd(125)+`<path d="M85,125 L100,72 L165,72 L180,125 Z" fill="${str}" opacity="0.7"/>`+`<path d="M132,125 Q145,110 155,125" fill="${nat}" opacity="0.5"/>`+lbl(132,62,'nearshore breakwater')+lbl(145,118,'tombolo')+suf,
+    surge_barrier:()=>pre+water(50,115)+wline(50)+gnd(115)+`<rect x="18" y="55" width="11" height="60" fill="${str}" opacity="0.9"/><rect x="261" y="55" width="11" height="60" fill="${str}" opacity="0.9"/><rect x="29" y="66" width="66" height="8" fill="${str}" opacity="0.6"/><rect x="195" y="66" width="66" height="8" fill="${str}" opacity="0.6"/><line x1="95" y1="70" x2="195" y2="70" stroke="${str}" stroke-width="1.5" stroke-dasharray="6 4"/>`+lbl(145,58,'surge gate (open)')+lbl(50,44,'sea')+lbl(230,44,'harbour')+suf,
+    closure_dam:()=>pre+water(50,115)+wline(50)+gnd(115)+`<rect x="90" y="50" width="110" height="65" fill="${str}" opacity="0.7"/>`+lbl(145,42,'closure dam')+lbl(44,44,'sea')+lbl(240,44,'enclosed')+suf,
+    dyke:()=>pre+water(65,115)+wline(65)+gnd(115)+`<polygon points="28,115 262,115 228,65 58,65" fill="${str}" opacity="0.7"/><line x1="58" y1="65" x2="228" y2="65" stroke="rgba(239,159,39,0.7)" stroke-width="1" stroke-dasharray="4 3"/>`+lbl(145,58,'crest','middle','rgba(239,159,39,0.9)')+lbl(28,52,'sea')+lbl(262,52,'land','end')+suf,
+    wave_wall:()=>pre+water(60,115)+wline(60)+gnd(115)+`<rect x="120" y="115" width="6" height="60" fill="${str}" opacity="0.8"/>`+`<path d="M126,56 Q138,52 132,62 L126,68 Z" fill="${str}" opacity="0.8"/>`+lbl(80,50,'wave')+lbl(200,50,'protected')+suf,
+    groynes:()=>pre+water(50,120)+wline(50)+gnd(120)+[80,140,200].map(x=>`<rect x="${x}" y="55" width="8" height="65" fill="${str}" opacity="0.7"/>`).join('')+lbl(145,42,'groynes')+lbl(28,46,'longshore drift →')+suf,
+    setback_wall:()=>pre+water(50,115)+wline(50)+gnd(115)+`<path d="M30,115 Q80,95 130,90" stroke="${nat}" stroke-width="8" fill="none" opacity="0.6"/>`+`<rect x="175" y="68" width="8" height="47" fill="${str}" opacity="0.8"/>`+lbl(80,80,'buffer foreshore')+lbl(210,60,'setback wall')+suf,
+    flood_wall:()=>pre+water(65,115)+wline(65)+gnd(115)+`<rect x="135" y="115" width="6" height="55" fill="${str}" opacity="0.85"/>`+lbl(60,55,'protected zone')+lbl(220,55,'flood zone')+suf,
+    mobile_wall:()=>pre+water(65,115)+wline(65)+gnd(115)+[110,125,140,155,170].map(x=>`<rect x="${x}" y="68" width="10" height="47" fill="${str}" opacity="0.7" rx="1"/>`).join('')+lbl(145,58,'deployable panels')+suf,
+    operable_barrier:()=>pre+water(62,115)+wline(62)+gnd(115)+`<rect x="100" y="115" width="8" height="52" fill="${str}" opacity="0.8"/><rect x="182" y="115" width="8" height="52" fill="${str}" opacity="0.8"/><line x1="108" y1="72" x2="182" y2="72" stroke="${str}" stroke-width="2" stroke-dasharray="5 3"/>`+lbl(145,58,'operable gate (open)')+suf,
+    sluice:()=>pre+water(60,115)+wline(60)+gnd(115)+`<rect x="100" y="65" width="90" height="50" fill="${str}" opacity="0.4"/><rect x="130" y="80" width="30" height="35" fill="${wf}" opacity="0.8"/>`+lbl(145,56,'sluice gate')+lbl(145,100,'opening')+suf,
+    double_dike:()=>pre+water(58,125)+wline(58)+gnd(125)+`<polygon points="18,125 62,125 52,70 28,70" fill="${str}" opacity="0.8"/><polygon points="192,125 236,125 226,70 202,70" fill="${str}" opacity="0.8"/><rect x="62" y="88" width="130" height="37" fill="rgba(55,138,221,0.2)"/>`+lbl(127,80,'inter-dike zone')+lbl(38,65,'outer')+lbl(214,65,'inner')+suf,
+    perched_beach:()=>pre+water(48,122)+wline(48)+gnd(122)+`<rect x="58" y="102" width="174" height="20" fill="rgba(136,135,128,0.4)"/><path d="M58,102 Q100,82 145,77 Q188,72 232,78 L232,102 Z" fill="rgba(210,190,150,0.28)"/>`+lbl(145,68,'beach sediment')+lbl(145,114,'submerged sill')+suf,
+    barrier_island:()=>pre+water(35,128)+wline(35)+gnd(128)+`<path d="M70,128 Q110,102 145,98 Q180,102 220,128 Z" fill="${nat}" opacity="0.55"/>`+`<path d="M80,128 Q115,108 145,104 Q175,108 210,128" fill="rgba(210,190,150,0.3)"/>`+lbl(145,90,'barrier island')+lbl(28,30,'open sea')+lbl(238,30,'sheltered')+suf,
+    eco_revetment:()=>pre+water(58,108)+wline(58)+gnd(108)+`<polygon points="38,108 108,108 92,58 48,58" fill="${str}" opacity="0.6"/>`+[55,65,75,85,95].map(x=>`<circle cx="${x}" cy="${108-Math.floor(x/10)}" r="3" fill="${nat}" opacity="0.7"/>`).join('')+lbl(160,72,'ecological overlay')+suf,
+    nourishment:()=>pre+water(50,120)+wline(50)+gnd(120)+`<path d="M50,120 Q100,98 145,94 Q188,90 240,98 L240,120 Z" fill="rgba(210,190,150,0.32)"/>`+lbl(145,84,'nourished beach profile')+lbl(28,44,'sea')+suf,
+    reef:()=>pre+water(35,132)+wline(35)+gnd(132)+`<path d="M88,132 L98,108 L108,112 L118,104 L128,112 L138,106 L148,112 L158,132 Z" fill="${nat}" opacity="0.65"/>`+lbl(120,94,'reef')+lbl(38,28,'wave approach')+lbl(238,28,'sheltered')+suf,
+    reef_unit:()=>pre+water(38,132)+wline(38)+gnd(132)+`<path d="M110,132 L120,110 L130,116 L140,106 L150,116 L160,132 Z" fill="${nat}" opacity="0.7"/><rect x="108" y="130" width="54" height="4" fill="${str}" opacity="0.4"/>`+lbl(135,96,'reef unit')+lbl(38,30,'sea')+suf,
+    dune:()=>pre+water(55,125)+wline(55)+gnd(125)+`<path d="M40,125 Q90,92 145,86 Q195,80 250,95 L250,125 Z" fill="rgba(210,190,150,0.32)"/>`+[65,85,105,125,145,165,185,205].map(x=>`<line x1="${x}" y1="${125}" x2="${x}" y2="${125-14-(x%30<15?8:0)}" stroke="${nat}" stroke-width="1.2"/>`).join('')+lbl(145,76,'vegetated dune')+suf,
+    eco_tiles:()=>pre+water(55,110)+wline(55)+gnd(110)+`<polygon points="40,110 90,110 80,62 50,62" fill="${str}" opacity="0.6"/>`+[50,60,70,80].map((x,i)=>`<rect x="${x-4}" y="${62+(i*10)}" width="8" height="7" fill="${nat}" opacity="0.7" rx="1"/>`).join('')+lbl(165,76,'eco tile surface')+suf,
+    reclamation:()=>pre+water(55,120)+wline(55)+gnd(120)+`<rect x="100" y="60" width="120" height="60" fill="${str}" opacity="0.3"/><line x1="100" y1="60" x2="220" y2="60" stroke="rgba(239,159,39,0.6)" stroke-width="1" stroke-dasharray="4 3"/>`+lbl(160,52,'reclaimed land','middle','rgba(239,159,39,0.9)')+lbl(40,46,'sea')+suf,
+    land_raise:()=>pre+water(70,118)+wline(70)+gnd(118)+`<rect x="80" y="50" width="140" height="68" fill="${str}" opacity="0.25"/><line x1="80" y1="50" x2="220" y2="50" stroke="rgba(239,159,39,0.6)" stroke-width="1" stroke-dasharray="4 3"/>`+lbl(150,42,'raised ground level','middle','rgba(239,159,39,0.9)')+suf,
+    elevated:()=>pre+water(75,115)+wline(75)+gnd(115)+`<line x1="98" y1="75" x2="98" y2="115" stroke="${str}" stroke-width="1.5"/><line x1="150" y1="75" x2="150" y2="115" stroke="${str}" stroke-width="1.5"/><line x1="202" y1="75" x2="202" y2="115" stroke="${str}" stroke-width="1.5"/><rect x="83" y="42" width="134" height="38" fill="${str}" opacity="0.28" rx="2"/><line x1="83" y1="42" x2="217" y2="42" stroke="${str}" stroke-width="1.5"/>`+lbl(150,36,'raised floor')+lbl(150,98,'flood zone')+suf,
+    channel:()=>pre+gnd(0)+`<path d="M0,60 L290,80" stroke="${wl}" stroke-width="22" fill="none" opacity="0.8"/><path d="M0,58 L290,78" stroke="${wl}" stroke-width="2" fill="none"/>`+lbl(145,44,'bypass/diversion channel')+suf,
+    foreshore:()=>pre+water(55,118)+wline(55)+gnd(118)+[65,88,108,128,148,168,188,210].map(x=>`<line x1="${x}" y1="118" x2="${x-4}" y2="${118-18}" stroke="${nat}" stroke-width="1.2"/><line x1="${x}" y1="118" x2="${x+4}" y2="${118-22}" stroke="${nat}" stroke-width="1.2"/>`).join('')+lbl(145,44,'vegetated foreshore')+lbl(28,50,'sea')+suf,
+    tidal_park:()=>pre+water(55,122)+wline(55)+gnd(122)+`<path d="M48,122 C80,108 115,102 145,96 C175,90 210,94 242,118 L242,122 Z" fill="rgba(99,153,34,0.18)"/>`+[68,88,108,128,148,168,190,210].map(x=>`<line x1="${x}" y1="122" x2="${x}" y2="${122-14-((x/20)%3)*5}" stroke="${nat}" stroke-width="1.5"/>`).join('')+lbl(145,44,'tidal park / wetland')+suf,
+    realignment:()=>pre+water(50,120)+wline(50)+gnd(120)+`<path d="M50,75 Q100,85 150,90 Q200,95 250,100" stroke="${str}" stroke-width="2" fill="none" stroke-dasharray="6 3" opacity="0.6"/><path d="M60,90 Q110,100 160,108 Q210,115 260,118" stroke="${nat}" stroke-width="2" fill="none" opacity="0.7"/>`+lbl(85,68,'old defence line','middle','rgba(127,119,221,0.6)')+lbl(155,120,'new intertidal shore','middle','rgba(99,153,34,0.8)')+suf,
+    tidal_restoration:()=>pre+water(55,118)+wline(55)+gnd(118)+`<path d="M60,118 C80,100 100,95 120,92 C140,89 160,91 180,95 C200,99 220,105 240,112" stroke="${nat}" stroke-width="2" fill="none"/>`+`<line x1="80" y1="50" x2="80" y2="118" stroke="rgba(55,138,221,0.3)" stroke-width="1" stroke-dasharray="2 4"/>`+lbl(145,44,'tidal gradient restoration')+suf,
+    seagrass:()=>pre+water(35,132)+wline(35)+gnd(132)+[75,90,105,120,135,150,165,180,195,210].map(x=>`<line x1="${x}" y1="132" x2="${x-3}" y2="${132-20+(x%20<10?5:0)}" stroke="${nat}" stroke-width="1.5"/><line x1="${x}" y1="132" x2="${x+2}" y2="${132-15}" stroke="${nat}" stroke-width="1"/>`).join('')+lbl(145,26,'seagrass bed')+suf,
+    wetland:()=>pre+water(60,118)+wline(60)+gnd(118)+[60,80,100,120,140,160,180,200,220].map((x,i)=>`<line x1="${x}" y1="118" x2="${x}" y2="${118-16-(i%3)*5}" stroke="${nat}" stroke-width="1.5"/>`).join('')+`<path d="M50,90 Q145,84 240,90" stroke="${nat}" stroke-width="0.5" fill="none" opacity="0.4"/>`+lbl(145,44,'wetland')+suf,
+    gravel_trench:()=>pre+gnd(0)+`<rect x="120" y="30" width="50" height="110" fill="rgba(136,135,128,0.4)" rx="2"/><line x1="145" y1="25" x2="145" y2="0" stroke="${wl}" stroke-width="1.5" stroke-dasharray="3 3"/>`+lbl(145,16,'surface runoff')+lbl(210,80,'gravel trench')+suf,
+    absorbent_cell:()=>pre+gnd(40)+`<rect x="90" y="55" width="110" height="80" fill="rgba(55,138,221,0.12)" rx="3"/>`+[4,3,2,1].map(i=>`<rect x="${90+i*5}" y="${55+i*5}" width="${110-i*10}" height="${80-i*10}" fill="none" stroke="rgba(127,119,221,0.3)" stroke-width="0.5" rx="2"/>`).join('')+lbl(145,40,'paved surface')+lbl(145,98,'water cell')+suf,
+    percolation:()=>pre+gnd(50)+[80,120,160,200].map(x=>`<line x1="${x}" y1="45" x2="${x}" y2="130" stroke="${wl}" stroke-width="1.5" stroke-dasharray="3 4" opacity="0.7"/><circle cx="${x}" cy="132" r="4" fill="${wl}" opacity="0.5"/>`).join('')+lbl(145,38,'percolation points')+suf,
+    abc_waters:()=>pre+gnd(60)+`<path d="M30,120 C70,110 90,95 130,88 C160,82 200,86 260,100" stroke="${wl}" stroke-width="14" fill="none" opacity="0.6"/><path d="M30,120 C70,110 90,95 130,88 C160,82 200,86 260,100" stroke="${nat}" stroke-width="3" fill="none" opacity="0.6"/>`+lbl(145,44,'ABC Waters channel')+suf,
+    retention_pond:()=>pre+gnd(40)+`<ellipse cx="145" cy="100" rx="95" ry="55" fill="${wf}"/><ellipse cx="145" cy="100" rx="95" ry="55" fill="none" stroke="${wl}" stroke-width="0.8"/>`+lbl(145,100,'retention pond')+suf,
+    bioswale:()=>pre+gnd(50)+`<path d="M20,115 C70,105 100,95 145,92 C190,89 220,95 270,108" stroke="${wf}" stroke-width="20" fill="none" opacity="0.9"/><path d="M20,115 C70,105 100,95 145,92 C190,89 220,95 270,108" stroke="${nat}" stroke-width="3" fill="none" opacity="0.7"/>`+lbl(145,82,'bioswale')+suf,
+    rain_garden:()=>pre+gnd(50)+`<ellipse cx="145" cy="105" rx="65" ry="40" fill="rgba(99,153,34,0.15)"/><ellipse cx="145" cy="105" rx="65" ry="40" fill="none" stroke="${nat}" stroke-width="0.8"/>`+[120,135,145,158,132].map((x,i)=>`<line x1="${x}" y1="105" x2="${x}" y2="${105-18+(i%2)*5}" stroke="${nat}" stroke-width="1.2"/>`).join('')+lbl(145,58,'rain garden')+suf,
+    water_plaza:()=>pre+gnd(50)+`<rect x="60" y="65" width="170" height="90" fill="${wf}" opacity="0.6" rx="4"/><rect x="60" y="65" width="170" height="90" fill="none" stroke="${wl}" stroke-width="0.8" rx="4"/>`+lbl(145,56,'water plaza')+lbl(145,112,'flood storage volume')+suf,
+    hybrid_realignment:()=>pre+water(50,120)+wline(50)+gnd(120)+`<line x1="80" y1="50" x2="80" y2="120" stroke="${str}" stroke-width="2" stroke-dasharray="5 3" opacity="0.7"/><path d="M90,120 Q140,105 200,102 Q230,100 260,108" stroke="${nat}" stroke-width="2" fill="none" opacity="0.8"/>`+lbl(50,42,'old wall','middle','rgba(127,119,221,0.6)')+lbl(178,90,'new intertidal')+suf,
+    seabed:()=>pre+water(40,132)+wline(40)+gnd(132)+`<path d="M20,132 Q80,122 145,118 Q210,114 270,125" stroke="rgba(136,135,128,0.5)" stroke-width="2" fill="none"/>`+[70,100,130,160,190,220].map(x=>`<circle cx="${x}" cy="${132-5}" r="${2+(x%30<15?3:1)}" fill="${nat}" opacity="0.5"/>`).join('')+lbl(145,30,'seabed biodiversity')+suf,
+    blue_green_roof:()=>pre+gnd(0)+`<rect x="60" y="60" width="170" height="80" fill="${str}" opacity="0.2" rx="4"/><rect x="60" y="45" width="170" height="20" fill="${nat}" opacity="0.5" rx="3"/><rect x="60" y="65" width="170" height="15" fill="${wf}" opacity="0.7" rx="2"/>`+lbl(145,36,'green layer')+lbl(145,76,'blue retention layer')+lbl(145,105,'building structure')+suf,
+    detention_tank:()=>pre+gnd(40)+`<rect x="85" y="55" width="120" height="85" fill="rgba(55,138,221,0.12)" rx="4"/><rect x="85" y="55" width="120" height="85" fill="none" stroke="${str}" stroke-width="1" rx="4"/><line x1="145" y1="50" x2="145" y2="20" stroke="${wl}" stroke-width="1.5" stroke-dasharray="3 3"/>`+lbl(145,38,'ground surface')+lbl(145,100,'detention tank')+suf,
+    mangrove:()=>pre+water(60,122)+wline(60)+gnd(122)+[50,74,98,122,146,168,192,218,242].map((x,i)=>{const h=28+i%3*9,sp=14+i%2*5;return `<line x1="${x}" y1="122" x2="${x}" y2="${122-h}" stroke="${nat}" stroke-width="1.2"/><line x1="${x}" y1="${122-h+10}" x2="${x-sp/2}" y2="122" stroke="${nat}" stroke-width="0.6" opacity="0.4"/><line x1="${x}" y1="${122-h+10}" x2="${x+sp/2}" y2="122" stroke="${nat}" stroke-width="0.6" opacity="0.4"/><ellipse cx="${x}" cy="${122-h-4}" rx="${sp/2+2}" ry="5" fill="${nat}" opacity="0.45"/>`}).join('')+lbl(145,30,'mangrove belt')+lbl(28,54,'sea')+suf,
+    tidal_pools:()=>pre+water(38,130)+wline(38)+gnd(130)+[90,130,170].map((x,i)=>`<ellipse cx="${x}" cy="${130}" rx="${14+i*2}" ry="5" fill="${wf}" opacity="0.8"/>`).join('')+lbl(145,26,'tidal pools')+suf,
+    oyster_reef:()=>pre+water(38,132)+wline(38)+gnd(132)+`<rect x="95" y="108" width="100" height="12" fill="${str}" opacity="0.4" rx="2"/>`+[105,115,125,135,145,155,165,175,185].map((x,i)=>`<ellipse cx="${x}" cy="108" rx="5" ry="5" fill="${nat}" opacity="0.65"/>`).join('')+lbl(145,96,'oyster cage reef')+suf,
+    floodable_park:()=>pre+gnd(50)+`<rect x="60" y="65" width="170" height="80" fill="rgba(99,153,34,0.12)" rx="6"/>`+[80,100,120,140,160,180,200].map(x=>`<line x1="${x}" y1="145" x2="${x}" y2="${145-12-(x%40<20?6:0)}" stroke="${nat}" stroke-width="1.3"/>`).join('')+`<line x1="60" y1="110" x2="230" y2="110" stroke="${wl}" stroke-width="0.5" stroke-dasharray="4 3"/>`+lbl(145,56,'floodable park')+lbl(255,112,'flood level','start')+suf,
+    dry_pond:()=>pre+gnd(50)+`<path d="M60,140 Q90,90 145,84 Q200,90 230,140 Z" fill="rgba(99,153,34,0.12)"/><path d="M60,140 Q90,90 145,84 Q200,90 230,140" stroke="${nat}" stroke-width="0.8" fill="none"/><line x1="70" y1="120" x2="220" y2="120" stroke="${wl}" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.5"/>`+lbl(145,76,'dry pond')+lbl(240,120,'design flood level','start')+suf,
+    amphibious_park:()=>pre+water(68,118)+wline(68)+gnd(118)+`<rect x="80" y="48" width="130" height="72" fill="${str}" opacity="0.18" rx="4"/><line x1="80" y1="48" x2="210" y2="48" stroke="${str}" stroke-width="1.5"/><line x1="80" y1="72" x2="210" y2="72" stroke="${wl}" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.5"/>`+lbl(145,40,'floating/adaptive platform')+lbl(145,80,'flood level')+suf,
+  };
+  const fallback=()=>pre+`<rect x="10" y="10" width="${W-20}" height="${H-20}" fill="none" stroke="rgba(255,255,255,0.05)" rx="4"/><text x="${W/2}" y="${H/2}" font-family="Courier New" font-size="8" fill="rgba(78,77,74,0.5)" text-anchor="middle">${t}</text>`+suf;
+  return (diagrams[t]||fallback)();
+}
+
+// ── HELPERS ────────────────────────────────────────────────────────────
+function pips(s){return[1,2,3].map(i=>`<div class="sp${i<=SP[s]?' on':''}"></div>`).join('')}
+function disSlot(regime,p,s){
+  const L={pulse:'pulse',sustained:'sust.',press:'press',ramp:'ramp'};
+  let c='off';
+  if(regime===p)c=regime+'-p';
+  else if(regime===s)c=regime+'-s';
+  return `<div class="ds ${c}"><span class="ds-lbl">${L[regime]}</span></div>`;
+}
+function disStrip(d){return['pulse','sustained','press','ramp'].map(r=>disSlot(r,d.primary,d.secondary)).join('')}
+function cellBadgeStyle(g){
+  const cols={A:'rgba(136,135,128,0.4)',B:'rgba(99,153,34,0.4)',C:'rgba(127,119,221,0.4)',D:'rgba(55,138,221,0.4)',E:'rgba(239,159,39,0.4)'};
+  const tc={A:'#888780',B:'#639922',C:'#7F77DD',D:'#378ADD',E:'#EF9F27'};
+  return `border-color:${cols[g]};color:${tc[g]}`;
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────
+function render(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const items=REALISTIC.filter(r=>{
+    if(activeGroup!=='all'&&r.group!==activeGroup)return false;
+    if(activeFn!=='all'&&r.fn!==activeFn)return false;
+    if(q&&!r.name.toLowerCase().includes(q)&&!r.tags.some(t=>t.includes(q))&&!r.desc.toLowerCase().includes(q))return false;
+    return true;
+  });
+  document.getElementById('ct').textContent=REALISTIC.length;
+  document.getElementById('result-count').textContent=`${items.length} of ${REALISTIC.length} shown`;
+  const grid=document.getElementById('grid');
+  if(items.length===0){
+    grid.innerHTML=`<div id="empty" style="display:block;padding:60px 20px;text-align:center;color:var(--t3);font-size:10px;grid-column:1/-1"><span style="display:block;font-size:28px;opacity:.12;margin-bottom:10px">&#9676;</span>no objects match this filter</div>`;
+    return;
+  }
+  grid.innerHTML=items.map(r=>`
+<div class="cell-bg">
+<div class="cpm-card${activeCard===r.id?' active':''}" onclick="openDrawer('${r.id}')">
+  <div class="dz">
+    ${svgDiagram(r.diagram,290,148)}
+    <div class="cell-badge" style="${cellBadgeStyle(r.group)}">${r.typology_id}</div>
+    <div class="scale-pips">${pips(r.scale)}</div>
+  </div>
+  <div class="cb">
+    <div class="card-top">
+      <div class="card-name">${r.name}</div>
+      <div class="card-id">${r.id}</div>
+    </div>
+    <div class="card-tags">
+      <span class="tag tag-${r.group}">${GN[r.group]}</span>
+      <span class="tag tag-fn">${FN[r.fn]}</span>
+    </div>
+    <div class="card-desc">${r.desc}</div>
+    <div class="scale-label">scale: <span>${SL[r.scale]}</span></div>
+    <div class="dis-strip">${disStrip(r.disturbance)}</div>
+  </div>
+</div>
+</div>`).join('');
+}
+
+// ── DRAWER ─────────────────────────────────────────────────────────────
+function openDrawer(id){
+  const r=REALISTIC.find(x=>x.id===id);
+  if(!r)return;
+  activeCard=id;
+  document.getElementById('dr-id').textContent=`${r.id} · ${r.typology_id}`;
+  document.getElementById('dr-name').textContent=r.name;
+  document.getElementById('dr-tags').innerHTML=`<span class="tag tag-${r.group}">${GN[r.group]}</span><span class="tag tag-fn">${FN[r.fn]}</span><span class="tag tag-fn" style="border-color:var(--bd2)">${SL[r.scale]}</span>`;
+  document.getElementById('dr-diagram').innerHTML=svgDiagram(r.diagram,328,160);
+  document.getElementById('dr-desc').textContent=r.desc;
+  document.getElementById('dr-scale').textContent=SL[r.scale];
+  document.getElementById('dr-cell').textContent=`${r.typology_id} · ${GN[r.group]} / ${FN[r.fn]}`;
+  document.getElementById('dr-dis').innerHTML=disStrip(r.disturbance);
+  document.getElementById('dr-tag-chips').innerHTML=r.tags.map(t=>`<span class="dr-tag-chip">${t}</span>`).join('');
+  document.getElementById('dr-source').textContent=`source: ${r.source}`;
+  document.getElementById('drawer').classList.add('open');
+  render();
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  activeCard=null;
+  render();
+}
+
+// ── FILTERS ────────────────────────────────────────────────────────────
+function setGroup(g,btn){
+  activeGroup=g;
+  document.querySelectorAll('.tb-right .flt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+function setFn(f,btn){
+  activeFn=f;
+  document.querySelectorAll('.fn-flt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+function applyFilters(){render()}
+
+render();
+</script>
+</body>
+</html>
