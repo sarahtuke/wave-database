@@ -263,6 +263,7 @@ var REALISTIC = [
     disturbance: { primary: 'pulse', secondary: 'ramp' },
     desc: 'Addition of sand or sediment to an eroding beach or dune system to restore natural wave attenuation capacity and ecological habitat.',
     source: 'Adaptation Measures Catalogue (Celine)',
+    workshop: true,
     tags: ['beach nourishment', 'sediment', 'sand', 'erosion management', 'NbS']
   },
 
@@ -299,6 +300,7 @@ var REALISTIC = [
     disturbance: { primary: 'pulse', secondary: 'press' },
     desc: 'Prefabricated modular reef unit placed on the seabed to attenuate waves and provide structured habitat for marine colonisation.',
     source: 'Adaptation Measures Catalogue (Celine)',
+    workshop: true,
     tags: ['modular reef', 'prefabricated', 'habitat', 'wave reduction']
   },
 
@@ -337,6 +339,7 @@ var REALISTIC = [
     disturbance: { primary: 'ramp', secondary: 'sustained' },
     desc: 'Two parallel dike structures with an inter-dike zone accommodating tidal inflow, reducing hydraulic load on the inner dike while creating ecological and productive landscape value.',
     source: 'Adaptation Measures Catalogue (Celine)',
+    workshop: true,
     tags: ['double dike', 'inter-dike', 'tidal', 'hybrid', 'Netherlands']
   },
 
@@ -349,6 +352,7 @@ var REALISTIC = [
     disturbance: { primary: 'pulse', secondary: 'ramp' },
     desc: 'Artificially elevated beach created by placing sediment on a submerged sill or platform. Combines structural support with beach nourishment to maintain elevation.',
     source: 'Adaptation Measures Catalogue (Celine)',
+    workshop: true,
     tags: ['perched beach', 'nourishment', 'sill', 'hybrid beach']
   },
 
@@ -361,6 +365,7 @@ var REALISTIC = [
     disturbance: { primary: 'pulse', secondary: 'ramp' },
     desc: 'Natural or engineered island placed offshore to attenuate wave energy and provide ecological habitat. Acts as a living coastal buffer at territorial scale.',
     source: 'Adaptation Measures Catalogue (Celine)',
+    workshop: true,
     tags: ['barrier island', 'offshore', 'territorial', 'island ecology']
   },
 
@@ -373,6 +378,7 @@ var REALISTIC = [
     disturbance: { primary: 'pulse', secondary: 'press' },
     desc: 'Enhancement of existing hard coastal structures with ecological features — pools, textures, biodiversity habitats — layered onto revetments, seawalls, and breakwaters.',
     source: 'Adaptation Measures Catalogue (Celine)',
+    workshop: true,
     tags: ['ecological enhancement', 'hard structures', 'biodiversity', 'hybrid']
   },
 
@@ -655,6 +661,7 @@ var REALISTIC = [
     disturbance: { primary: 'ramp', secondary: 'sustained' },
     desc: 'Hybrid approach combining managed retreat of hard defences with active creation of intertidal habitat zones. Balances protection with ecological and landscape value.',
     source: 'Adaptation Measures Catalogue (Celine)',
+    workshop: true,
     tags: ['managed realignment', 'hybrid', 'retreat', 'intertidal landscape']
   },
 
@@ -667,6 +674,7 @@ var REALISTIC = [
     disturbance: { primary: 'press', secondary: 'ramp' },
     desc: 'Strategic dredging and reshaping of the seabed to create varied bathymetric conditions that promote biodiversity and modify wave propagation patterns.',
     source: 'Adaptation Measures Catalogue (Celine)',
+    workshop: true,
     tags: ['seabed', 'bathymetry', 'dredging', 'biodiversity', 'wave modification']
   },
 
@@ -679,6 +687,7 @@ var REALISTIC = [
     disturbance: { primary: 'sustained', secondary: 'ramp' },
     desc: 'District-scale integration of blue (water retention) and green (vegetated) roof systems across multiple buildings to attenuate stormwater and reduce urban flood peaks.',
     source: 'Adaptation Measures Catalogue (Celine)',
+    workshop: true,
     tags: ['blue roof', 'green roof', 'district', 'stormwater retention', 'urban flooding']
   },
 
@@ -691,6 +700,7 @@ var REALISTIC = [
     disturbance: { primary: 'sustained', secondary: 'pulse' },
     desc: 'Subsurface or above-ground storage tank that temporarily holds stormwater during peak events, releasing it slowly to prevent downstream flooding.',
     source: 'Adaptation Measures Catalogue (Celine)',
+    workshop: true,
     tags: ['detention tank', 'storage', 'stormwater', 'peak attenuation', 'subsurface']
   },
 
