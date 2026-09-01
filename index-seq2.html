@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAS · Wave Catalogue</title>
+<title>SAS · Wave Catalogue (Seq2)</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -287,6 +287,28 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .sc-pip.on{background:rgba(127,119,221,0.16);border-color:rgba(127,119,221,0.32);color:#9b95f0}
 .sc-pip.off{background:var(--sas-bg,#0c0f1c);color:var(--sas-t3,#4e4d4a)}
 
+/* SEQ2: SITE CHARACTERIZATION DRAWER TAB */
+.sic-field{margin-bottom:12px}
+.sic-label{font-size:7.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);display:block;margin-bottom:5px}
+.sic-input{width:100%;background:var(--sas-bg3,#171c2e);border:1px solid var(--sas-bd2,rgba(255,255,255,0.13));border-radius:var(--sas-r,5px);color:var(--sas-t1,#dedad0);font-size:10px;padding:6px 8px;font-family:'Courier New',monospace}
+.sic-input:focus{outline:none;border-color:rgba(127,119,221,0.5)}
+.sic-draw-row{display:flex;flex-direction:column;gap:5px;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-r,5px);padding:7px 8px;background:var(--sas-bg3,#171c2e)}
+.sic-draw-btn{font-size:8px;padding:4px 9px;border:1px solid rgba(127,119,221,0.4);border-radius:var(--sas-r,5px);background:transparent;color:var(--sas-ac,#7F77DD);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.04em;transition:all 0.12s}
+.sic-draw-btn:hover{background:rgba(127,119,221,0.09)}
+.sic-draw-btn.on{background:rgba(127,119,221,0.18);color:#fff}
+.sic-scale-readout{font-size:8px;color:var(--sas-t3,#4e4d4a)}
+.sic-tag-cat{margin-bottom:8px}
+.sic-tag-cat-title{font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sas-t2,#8a8880);margin-bottom:4px}
+.sic-tag-row{display:flex;flex-wrap:wrap;gap:4px}
+.sic-note{font-size:7.5px;color:var(--sas-t3,#4e4d4a);font-style:italic;line-height:1.5;margin-top:2px;margin-bottom:10px}
+.sic-submit{width:100%;padding:7px 8px;font-size:9px}
+.sic-submit:disabled{opacity:0.35;cursor:not-allowed}
+.sic-submit:disabled:hover{background:transparent}
+.sic-summary{border:1px solid rgba(29,158,117,0.3);border-radius:var(--sas-rl,9px);background:rgba(29,158,117,0.06);padding:10px;font-size:9px;color:var(--sas-t2,#8a8880);line-height:1.6;margin-bottom:10px}
+.sic-summary-title{font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:#5DCAA5;margin-bottom:5px}
+.sic-edit-btn{font-size:8px;color:var(--sas-ac,#7F77DD);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.sic-hint{font-size:8px;color:var(--sas-t3,#4e4d4a);line-height:1.6;margin-bottom:12px;padding:8px 9px;border:1px dashed var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-r,5px)}
+
 /* ANCHOR TABLE (inside constellation) */
 .anc-tbl-wrap{padding-top:2px}
 .anc-legend-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:7px}
@@ -474,7 +496,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
       <div class="mx-biv-key" id="mx-biv-key"></div>
       <div class="mx-browse-wrap" style="display:flex;flex-direction:column;gap:5px">
         <button class="mx-browse-btn" onclick="window.open('standard-objects.html','_blank')">browse standard objects &nbsp;&#8594;</button>
-        <button class="mx-browse-btn" style="border-color:rgba(127,119,221,0.35);color:var(--sas-ac,#7F77DD);background:rgba(127,119,221,0.04)" onclick="window.open('spatial-strategy.html','_blank')">spatial strategy builder &nbsp;&#8594;</button>
+        <button class="mx-browse-btn" style="border-color:rgba(127,119,221,0.35);color:var(--sas-ac,#7F77DD);background:rgba(127,119,221,0.04)" onclick="window.open('spatial-strategy-seq2.html','_blank')">spatial strategy builder &nbsp;&#8594;</button>
       </div>
     </div>
 
@@ -497,6 +519,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
           <div class="ty-code" id="ty-code"></div>
           <div class="ty-name" id="ty-name"></div>
           <div class="ty-badges" id="ty-badges"></div>
+          <div id="ty-actions" style="margin-top:8px"></div>
         </div>
         <div class="ty-body" id="ty-body"></div>
       </div>
@@ -510,6 +533,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
       <div class="rec-tabs">
         <button class="rtab on" onclick="setRTab('s',this)">Studies</button>
         <button class="rtab" onclick="setRTab('a',this)">Analytics</button>
+        <button class="rtab" onclick="setRTab('site',this)">Site</button>
       </div>
       <div class="rec-ctx">
         <span id="rec-ctx-label">all studies</span>
@@ -624,6 +648,17 @@ function labelNear(avg,labels){return avg==null?'–':labels[Math.round(avg)]||'
 let selCell=null,recTab='s',radarChart=null,miniCharts={};
 let atlasMap=null,atlasMarkers=[],atlasFilter='all',atlasOpen=true;
 let briefMode=false,briefAnchors=new Set(),briefCustomAnchors=[];
+
+// ── SEQ2: SITE CHARACTERIZATION (drawer tab, not a front gate) ──────────
+const SITE_TAGS={
+  programmatic:['Port','Industrial','Residential','Recreational','Mixed-Use'],
+  infrastructural:['Desalination Plant','Tidal Gates','Seawall','Pumping Station','Levee'],
+  ecological:['Mangroves','Wetlands','Coral Reef','Dunes','Seagrass Meadow']
+};
+let siteContext=null;
+let siteTagsSelected={programmatic:new Set(),infrastructural:new Set(),ecological:new Set()};
+let sicEditing=false;
+let scArmed=false,scStartLatLng=null,scRect=null,scBoxBounds=null,scAreaM2=null,scScaleLabel=null;
 
 // ── HELPERS ──────────────────────────────────────────────
 function studiesForCell(cid){return STUDIES.filter(s=>cellId(s.position,s.material)===cid)}
@@ -810,6 +845,18 @@ function renderTypology(){
     ${specObjs.length?`<span class="ty-badge" style="border-color:rgba(127,119,221,0.3);color:var(--sas-ac,#7F77DD)">${specObjs.length} Speculative Objects</span>`:''}
     ${realObjs.length?`<span class="ty-badge" style="border-color:rgba(239,159,39,0.3);color:var(--sas-ac2,#EF9F27)">${realObjs.length} Standard Objects</span>`:''}
     <div class="ty-conf">${pips}<span>${stds.length?'evidence confidence':'research gap'}</span></div>`;
+  // SEQ2: matrix cells (Position × Material) and CPM records (Function+Group typology_id)
+  // are two different classification systems, so a Standard Object almost never shares
+  // selCell's id directly. Studies DO carry both — bridge through a study's own
+  // func_code+group_code to find the matching CPM when no Standard Object matched selCell.
+  let handoffCpm=realObjs[0]||null;
+  if(!handoffCpm&&stds.length){
+    const bridgeTid=stds[0].func_code+stds[0].group_code;
+    handoffCpm=REALISTIC.find(o=>o.typology_id===bridgeTid)||null;
+  }
+  document.getElementById('ty-actions').innerHTML=handoffCpm
+    ?`<button class="btn ac" onclick="addToSpatialBuilder('${handoffCpm.id}')">+ add ${handoffCpm.name} to spatial builder</button>`
+    :'';
 
   const allEmpty=!stds.length&&!realObjs.length&&!specObjs.length;
   if(allEmpty){
@@ -1048,6 +1095,12 @@ function toggleSec(el){const b=el.nextElementSibling,t=el.querySelector('span');
 function renderRecords(){
   const stds=studiesForSelected(),body=document.getElementById('rec-body');
   const ctx=document.getElementById('rec-ctx-label'),clr=document.getElementById('rec-clr');
+  if(recTab==='site'){
+    ctx.textContent='site characterization';
+    clr.style.display='none';
+    renderSiteCharPanel(body);
+    return;
+  }
   ctx.textContent=selCell?`cell ${selCell} · ${stds.length} ${stds.length===1?'study':'studies'}`:`all studies · ${stds.length}`;
   clr.style.display=selCell?'inline':'none';
   if(recTab==='s'){
@@ -1058,6 +1111,171 @@ function renderRecords(){
       return`<div class="sc" onclick="openStudy('${s.asa_code}')"><div class="sc-asa" style="color:${gc}">${s.asa_code}</div><div class="sc-title">${s.title}</div><div class="sc-cite">${s.citation}</div><div class="sc-row">${s.position?`<span class="sc-tag">${s.position}</span>`:''}${s.material?`<span class="sc-tag" style="border-color:${gc}50;color:${gc};background:${gc}0d">${s.material}</span>`:''}${s.region?`<span class="sc-tag">${s.region}</span>`:''}</div><div class="sc-pips">${pips}</div></div>`;
     }).join('');
   }else renderMiniAnalytics(body);
+}
+
+// ── SEQ2: SITE CHARACTERIZATION PANEL (records drawer tab) ───────────────
+// Reached by choosing the "Site" tab in Records — optional, not a gate. Draws
+// its boundary box directly on the persistent Atlas map (initAtlas()) rather
+// than spinning up a second Leaflet instance.
+function renderSiteCharPanel(body){
+  if(siteContext&&!sicEditing){
+    body.innerHTML=renderSiteSummary();
+    return;
+  }
+  body.innerHTML=`
+    <div class="sic-hint">Optional. Characterizing the site seeds the weighting used later in the Spatial Builder — you can browse the matrix freely with or without it.</div>
+    <div class="sic-field">
+      <label class="sic-label">City / Site Name</label>
+      <input id="sic-city" class="sic-input" type="text" placeholder="e.g. Rotterdam" oninput="sicValidate()">
+    </div>
+    <div class="sic-field">
+      <label class="sic-label">Boundary Box</label>
+      <div class="sic-draw-row">
+        <button class="sic-draw-btn" id="sic-draw-btn" onclick="toggleSiteBoxDraw()">draw box on atlas map &darr;</button>
+        <span class="sic-scale-readout" id="sic-scale-readout">${scScaleLabel?`${Math.round(scAreaM2).toLocaleString()} m² · ${scScaleLabel} scale`:'no boundary drawn yet'}</span>
+      </div>
+    </div>
+    <div class="sic-field">
+      <label class="sic-label">Site Tags</label>
+      ${Object.keys(SITE_TAGS).map(cat=>`<div class="sic-tag-cat"><div class="sic-tag-cat-title">${cat}</div><div class="sic-tag-row" id="sic-tags-${cat}"></div></div>`).join('')}
+      <div class="sic-note">Manual selection only — placeholder for a future live GIS lookup plugin.</div>
+    </div>
+    <button class="btn ac sic-submit" id="sic-submit-btn" onclick="completeSiteCharacterization()" disabled>save site context</button>
+  `;
+  renderSiteTagPickers();
+  sicValidate();
+  if(sicEditing&&siteContext){
+    const cityEl=document.getElementById('sic-city');
+    if(cityEl)cityEl.value=siteContext.city;
+    sicValidate();
+  }
+}
+function renderSiteSummary(){
+  const t=siteContext.tags;
+  const tagRows=['programmatic','infrastructural','ecological'].filter(c=>t[c]&&t[c].length)
+    .map(c=>`<div><span style="color:var(--sas-t3,#4e4d4a)">${c}:</span> ${t[c].join(', ')}</div>`).join('');
+  return`
+    <div class="sic-summary">
+      <div class="sic-summary-title">Site Context Saved</div>
+      <div style="color:var(--sas-t1,#dedad0);font-size:10px;margin-bottom:3px">${siteContext.city}</div>
+      <div>${Math.round(siteContext.areaM2).toLocaleString()} m² &middot; ${siteContext.scaleLabel} scale</div>
+      ${tagRows?`<div style="margin-top:6px">${tagRows}</div>`:''}
+    </div>
+    <div class="sic-edit-btn" onclick="editSiteContext()">&larr; edit site context</div>
+    <div class="sic-note" style="margin-top:10px">This carries into the Spatial Builder automatically when you add a CPM from the Typology panel.</div>`;
+}
+function editSiteContext(){
+  sicEditing=true;
+  if(siteContext){
+    siteTagsSelected={
+      programmatic:new Set(siteContext.tags.programmatic),
+      infrastructural:new Set(siteContext.tags.infrastructural),
+      ecological:new Set(siteContext.tags.ecological)
+    };
+    scBoxBounds=siteContext.boundingBox;scAreaM2=siteContext.areaM2;scScaleLabel=siteContext.scaleLabel;
+  }
+  renderRecords();
+}
+function renderSiteTagPickers(){
+  Object.keys(SITE_TAGS).forEach(cat=>{
+    const el=document.getElementById('sic-tags-'+cat);
+    if(!el)return;
+    el.innerHTML=SITE_TAGS[cat].map(t=>{
+      const on=siteTagsSelected[cat].has(t);
+      return`<button class="anc-tog${on?' on':''}" onclick="toggleSiteTag('${cat}','${t}')">${t}</button>`;
+    }).join('');
+  });
+}
+function toggleSiteTag(cat,tag){
+  if(siteTagsSelected[cat].has(tag))siteTagsSelected[cat].delete(tag);else siteTagsSelected[cat].add(tag);
+  renderSiteTagPickers();
+}
+function toggleSiteBoxDraw(){scArmed?disarmSiteBoxDraw():armSiteBoxDraw();}
+function armSiteBoxDraw(){
+  if(!atlasMap)return;
+  if(!atlasOpen)setAtlasSize('default');
+  scArmed=true;
+  atlasMap.dragging.disable();
+  const btn=document.getElementById('sic-draw-btn');
+  if(btn){btn.classList.add('on');btn.textContent='drawing… drag the atlas map below';}
+}
+function disarmSiteBoxDraw(){
+  if(!atlasMap)return;
+  scArmed=false;
+  atlasMap.dragging.enable();
+  const btn=document.getElementById('sic-draw-btn');
+  if(btn){btn.classList.remove('on');btn.textContent='draw box on atlas map ↓';}
+}
+function onSiteBoxMouseMove(e){
+  if(!scStartLatLng)return;
+  const bounds=L.latLngBounds(scStartLatLng,e.latlng);
+  if(scRect)scRect.setBounds(bounds);
+  else scRect=L.rectangle(bounds,{color:'#7F77DD',weight:1.5,fillOpacity:0.12}).addTo(atlasMap);
+}
+function onSiteBoxMouseUp(e){
+  if(!scStartLatLng)return;
+  const bounds=L.latLngBounds(scStartLatLng,e.latlng);
+  if(scRect)scRect.setBounds(bounds);
+  finalizeSiteBox(bounds);
+  atlasMap.off('mousemove',onSiteBoxMouseMove);
+  atlasMap.off('mouseup',onSiteBoxMouseUp);
+  scStartLatLng=null;
+  disarmSiteBoxDraw();
+}
+function _haversineM(lat1,lng1,lat2,lng2){
+  const R=6371000,toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1),dLng=toRad(lng2-lng1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+// TBD — placeholder thresholds, not derived from any spatial standard. Pending real
+// definition of unit / neighbourhood / territorial scale cutoffs for this framework.
+function scaleLabelFromArea(m2){
+  if(m2<10)return'unit';
+  if(m2<=100)return'neighborhood';
+  return'territorial';
+}
+function finalizeSiteBox(bounds){
+  const sw=bounds.getSouthWest(),ne=bounds.getNorthEast();
+  scBoxBounds={south:sw.lat,west:sw.lng,north:ne.lat,east:ne.lng};
+  const w=_haversineM(sw.lat,sw.lng,sw.lat,ne.lng),h=_haversineM(sw.lat,sw.lng,ne.lat,sw.lng);
+  scAreaM2=w*h;
+  scScaleLabel=scaleLabelFromArea(scAreaM2);
+  const ro=document.getElementById('sic-scale-readout');
+  if(ro)ro.textContent=`${Math.round(scAreaM2).toLocaleString()} m² · ${scScaleLabel} scale`;
+  sicValidate();
+}
+function sicValidate(){
+  const cityEl=document.getElementById('sic-city');
+  const btn=document.getElementById('sic-submit-btn');
+  if(!cityEl||!btn)return;
+  btn.disabled=!(cityEl.value.trim()&&scBoxBounds);
+}
+function completeSiteCharacterization(){
+  const cityEl=document.getElementById('sic-city');
+  const city=cityEl?cityEl.value.trim():'';
+  if(!city||!scBoxBounds)return;
+  siteContext={
+    city,
+    boundingBox:scBoxBounds,
+    areaM2:scAreaM2,
+    scaleLabel:scScaleLabel,
+    tags:{
+      programmatic:[...siteTagsSelected.programmatic],
+      infrastructural:[...siteTagsSelected.infrastructural],
+      ecological:[...siteTagsSelected.ecological]
+    }
+  };
+  try{localStorage.setItem('waveSeq2SiteContext',JSON.stringify(siteContext));}catch(e){}
+  sicEditing=false;
+  renderRecords();
+}
+
+// ── SEQ2: TYPOLOGY → SPATIAL BUILDER HANDOFF ──────────────
+function addToSpatialBuilder(cpmId){
+  const handoff={cpmId,siteContext:siteContext||null};
+  try{localStorage.setItem('waveSeq2Handoff',JSON.stringify(handoff));}catch(e){}
+  window.open('spatial-strategy-seq2.html?from=typology','_blank');
 }
 
 function renderMiniAnalytics(body){
@@ -1097,6 +1315,14 @@ function initAtlas(){
     errorTileUrl:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
   }).addTo(atlasMap);
   plotAtlasMarkers();
+  // SEQ2: box-draw for site characterization reuses this same map instance.
+  atlasMap.on('mousedown',e=>{
+    if(!scArmed)return;
+    scStartLatLng=e.latlng;
+    if(scRect){atlasMap.removeLayer(scRect);scRect=null;}
+    atlasMap.on('mousemove',onSiteBoxMouseMove);
+    atlasMap.on('mouseup',onSiteBoxMouseUp);
+  });
 }
 
 function plotAtlasMarkers(){

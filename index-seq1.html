@@ -21,11 +21,11 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 #app{display:flex;flex-direction:column;height:100vh}
 
 /* OPENING OVERLAY */
-#opening-overlay{position:fixed;inset:0;z-index:500;background:var(--sas-bg,#0c0f1c);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;transition:opacity 0.3s}
+#opening-overlay{position:fixed;inset:0;z-index:500;background:var(--sas-bg,#0c0f1c);display:flex;flex-direction:column;transition:opacity 0.3s;overflow:hidden}
 #opening-overlay.hidden{opacity:0;pointer-events:none}
 .oo-logo{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);margin-bottom:10px}
-.oo-headline{font-size:20px;color:var(--sas-t1,#dedad0);letter-spacing:-0.01em;margin-bottom:9px;text-align:center}
-.oo-sub{font-size:10px;color:var(--sas-t3,#4e4d4a);text-align:center;line-height:1.7;max-width:360px;margin-bottom:28px}
+.oo-headline{font-size:20px;color:var(--sas-t1,#dedad0);letter-spacing:-0.01em;margin-bottom:9px}
+.oo-sub{font-size:10px;color:var(--sas-t3,#4e4d4a);line-height:1.7;max-width:480px;margin-bottom:28px}
 .oo-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:540px}
 .oo-card{background:var(--sas-bg2,#10152a);border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-rl,9px);padding:20px 18px;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
 .oo-card:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13));background:var(--sas-bg3,#171c2e)}
@@ -35,8 +35,36 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .oo-desc{font-size:9px;color:var(--sas-t2,#8a8880);line-height:1.5}
 .oo-hint{font-size:8px;color:var(--sas-t3,#4e4d4a);letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
 
+/* SITE CHARACTERIZATION GATE (SEQ1) — site-char large/left, live matrix smaller/right, live atlas full-width/bottom */
+#oo-gate{display:flex;flex-direction:column;height:100%;width:100%;overflow:hidden}
+#oo-gate-top{flex:1;display:flex;overflow:hidden;min-height:0}
+#oo-gate-left{flex:1;min-width:0;overflow-y:auto;padding:28px 32px}
+#oo-gate-right{width:320px;min-width:260px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;border-left:1px solid var(--sas-bd,rgba(255,255,255,0.07))}
+#oo-gate-right #panel-m{width:100%;max-width:none;flex:1;min-height:0}
+#oo-gate-atlas-slot{flex-shrink:0;display:flex;flex-direction:column}
+#oo-gate-atlas-slot #atlas-body{height:220px}
+#oo-sitechar{width:100%;max-width:640px;display:flex;flex-direction:column}
+.sc-field{width:100%;margin-bottom:16px}
+.sc-label{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);display:block;margin-bottom:6px}
+.sc-input{width:100%;background:var(--sas-bg2,#10152a);border:1px solid var(--sas-bd2,rgba(255,255,255,0.13));border-radius:var(--sas-r,5px);color:var(--sas-t1,#dedad0);font-size:11px;padding:8px 10px;font-family:'Courier New',monospace}
+.sc-input:focus{outline:none;border-color:rgba(127,119,221,0.5)}
+.sc-geocode-status{font-size:8px;color:var(--sas-ac2,#EF9F27);margin-top:4px;min-height:10px}
+#sc-map-wrap{border:1px solid var(--sas-bd2,rgba(255,255,255,0.13));border-radius:var(--sas-rl,9px);overflow:hidden}
+#sc-map{width:100%;height:220px;position:relative;z-index:0}
+#sc-map-hint{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--sas-bg2,#10152a);border-top:1px solid var(--sas-bd,rgba(255,255,255,0.07));padding:6px 10px;font-size:8px;color:var(--sas-t3,#4e4d4a)}
+.sc-draw-btn{font-size:8px;padding:3px 9px;border:1px solid rgba(127,119,221,0.4);border-radius:var(--sas-r,5px);background:transparent;color:var(--sas-ac,#7F77DD);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.04em;transition:all 0.12s;flex-shrink:0}
+.sc-draw-btn:hover{background:rgba(127,119,221,0.09)}
+.sc-draw-btn.on{background:rgba(127,119,221,0.18);color:#fff}
+.sc-tag-cats{display:flex;flex-direction:column;gap:9px}
+.sc-tag-cat-title{font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sas-t2,#8a8880);margin-bottom:4px}
+.sc-tag-row{display:flex;flex-wrap:wrap;gap:5px}
+.sc-tag-note{font-size:7.5px;color:var(--sas-t3,#4e4d4a);font-style:italic;margin-top:6px;line-height:1.5}
+.sc-submit{width:100%;padding:9px 10px;font-size:10px;margin-top:4px}
+.sc-submit:disabled{opacity:0.35;cursor:not-allowed}
+.sc-submit:disabled:hover{background:transparent}
+
 /* OPENING INTRO SEQUENCE (Screen 1 → Screen 2 → combined, before the app is revealed) */
-#oo-intro{display:flex;flex-direction:column;align-items:center;gap:22px}
+#oo-intro{position:absolute;inset:0;z-index:10;background:var(--sas-bg,#0c0f1c);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
 .oo-intro-cap{font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--sas-t1,#dedad0);transition:opacity 0.25s ease;min-height:14px}
 .oo-intro-grid{display:grid;grid-template-columns:repeat(4,66px);grid-template-rows:repeat(3,66px);gap:9px}
 .oo-intro-cell{border:1px solid rgba(127,119,221,0.4);border-radius:9px;background:rgba(127,119,221,0.03);position:relative}
@@ -275,6 +303,19 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .rec-ctx{font-size:8px;color:var(--sas-t3,#4e4d4a);padding:5px 10px;border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07));display:flex;align-items:center;justify-content:space-between}
 .ctx-clr{font-size:8px;cursor:pointer;color:var(--sas-ac,#7F77DD);opacity:0.7}
 .ctx-clr:hover{opacity:1}
+#rtab-site-count{font-size:7px;background:var(--sas-ac,#7F77DD);color:#fff;border-radius:8px;padding:0 4px;margin-left:4px;vertical-align:middle}
+
+/* SITE TAB (SEQ1 — records panel) */
+.site-tab-sec{margin-bottom:14px}
+.site-tab-sec-title{font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07))}
+#site-tab-map{width:100%;height:140px;border:1px solid var(--sas-bd2,rgba(255,255,255,0.13));border-radius:var(--sas-r,5px);position:relative;z-index:0}
+.site-tab-note{font-size:9px;color:var(--sas-t2,#8a8880);line-height:1.7;background:var(--sas-bg3,#171c2e);border-left:2px solid var(--sas-ac2,#EF9F27);padding:7px 9px;border-radius:0 var(--sas-r,5px) var(--sas-r,5px) 0}
+.site-tab-note strong{color:var(--sas-t1,#dedad0)}
+.staged-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-r,5px);background:var(--sas-bg3,#171c2e);margin-bottom:4px}
+.staged-item-name{font-size:9px;color:var(--sas-t1,#dedad0);flex:1}
+.staged-item-rm{background:none;border:1px solid rgba(192,84,78,0.22);color:#f09595;font-size:7px;padding:1px 5px;border-radius:3px;cursor:pointer;font-family:'Courier New',monospace}
+.staged-empty{font-size:9px;color:var(--sas-t3,#4e4d4a);padding:8px 0;font-style:italic}
+.site-tab-launch{width:100%;margin-top:6px}
 .sc{border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-rl,9px);padding:9px;margin-bottom:7px;cursor:pointer;transition:all 0.12s;background:var(--sas-bg3,#171c2e)}
 .sc:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13));background:var(--sas-bg4,#1e2438)}
 .sc-asa{font-size:8px;letter-spacing:0.07em;margin-bottom:3px}
@@ -334,7 +375,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 #atlas-chevron.up{transform:rotate(180deg)}
 #atlas-body{height:200px;overflow:hidden;transition:height 0.2s ease;flex-shrink:0}
 #atlas-body.collapsed{height:0}
-#atlas-map{width:100%;height:100%}
+#atlas-map{width:100%;height:100%;position:relative;z-index:0}
 
 /* Leaflet overrides for dark theme */
 .leaflet-container{background:#090b17!important;font-family:'Courier New',monospace!important}
@@ -415,26 +456,58 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 </head>
 <body>
 
-<!-- OPENING OVERLAY -->
+<!-- OPENING OVERLAY (SEQ1: Site Characterization front gate) -->
 <div id="opening-overlay">
-  <div id="oo-landing" style="display:flex;flex-direction:column;align-items:center">
-    <div class="oo-logo">Wave Catalogue</div>
-    <div class="oo-headline">Building hybridised Coastal Protection Measures for coastal adaptation</div>
-    <div class="oo-sub">A living evidence catalogue of CPM typologies, standard objects, and speculative design. Let's get started.</div>
-    <div class="oo-cards">
-      <div class="oo-card oo-build" onclick="dismissOverlay('build')">
-        <div class="oo-icon">&#9678;</div>
-        <div class="oo-name">Start by Constellations</div>
-        <div class="oo-desc">Tell us what your coastal strategy needs — high structural, high ecological, high social — and we'll surface which matrix cells hold the evidence.</div>
-        <div class="oo-hint">define your brief &rarr;</div>
+  <div id="oo-gate">
+    <div id="oo-gate-top">
+      <div id="oo-gate-left">
+        <div id="oo-sitechar">
+          <div class="oo-logo">Wave Catalogue &middot; Sequence Test</div>
+          <div class="oo-headline">Characterize your site</div>
+          <div class="oo-sub">Tell us where you're working and what's already there. Browse the matrix and atlas on the right while you do — this seeds the spatial builder's scoring later in the sequence.</div>
+
+          <div class="sc-field">
+            <label class="sc-label">City / Site Name</label>
+            <input id="sc-city" class="sc-input" type="text" placeholder="e.g. Rotterdam" oninput="scOnCityInput()">
+            <div id="sc-geocode-status" class="sc-geocode-status"></div>
+          </div>
+
+          <div class="sc-field">
+            <label class="sc-label">Draw a boundary box over the coastline</label>
+            <div id="sc-map-wrap">
+              <div id="sc-map"></div>
+              <div id="sc-map-hint">
+                <span id="sc-scale-readout">no boundary drawn</span>
+                <button class="sc-draw-btn" id="sc-draw-btn" onclick="toggleBoxDraw()">draw box</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sc-field">
+            <label class="sc-label">Site Tags</label>
+            <div class="sc-tag-cats">
+              <div class="sc-tag-cat">
+                <div class="sc-tag-cat-title">Programmatic</div>
+                <div class="sc-tag-row" id="sc-tags-programmatic"></div>
+              </div>
+              <div class="sc-tag-cat">
+                <div class="sc-tag-cat-title">Infrastructural</div>
+                <div class="sc-tag-row" id="sc-tags-infrastructural"></div>
+              </div>
+              <div class="sc-tag-cat">
+                <div class="sc-tag-cat-title">Ecological</div>
+                <div class="sc-tag-row" id="sc-tags-ecological"></div>
+              </div>
+            </div>
+            <div class="sc-tag-note">Manual selection only — placeholder for a future live GIS lookup plugin.</div>
+          </div>
+
+          <button class="btn ac sc-submit" id="sc-submit-btn" onclick="completeSiteCharacterization()" disabled>enter catalogue &rarr;</button>
+        </div>
       </div>
-      <div class="oo-card" onclick="dismissOverlay('browse')">
-        <div class="oo-icon">&#8862;</div>
-        <div class="oo-name">Scan by Matrix</div>
-        <div class="oo-desc">Browse the Position &times; Material grid directly. Click any cell to see its studies, objects, and anchor evidence.</div>
-        <div class="oo-hint">start browsing &rarr;</div>
-      </div>
+      <div id="oo-gate-right"></div>
     </div>
+    <div id="oo-gate-atlas-slot"></div>
   </div>
   <div id="oo-intro" style="display:none">
     <div class="oo-intro-cap" id="oo-intro-cap">Screen 1 &middot; External Resilience</div>
@@ -474,7 +547,6 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
       <div class="mx-biv-key" id="mx-biv-key"></div>
       <div class="mx-browse-wrap" style="display:flex;flex-direction:column;gap:5px">
         <button class="mx-browse-btn" onclick="window.open('standard-objects.html','_blank')">browse standard objects &nbsp;&#8594;</button>
-        <button class="mx-browse-btn" style="border-color:rgba(127,119,221,0.35);color:var(--sas-ac,#7F77DD);background:rgba(127,119,221,0.04)" onclick="window.open('spatial-strategy.html','_blank')">spatial strategy builder &nbsp;&#8594;</button>
       </div>
     </div>
 
@@ -497,6 +569,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
           <div class="ty-code" id="ty-code"></div>
           <div class="ty-name" id="ty-name"></div>
           <div class="ty-badges" id="ty-badges"></div>
+          <div id="ty-actions" style="margin-top:8px"></div>
         </div>
         <div class="ty-body" id="ty-body"></div>
       </div>
@@ -504,17 +577,9 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 
     <div class="vdiv"></div>
 
-    <!-- RECORDS -->
+    <!-- RECORDS (SEQ1 — site only, no study/analytics tabs; stays visible while browsing the matrix) -->
     <div id="panel-r" class="panel">
-      <div class="ph"><span class="ph-title">Records</span></div>
-      <div class="rec-tabs">
-        <button class="rtab on" onclick="setRTab('s',this)">Studies</button>
-        <button class="rtab" onclick="setRTab('a',this)">Analytics</button>
-      </div>
-      <div class="rec-ctx">
-        <span id="rec-ctx-label">all studies</span>
-        <span class="ctx-clr" id="rec-clr" onclick="clearSel()" style="display:none">clear &times;</span>
-      </div>
+      <div class="ph"><span class="ph-title">Site</span><span class="ph-badge" id="rtab-site-count" style="display:none"></span></div>
       <div class="pb" id="rec-body"></div>
     </div>
 
@@ -621,14 +686,13 @@ function screen2Summary(stds){
 function labelNear(avg,labels){return avg==null?'–':labels[Math.round(avg)]||'–';}
 
 // ── STATE ────────────────────────────────────────────────
-let selCell=null,recTab='s',radarChart=null,miniCharts={};
+let selCell=null,radarChart=null;
 let atlasMap=null,atlasMarkers=[],atlasFilter='all',atlasOpen=true;
 let briefMode=false,briefAnchors=new Set(),briefCustomAnchors=[];
 
 // ── HELPERS ──────────────────────────────────────────────
 function studiesForCell(cid){return STUDIES.filter(s=>cellId(s.position,s.material)===cid)}
 function objectsForCell(cid){return [...SPECULATIVE,...REALISTIC].filter(o=>o.typology_id===cid)}
-function studiesForSelected(){return selCell?studiesForCell(selCell):STUDIES}
 function anchorScore(studies,anchor){
   if(!studies.length)return{score:0,conf:'na'};
   let pts=0;studies.forEach(s=>{const a=s.anchors&&s.anchors[anchor];if(!a||!a.has)return;if(a.score!=null)pts+=a.score/10;else if(a.quant&&a.qual)pts+=1;else if(a.quant||a.qual)pts+=0.5;});
@@ -731,7 +795,7 @@ function renderIntroGrid(){
   document.querySelectorAll('.oo-intro-pt').forEach(p=>p.classList.remove('on'));
 }
 function playIntroSequence(onDone){
-  document.getElementById('oo-landing').style.display='none';
+  document.getElementById('oo-gate').style.display='none';
   const intro=document.getElementById('oo-intro');
   intro.style.display='flex';
   const cap=document.getElementById('oo-intro-cap');
@@ -810,6 +874,9 @@ function renderTypology(){
     ${specObjs.length?`<span class="ty-badge" style="border-color:rgba(127,119,221,0.3);color:var(--sas-ac,#7F77DD)">${specObjs.length} Speculative Objects</span>`:''}
     ${realObjs.length?`<span class="ty-badge" style="border-color:rgba(239,159,39,0.3);color:var(--sas-ac2,#EF9F27)">${realObjs.length} Standard Objects</span>`:''}
     <div class="ty-conf">${pips}<span>${stds.length?'evidence confidence':'research gap'}</span></div>`;
+  document.getElementById('ty-actions').innerHTML=realObjs.length
+    ?`<button class="btn ac" onclick="stageForSpatialBuilder('${realObjs[0].id}','${realObjs[0].name.replace(/'/g,"\\'")}')">+ add ${realObjs[0].name} to spatial builder</button>`
+    :'';
 
   const allEmpty=!stds.length&&!realObjs.length&&!specObjs.length;
   if(allEmpty){
@@ -1046,42 +1113,59 @@ function toggleSec(el){const b=el.nextElementSibling,t=el.querySelector('span');
 
 // ── RECORDS ──────────────────────────────────────────────
 function renderRecords(){
-  const stds=studiesForSelected(),body=document.getElementById('rec-body');
-  const ctx=document.getElementById('rec-ctx-label'),clr=document.getElementById('rec-clr');
-  ctx.textContent=selCell?`cell ${selCell} · ${stds.length} ${stds.length===1?'study':'studies'}`:`all studies · ${stds.length}`;
-  clr.style.display=selCell?'inline':'none';
-  if(recTab==='s'){
-    if(!stds.length){body.innerHTML=`<div class="no-rec">No studies catalogued<br>for this typology yet.</div>`;return;}
-    body.innerHTML=stds.map(s=>{
-      const gc=MAT_COLORS[s.material]||'#888';
-      const pips=ANC.map((a,i)=>`<div class="sc-pip ${s.anchors&&s.anchors[a]&&s.anchors[a].has?'on':'off'}" title="${a}">${['S','Ec','$','So','A'][i]}</div>`).join('');
-      return`<div class="sc" onclick="openStudy('${s.asa_code}')"><div class="sc-asa" style="color:${gc}">${s.asa_code}</div><div class="sc-title">${s.title}</div><div class="sc-cite">${s.citation}</div><div class="sc-row">${s.position?`<span class="sc-tag">${s.position}</span>`:''}${s.material?`<span class="sc-tag" style="border-color:${gc}50;color:${gc};background:${gc}0d">${s.material}</span>`:''}${s.region?`<span class="sc-tag">${s.region}</span>`:''}</div><div class="sc-pips">${pips}</div></div>`;
-    }).join('');
-  }else renderMiniAnalytics(body);
+  renderSiteTab(document.getElementById('rec-body'));
 }
 
-function renderMiniAnalytics(body){
-  const all=STUDIES,filled=new Set(all.filter(s=>s.position&&s.material).map(s=>cellId(s.position,s.material))).size;
-  let t=0;all.forEach(s=>ANC.forEach(a=>{if(s.anchors&&s.anchors[a]&&s.anchors[a].has)t++;}));
+// ── SEQ1: SITE TAB (boundary preview + staged CPMs) ───────
+let stagedCPMs=[];
+let siteTabMap=null;
+function renderSiteTab(body){
+  const tagsHTML=siteContext?Object.entries(siteContext.tags).map(([cat,tags])=>
+    tags.length?`<strong>${cat}:</strong> ${tags.join(', ')}`:''
+  ).filter(Boolean).join('<br>'):'';
   body.innerHTML=`
-    <div class="mini-stat-grid">
-      <div class="mini-stat"><div class="mini-stat-label">Studies</div><div class="mini-stat-val">${all.length}</div></div>
-      <div class="mini-stat"><div class="mini-stat-label">Cells Filled</div><div class="mini-stat-val">${filled}/12</div></div>
-      <div class="mini-stat"><div class="mini-stat-label">Objects</div><div class="mini-stat-val">${SPECULATIVE.length+REALISTIC.length}</div></div>
-      <div class="mini-stat"><div class="mini-stat-label">Anchor Cover</div><div class="mini-stat-val">${all.length?Math.round((t/(all.length*5))*100):0}%</div></div>
+    <div class="site-tab-sec">
+      <div class="site-tab-sec-title">Site Boundary</div>
+      ${siteContext?`<div id="site-tab-map"></div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);margin-top:5px">${siteContext.city} &middot; ${siteContext.scaleLabel} scale &middot; ${Math.round(siteContext.areaM2).toLocaleString()} m&sup2;</div>`
+        :`<div class="staged-empty">No site characterized this session.</div>`}
     </div>
-    <div class="mini-chart-title">Anchor coverage across all studies</div>
-    <canvas id="ancChart" style="max-height:110px"></canvas>
-    <div class="mini-chart-title" style="margin-top:12px">Studies by material</div>
-    <canvas id="grpChart" style="max-height:100px"></canvas>`;
-  setTimeout(()=>{
-    if(miniCharts.anc)miniCharts.anc.destroy();
-    const ac=document.getElementById('ancChart');
-    if(ac)miniCharts.anc=new Chart(ac,{type:'bar',data:{labels:['Struct.','Ecol.','Econ.','Social','Auth.'],datasets:[{data:ANC.map(a=>all.filter(s=>s.anchors&&s.anchors[a]&&s.anchors[a].has).length),backgroundColor:'rgba(127,119,221,0.55)',borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#4e4d4a',font:{size:7,family:'Courier New'}},grid:{display:false}},y:{ticks:{color:'#4e4d4a',font:{size:8},stepSize:1},grid:{color:'rgba(255,255,255,0.04)'}}},animation:{duration:300}}});
-    if(miniCharts.grp)miniCharts.grp.destroy();
-    const gc=document.getElementById('grpChart');
-    if(gc)miniCharts.grp=new Chart(gc,{type:'bar',data:{labels:MAT,datasets:[{data:MAT.map(m=>all.filter(s=>s.material===m).length),backgroundColor:MAT.map(m=>MAT_COLORS[m]+'99'),borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#4e4d4a',font:{size:8},stepSize:1},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#4e4d4a',font:{size:8,family:'Courier New'}},grid:{display:false}}},animation:{duration:300}}});
-  },30);
+    ${tagsHTML?`<div class="site-tab-sec"><div class="site-tab-sec-title">Processes (notes)</div><div class="site-tab-note">${tagsHTML}</div></div>`:''}
+    <div class="site-tab-sec">
+      <div class="site-tab-sec-title">Staged for Spatial Builder (${stagedCPMs.length})</div>
+      <div id="staged-list">${stagedCPMs.length?stagedCPMs.map(c=>`<div class="staged-item"><span class="staged-item-name">${c.name}</span><button class="staged-item-rm" onclick="unstageCPM('${c.id}')">&times;</button></div>`).join(''):'<div class="staged-empty">Browse the matrix and use "+ add to spatial builder" on a typology to queue CPMs here.</div>'}</div>
+      <button class="btn ac site-tab-launch" ${stagedCPMs.length?'':'disabled'} onclick="launchSpatialBuilder()">open spatial builder &rarr;</button>
+    </div>`;
+  if(siteContext){
+    setTimeout(()=>{
+      if(siteTabMap){siteTabMap.remove();siteTabMap=null;}
+      const el=document.getElementById('site-tab-map');
+      if(!el)return;
+      siteTabMap=L.map('site-tab-map',{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false});
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:18}).addTo(siteTabMap);
+      const bb=siteContext.boundingBox;
+      const bounds=[[bb.south,bb.west],[bb.north,bb.east]];
+      L.rectangle(bounds,{color:'#7F77DD',weight:1.5,fillOpacity:0.12}).addTo(siteTabMap);
+      siteTabMap.fitBounds(bounds,{padding:[10,10]});
+    },30);
+  }
+}
+function stageForSpatialBuilder(cpmId,cpmName){
+  if(!stagedCPMs.find(c=>c.id===cpmId))stagedCPMs.push({id:cpmId,name:cpmName});
+  document.getElementById('rtab-site-count').textContent=stagedCPMs.length;
+  document.getElementById('rtab-site-count').style.display=stagedCPMs.length?'inline':'none';
+  renderRecords();
+}
+function unstageCPM(cpmId){
+  stagedCPMs=stagedCPMs.filter(c=>c.id!==cpmId);
+  document.getElementById('rtab-site-count').textContent=stagedCPMs.length;
+  document.getElementById('rtab-site-count').style.display=stagedCPMs.length?'inline':'none';
+  renderRecords();
+}
+function launchSpatialBuilder(){
+  if(!stagedCPMs.length)return;
+  const handoff={cpmIds:stagedCPMs.map(c=>c.id),siteContext:siteContext||null};
+  try{localStorage.setItem('waveSeq1Handoff',JSON.stringify(handoff));}catch(e){}
+  window.open('spatial-strategy-seq1.html?from=typology','_blank');
 }
 
 // ── ATLAS ────────────────────────────────────────────────
@@ -1125,9 +1209,10 @@ function plotAtlasMarkers(){
     [...SPECULATIVE,...REALISTIC].forEach(o=>{
       if(!o.location)return;
       const m=L.circleMarker([o.location.lat,o.location.lng],{radius:5,fillColor:'#EF9F27',color:'rgba(255,255,255,0.3)',weight:1,opacity:1,fillOpacity:0.75,dashArray:'3,3'});
-      m.typologyId=null;
+      m.typologyId=o.typology_id||null;
       m.markerType='object';
-      m.bindPopup(`<div style="font-size:7px;padding:1px 6px;border-radius:3px;border:1px solid rgba(239,159,39,0.3);color:#EF9F27;display:inline-block;margin-bottom:5px;letter-spacing:0.05em">Speculative Object</div><div style="font-size:10px;color:var(--sas-t1,#dedad0);margin-bottom:2px;line-height:1.3">${o.name}</div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);margin-bottom:4px">${o.author} &middot; ${o.year}</div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);font-style:italic;margin-bottom:5px">${o.location.label}</div><div style="font-size:8px;color:var(--sas-t2,#8a8880);line-height:1.4">${o.coastal_context}</div>`,{className:'sas-popup'});
+      m.bindPopup(`<div style="font-size:7px;padding:1px 6px;border-radius:3px;border:1px solid rgba(239,159,39,0.3);color:#EF9F27;display:inline-block;margin-bottom:5px;letter-spacing:0.05em">Speculative Object</div><div style="font-size:10px;color:var(--sas-t1,#dedad0);margin-bottom:2px;line-height:1.3">${o.name}</div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);margin-bottom:4px">${o.author} &middot; ${o.year}</div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);font-style:italic;margin-bottom:5px">${o.location.label}</div><div style="font-size:8px;color:var(--sas-t2,#8a8880);line-height:1.4">${o.coastal_context}</div>${m.typologyId?`<div style="font-size:8px;color:#9b95f0;cursor:pointer;margin-top:6px" onclick="clickCell('${m.typologyId}')">&#8594; highlight in matrix</div>`:''}`,{className:'sas-popup'});
+      m.on('click',()=>{if(m.typologyId)clickCell(m.typologyId);});
       m.addTo(atlasMap);
       atlasMarkers.push(m);
     });
@@ -1175,8 +1260,6 @@ function clickCell(cid){
   renderMatrix();renderTypology();renderRecords();
   updateAtlasSelection();
 }
-function clearSel(){selCell=null;renderMatrix();renderTypology();renderRecords();updateAtlasSelection();}
-function setRTab(tab,el){recTab=tab;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('on'));el.classList.add('on');renderRecords();}
 
 // ── STUDY MODAL ──────────────────────────────────────────
 function openStudy(asa){
@@ -1304,16 +1387,192 @@ function doImp(){
   });
 })();
 
-// ── OPENING OVERLAY ──────────────────────────────────────
-function dismissOverlay(mode){
+// ── SITE CHARACTERIZATION (SEQ1 front gate) ──────────────
+const SITE_TAGS={
+  programmatic:['Port','Industrial','Residential','Recreational','Mixed-Use'],
+  infrastructural:['Desalination Plant','Tidal Gates','Seawall','Pumping Station','Levee'],
+  ecological:['Mangroves','Wetlands','Coral Reef','Dunes','Seagrass Meadow']
+};
+let siteContext=null;
+let siteTagsSelected={programmatic:new Set(),infrastructural:new Set(),ecological:new Set()};
+let scMap=null,scArmed=false,scStartLatLng=null,scRect=null,scBoxBounds=null,scAreaM2=null,scScaleLabel=null;
+let scCityBounds=null,scCityRect=null,scGeocodeTimer=null,scGeocodeAbort=null;
+
+// Reparents the real matrix panel and atlas into the gate (not copies — the same live,
+// already-wired DOM nodes) so browsing them during characterization drives the same
+// clickCell()/selCell state as the main app, then moves them back on submit.
+let _gatePanelsEl=null,_gateMainEl=null;
+function moveComponentsIntoGate(){
+  const panelM=document.getElementById('panel-m');
+  const gateRight=document.getElementById('oo-gate-right');
+  _gatePanelsEl=panelM.parentElement;
+  gateRight.appendChild(panelM);
+  // The inline style="display:flex" on this element outranks any CSS selector, so it's toggled directly.
+  const browseWrap=panelM.querySelector('.mx-browse-wrap');
+  if(browseWrap)browseWrap.style.display='none';
+
+  const atlasToggle=document.getElementById('atlas-toggle');
+  const atlasBody=document.getElementById('atlas-body');
+  _gateMainEl=atlasToggle.parentElement;
+  const gateAtlasSlot=document.getElementById('oo-gate-atlas-slot');
+  gateAtlasSlot.appendChild(atlasToggle);
+  gateAtlasSlot.appendChild(atlasBody);
+}
+function restoreComponentsFromGate(){
+  const panelM=document.getElementById('panel-m');
+  const vdivM=document.getElementById('vdiv-m');
+  if(_gatePanelsEl)_gatePanelsEl.insertBefore(panelM,vdivM);
+  const browseWrap=panelM.querySelector('.mx-browse-wrap');
+  if(browseWrap)browseWrap.style.display='flex';
+
+  const atlasToggle=document.getElementById('atlas-toggle');
+  const atlasBody=document.getElementById('atlas-body');
+  if(_gateMainEl){_gateMainEl.appendChild(atlasToggle);_gateMainEl.appendChild(atlasBody);}
+  if(atlasMap)setTimeout(()=>atlasMap.invalidateSize(),320);
+}
+
+function initSiteCharMap(){
+  if(!window.L)return;
+  scMap=L.map('sc-map',{center:[25,10],zoom:2,zoomControl:true});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; <a href="https://openstreetmap.org">OSM</a> &copy; <a href="https://carto.com">CARTO</a>',
+    subdomains:'abcd',maxZoom:18
+  }).addTo(scMap);
+  scMap.on('mousedown',e=>{
+    if(!scArmed)return;
+    scStartLatLng=e.latlng;
+    if(scRect){scMap.removeLayer(scRect);scRect=null;}
+    scMap.on('mousemove',onScMouseMove);
+    scMap.on('mouseup',onScMouseUp);
+  });
+}
+
+// ── SEQ1: CITY GEOCODING (OSM Nominatim, no key required) ─
+function scOnCityInput(){
+  scValidate();
+  clearTimeout(scGeocodeTimer);
+  const q=document.getElementById('sc-city').value.trim();
+  const status=document.getElementById('sc-geocode-status');
+  if(!q){status.textContent='';return;}
+  status.textContent='…';
+  scGeocodeTimer=setTimeout(()=>geocodeCity(q),650);
+}
+async function geocodeCity(query){
+  const status=document.getElementById('sc-geocode-status');
+  if(scGeocodeAbort)scGeocodeAbort.abort();
+  scGeocodeAbort=new AbortController();
+  try{
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`,{signal:scGeocodeAbort.signal});
+    const data=await res.json();
+    if(!data.length){status.textContent='city not found';return;}
+    const hit=data[0];
+    const[south,north,west,east]=hit.boundingbox.map(Number);
+    scCityBounds={south,west,north,east};
+    const bounds=[[south,west],[north,east]];
+    if(scCityRect)scMap.removeLayer(scCityRect);
+    scCityRect=L.rectangle(bounds,{color:'#EF9F27',weight:1,fillOpacity:0.03,dashArray:'3,4',interactive:false}).addTo(scMap);
+    scMap.fitBounds(bounds,{padding:[16,16]});
+    status.textContent=`zoomed to ${hit.display_name.split(',')[0]}`;
+  }catch(e){
+    if(e.name!=='AbortError')status.textContent='geocoding unavailable';
+  }
+}
+function toggleBoxDraw(){scArmed?disarmBoxDraw():armBoxDraw();}
+function armBoxDraw(){
+  if(!scMap)return;
+  scArmed=true;
+  scMap.dragging.disable();
+  document.getElementById('sc-draw-btn').classList.add('on');
+  document.getElementById('sc-draw-btn').textContent='drawing… drag map';
+}
+function disarmBoxDraw(){
+  if(!scMap)return;
+  scArmed=false;
+  scMap.dragging.enable();
+  document.getElementById('sc-draw-btn').classList.remove('on');
+  document.getElementById('sc-draw-btn').textContent='draw box';
+}
+function onScMouseMove(e){
+  if(!scStartLatLng)return;
+  const bounds=L.latLngBounds(scStartLatLng,e.latlng);
+  if(scRect)scRect.setBounds(bounds);
+  else scRect=L.rectangle(bounds,{color:'#7F77DD',weight:1.5,fillOpacity:0.12,interactive:false}).addTo(scMap);
+}
+function onScMouseUp(e){
+  if(!scStartLatLng)return;
+  const bounds=L.latLngBounds(scStartLatLng,e.latlng);
+  if(scRect)scRect.setBounds(bounds);
+  finalizeScBox(bounds);
+  scMap.off('mousemove',onScMouseMove);
+  scMap.off('mouseup',onScMouseUp);
+  scStartLatLng=null;
+  disarmBoxDraw();
+}
+function _haversineM(lat1,lng1,lat2,lng2){
+  const R=6371000,toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1),dLng=toRad(lng2-lng1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+// TBD — placeholder thresholds, not derived from any spatial standard. Pending real
+// definition of unit / neighbourhood / territorial scale cutoffs for this framework.
+function scaleLabelFromArea(m2){
+  if(m2<10)return'unit';
+  if(m2<=100)return'neighborhood';
+  return'territorial';
+}
+function finalizeScBox(bounds){
+  const sw=bounds.getSouthWest(),ne=bounds.getNorthEast();
+  scBoxBounds={south:sw.lat,west:sw.lng,north:ne.lat,east:ne.lng};
+  const w=_haversineM(sw.lat,sw.lng,sw.lat,ne.lng),h=_haversineM(sw.lat,sw.lng,ne.lat,sw.lng);
+  scAreaM2=w*h;
+  scScaleLabel=scaleLabelFromArea(scAreaM2);
+  document.getElementById('sc-scale-readout').textContent=`${Math.round(scAreaM2).toLocaleString()} m² · ${scScaleLabel} scale`;
+  scValidate();
+}
+function renderSiteTagPickers(){
+  Object.keys(SITE_TAGS).forEach(cat=>{
+    const el=document.getElementById('sc-tags-'+cat);
+    if(!el)return;
+    el.innerHTML=SITE_TAGS[cat].map(t=>{
+      const on=siteTagsSelected[cat].has(t);
+      return`<button class="anc-tog${on?' on':''}" onclick="toggleSiteTag('${cat}','${t}')">${t}</button>`;
+    }).join('');
+  });
+}
+function toggleSiteTag(cat,tag){
+  if(siteTagsSelected[cat].has(tag))siteTagsSelected[cat].delete(tag);else siteTagsSelected[cat].add(tag);
+  renderSiteTagPickers();
+}
+function scValidate(){
+  const city=document.getElementById('sc-city').value.trim();
+  document.getElementById('sc-submit-btn').disabled=!(city&&scBoxBounds);
+}
+function completeSiteCharacterization(){
+  const city=document.getElementById('sc-city').value.trim();
+  if(!city||!scBoxBounds)return;
+  siteContext={
+    city,
+    boundingBox:scBoxBounds,
+    areaM2:scAreaM2,
+    scaleLabel:scScaleLabel,
+    tags:{
+      programmatic:[...siteTagsSelected.programmatic],
+      infrastructural:[...siteTagsSelected.infrastructural],
+      ecological:[...siteTagsSelected.ecological]
+    }
+  };
+  try{localStorage.setItem('waveSiteContext',JSON.stringify(siteContext));}catch(e){}
+  restoreComponentsFromGate();
+  renderRecords();
   const ov=document.getElementById('opening-overlay');
   playEntrySequence();
-  if(mode==='build')activateBriefBuilder();
   playIntroSequence(()=>{
     ov.classList.add('hidden');
     setTimeout(()=>ov.style.display='none',300);
   });
 }
+
 
 // ── BRIEF BUILDER (constellation search) ─────────────────
 function activateBriefBuilder(){
@@ -1457,6 +1716,9 @@ function drawBriefConstellation(){
 
 // ── BOOT ─────────────────────────────────────────────────
 updateStats();renderMatrix();renderTypology();renderRecords();
+renderSiteTagPickers();
+moveComponentsIntoGate();
+setTimeout(initSiteCharMap,60);
 setTimeout(initAtlas,150);
 </script>
 </body>

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wave Catalogue · Spatial Strategy (Seq2)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0f1c;--bg2:#10152a;--bg3:#171c2e;--bg4:#1e2438;--bg5:#21253a;
+  --bd:rgba(255,255,255,0.07);--bd2:rgba(255,255,255,0.13);--bd3:rgba(255,255,255,0.22);
+  --t1:#dedad0;--t2:#8a8880;--t3:#4e4d4a;
+  --ac:#7F77DD;--ac2:#EF9F27;
+  --cA:#1D9E75;--cB:#639922;--cC:#7F77DD;--cD:#378ADD;--cE:#EF9F27;
+  --hi:#1D9E75;--md:#EF9F27;--lo:#c0544e;
+  --r:5px;--rl:9px;
+}
+html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospace;font-size:12px;height:100%;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* TOP BAR */
+#topbar{height:40px;min-height:40px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 14px;gap:12px;z-index:10;flex-shrink:0}
+.logo{font-size:10px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+.logo em{color:var(--t3);font-style:normal}
+.tb-div{width:1px;height:16px;background:var(--bd);flex-shrink:0}
+.tb-stat{font-size:9px;color:var(--t3);white-space:nowrap}
+.tb-stat strong{color:var(--t2)}
+.back-btn{font-size:9px;padding:3px 10px;border:1px solid var(--bd);border-radius:var(--r);background:transparent;color:var(--t3);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:.04em;transition:all .12s;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.back-btn:hover{border-color:var(--bd2);color:var(--t2)}
+.tb-right{margin-left:auto;display:flex;gap:5px;align-items:center}
+.btn{font-size:9px;padding:4px 10px;border:1px solid var(--bd2);border-radius:var(--r);background:transparent;color:var(--t2);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:.04em;transition:all .12s;white-space:nowrap}
+.btn:hover{background:rgba(255,255,255,0.04);color:var(--t1)}
+.btn.ac{border-color:rgba(127,119,221,.45);color:var(--ac)}
+.btn.ac:hover{background:rgba(127,119,221,.09)}
+.btn.danger{border-color:rgba(192,84,78,.35);color:#f09595}
+.btn.danger:hover{background:rgba(192,84,78,.09)}
+
+/* MAIN */
+#main{flex:1;display:flex;overflow:hidden;min-height:0}
+
+/* PANEL HEADERS */
+.ph{height:34px;min-height:34px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 11px;gap:7px;flex-shrink:0}
+.ph-title{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--t3)}
+.ph-badge{font-size:8px;padding:1px 6px;border-radius:3px;border:1px solid var(--bd);color:var(--t3)}
+.ph-right{margin-left:auto;display:flex;gap:3px}
+
+/* CPM LIBRARY */
+#panel-lib{width:264px;min-width:180px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg)}
+
+#lib-filters{padding:8px 10px;border-bottom:1px solid var(--bd);flex-shrink:0;display:flex;flex-direction:column;gap:6px}
+.flt-row{display:flex;gap:3px;flex-wrap:wrap}
+.flt-btn{font-size:8px;padding:2px 7px;border:1px solid var(--bd);border-radius:3px;background:transparent;color:var(--t3);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:.03em;transition:all .12s;white-space:nowrap}
+.flt-btn:hover{border-color:var(--bd2);color:var(--t2)}
+.flt-btn.on{border-color:rgba(127,119,221,.45);color:var(--ac);background:rgba(127,119,221,.07)}
+.flt-btn.fn1.on{border-color:rgba(136,135,128,.55);color:#888780;background:rgba(136,135,128,.07)}
+.flt-btn.fn2.on{border-color:rgba(55,138,221,.55);color:#378ADD;background:rgba(55,138,221,.07)}
+.flt-btn.fn3.on{border-color:rgba(99,153,34,.55);color:#639922;background:rgba(99,153,34,.07)}
+.flt-btn.fn4.on{border-color:rgba(159,119,221,.55);color:#9F77DD;background:rgba(159,119,221,.07)}
+#score-filter-wrap{display:flex;align-items:center;gap:8px}
+.sf-label{font-size:8px;color:var(--t3);white-space:nowrap}
+#score-range{flex:1;accent-color:var(--ac);cursor:pointer;height:3px}
+#score-val{font-size:9px;color:var(--ac);font-weight:bold;white-space:nowrap;min-width:22px;text-align:right}
+
+#lib-list{flex:1;overflow-y:auto;padding:6px}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+
+/* CPM CARD */
+.cpm-item{border:1px solid var(--bd);border-radius:var(--r);padding:8px 9px;margin-bottom:4px;cursor:pointer;transition:all .12s;background:var(--bg3);position:relative}
+.cpm-item:hover{border-color:var(--bd2);background:var(--bg4)}
+.cpm-item.selected{border-color:var(--ac)!important;background:rgba(127,119,221,.12)!important;box-shadow:0 0 0 1px rgba(127,119,221,.2)}
+.cpm-item.no-data{opacity:.5}
+.ci-top{display:flex;align-items:flex-start;gap:5px;margin-bottom:5px}
+.ci-name{font-size:9px;color:var(--t1);flex:1;line-height:1.35}
+.ci-score{flex-shrink:0;font-size:12px;font-weight:bold;margin-top:0px;letter-spacing:-.01em}
+.ci-score.hi{color:var(--hi)}
+.ci-score.md{color:var(--md)}
+.ci-score.lo{color:var(--lo)}
+.ci-score.na{color:var(--t3);font-size:9px}
+.ci-bars{display:flex;gap:2px;margin-bottom:5px;align-items:flex-end;height:24px}
+.ci-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;height:100%}
+.ci-bar-bg{width:100%;flex:1;background:rgba(255,255,255,.04);border-radius:2px;position:relative;overflow:hidden}
+.ci-bar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:2px}
+.ci-bar-lbl{font-size:5px;color:var(--t3);letter-spacing:.03em;text-transform:uppercase;text-align:center;line-height:1}
+.ci-tags{display:flex;gap:3px;flex-wrap:wrap}
+.ci-tag{font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid var(--bd);color:var(--t3)}
+.ci-tag.grp-A{border-color:rgba(29,158,117,.3);color:var(--cA)}
+.ci-tag.grp-B{border-color:rgba(99,153,34,.3);color:var(--cB)}
+.ci-tag.grp-C{border-color:rgba(127,119,221,.3);color:var(--cC)}
+.ci-tag.grp-D{border-color:rgba(55,138,221,.3);color:var(--cD)}
+.ci-tag.grp-E{border-color:rgba(239,159,39,.3);color:var(--cE)}
+.ci-tag.nd{font-style:italic;opacity:.6}
+.ci-tag.placed-tag{border-color:rgba(29,158,117,.35);color:var(--hi)}
+.ci-place-hint{display:none;font-size:7px;color:var(--ac);margin-top:4px;letter-spacing:.05em}
+.cpm-item.selected .ci-place-hint{display:block}
+
+/* MAP */
+#panel-map{flex:1;position:relative;overflow:hidden;background:#090b17;min-width:0}
+#map{width:100%;height:100%}
+#place-overlay{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(127,119,221,.88);color:#fff;font-size:9px;padding:5px 16px;border-radius:20px;letter-spacing:.08em;pointer-events:none;display:none;backdrop-filter:blur(4px);white-space:nowrap}
+#place-overlay.show{display:block}
+
+/* RESIZABLE DIVIDER */
+.vdiv-r{width:5px;cursor:col-resize;background:transparent;flex-shrink:0;transition:background .12s;z-index:5}
+.vdiv-r:hover,.vdiv-r.dragging{background:rgba(127,119,221,.28)}
+
+/* STRATEGY PANEL */
+#panel-str{width:270px;min-width:200px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg);border-left:1px solid var(--bd)}
+
+/* ANCHOR COVERAGE */
+.str-anc-wrap{padding:9px 11px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.str-anc-title{font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
+.anc-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.anc-row:last-child{margin-bottom:0}
+.anc-name{font-size:7px;color:var(--t3);width:50px;flex-shrink:0;text-transform:capitalize;letter-spacing:.04em}
+.anc-bar-bg{flex:1;height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.anc-bar-fill{height:100%;background:var(--ac);border-radius:2px;transition:width .4s}
+.anc-val{font-size:7px;color:var(--t2);width:22px;text-align:right;flex-shrink:0}
+
+/* STRATEGY LIST */
+.str-sec-hdr{height:28px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 11px;font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3)}
+#str-list{flex:1;overflow-y:auto;padding:6px}
+.str-empty{text-align:center;padding:28px 14px;color:var(--t3)}
+.str-empty-icon{font-size:24px;opacity:.12;margin-bottom:7px}
+.str-empty-msg{font-size:9px;margin-bottom:3px;color:var(--t3)}
+.str-empty-hint{font-size:8px;opacity:.5;line-height:1.55}
+.str-item{border:1px solid var(--bd);border-radius:var(--r);padding:7px 9px;margin-bottom:4px;background:var(--bg3)}
+.si-top{display:flex;align-items:flex-start;gap:5px;margin-bottom:4px}
+.si-num{font-size:8px;color:var(--t3);flex-shrink:0;width:14px;margin-top:1px}
+.si-name{font-size:9px;color:var(--t1);flex:1;line-height:1.3}
+.si-remove{background:none;border:1px solid rgba(192,84,78,.22);color:#f09595;font-size:7px;padding:1px 5px;border-radius:3px;cursor:pointer;font-family:'Courier New',monospace;opacity:.55;transition:all .12s;flex-shrink:0}
+.si-remove:hover{opacity:1;background:rgba(192,84,78,.1)}
+.si-meta{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:3px}
+.si-tag{font-size:7px;padding:1px 4px;border-radius:2px;border:1px solid var(--bd);color:var(--t3)}
+.si-score-badge{font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid;font-weight:bold}
+.si-score-badge.hi{border-color:rgba(29,158,117,.35);color:var(--hi);background:rgba(29,158,117,.07)}
+.si-score-badge.md{border-color:rgba(239,159,39,.35);color:var(--md);background:rgba(239,159,39,.07)}
+.si-score-badge.lo{border-color:rgba(192,84,78,.35);color:#f09595;background:rgba(192,84,78,.07)}
+.si-score-badge.na{border-color:var(--bd);color:var(--t3)}
+.si-loc{font-size:7px;color:var(--t3);letter-spacing:.02em}
+
+/* CLOISTER GROUPING (SEQ2 — stub proximity clustering) */
+.cloister-group{border:1px dashed var(--bd2);border-radius:var(--rl);padding:5px;margin-bottom:8px;transition:border-color .12s}
+.cloister-group:hover{border-color:rgba(127,119,221,.4)}
+.cloister-hdr{display:flex;align-items:center;justify-content:space-between;padding:3px 5px 6px;border-bottom:1px dashed var(--bd);margin-bottom:5px}
+.cloister-name{font-size:8px;letter-spacing:.06em;font-weight:bold}
+.cloister-pcn{font-size:8px;color:var(--t2)}
+.cloister-ungroup-zone{border-style:dotted;opacity:.55;padding:8px 5px;text-align:center}
+.cloister-ungroup-zone .cloister-hdr{border-bottom:none;margin-bottom:0}
+.str-item[draggable="true"]{cursor:grab}
+.str-item[draggable="true"]:active{cursor:grabbing}
+
+/* STRATEGY FOOT */
+#str-foot{flex-shrink:0;border-top:1px solid var(--bd);padding:8px 10px;background:var(--bg2)}
+.str-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:7px}
+.str-stat{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);padding:6px 8px}
+.str-stat-lbl{font-size:7px;color:var(--t3);margin-bottom:2px;letter-spacing:.05em;text-transform:uppercase}
+.str-stat-val{font-size:14px;font-weight:bold;color:var(--t2)}
+
+/* LEAFLET DARK */
+.leaflet-container{background:#090b17!important;font-family:'Courier New',monospace!important}
+.leaflet-control-zoom a{background:var(--bg3)!important;color:var(--t2)!important;border-color:var(--bd2)!important;font-family:'Courier New',monospace!important}
+.leaflet-control-zoom a:hover{background:var(--bg4)!important;color:var(--t1)!important}
+.leaflet-control-attribution{background:rgba(12,15,28,.75)!important;color:var(--t3)!important;font-size:7px!important;font-family:'Courier New',monospace!important}
+.leaflet-control-attribution a{color:var(--t3)!important}
+.leaflet-popup-content-wrapper{background:var(--bg2)!important;border:1px solid var(--bd2)!important;border-radius:var(--rl)!important;box-shadow:0 4px 20px rgba(0,0,0,.5)!important;color:var(--t1)!important}
+.leaflet-popup-tip{background:var(--bg2)!important}
+.leaflet-popup-content{margin:10px 13px!important;font-family:'Courier New',monospace!important;min-width:160px}
+.leaflet-popup-close-button{color:var(--t3)!important;font-size:16px!important}
+.leaflet-popup-close-button:hover{color:var(--t1)!important}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header id="topbar">
+  <a href="index-seq2.html" class="back-btn">&#8592; catalogue</a>
+  <div class="tb-div"></div>
+  <div class="logo">Wave Catalogue <em>&middot;</em> Spatial Strategy</div>
+  <div class="tb-div"></div>
+  <div class="tb-stat"><strong id="s-total">–</strong> CPMs</div>
+  <div class="tb-stat"><strong id="s-scored">–</strong> with scores</div>
+  <div class="tb-stat"><strong id="s-placed">0</strong> placed</div>
+  <div class="tb-stat" id="s-site-wrap" style="display:none">site: <strong id="s-site">–</strong></div>
+  <div class="tb-stat">weights: <strong id="s-weightprofile">default</strong></div>
+  <div class="tb-right">
+    <button class="btn danger" onclick="clearStrategy()">clear strategy</button>
+    <button class="btn" onclick="openAdaptivePathways()">adaptive pathways ↗</button>
+    <button class="btn ac" onclick="exportStrategy()">export ↗</button>
+  </div>
+</header>
+
+<div id="main">
+
+  <!-- ── CPM LIBRARY ───────────────────────────── -->
+  <div id="panel-lib">
+    <div class="ph">
+      <span class="ph-title">CPM Library</span>
+      <span class="ph-badge" id="lib-count">–</span>
+    </div>
+    <div id="lib-filters">
+      <div id="score-filter-wrap">
+        <span class="sf-label">min score</span>
+        <input type="range" id="score-range" min="0" max="10" step="0.5" value="0" oninput="applyFilters()">
+        <span id="score-val">0.0</span>
+      </div>
+      <div class="flt-row" id="grp-btns">
+        <button class="flt-btn on" onclick="setGrp('all',this)">All</button>
+        <button class="flt-btn" onclick="setGrp('A',this)">Grey</button>
+        <button class="flt-btn" onclick="setGrp('B',this)">Green</button>
+        <button class="flt-btn" onclick="setGrp('C',this)">Hybrid</button>
+        <button class="flt-btn" onclick="setGrp('D',this)">Amph.</button>
+        <button class="flt-btn" onclick="setGrp('E',this)">LoTek</button>
+      </div>
+      <div class="flt-row" id="fn-btns">
+        <button class="flt-btn fn1 on" onclick="setFn('all',this)">All fn.</button>
+        <button class="flt-btn fn1" onclick="setFn('1',this)">1·Edge</button>
+        <button class="flt-btn fn2" onclick="setFn('2',this)">2·Shore</button>
+        <button class="flt-btn fn3" onclick="setFn('3',this)">3·Prod.</button>
+        <button class="flt-btn fn4" onclick="setFn('4',this)">4·Civic</button>
+      </div>
+    </div>
+    <div id="lib-list"></div>
+  </div>
+
+  <div class="vdiv-r" id="vdiv-l"></div>
+
+  <!-- ── MAP ──────────────────────────────────── -->
+  <div id="panel-map">
+    <div id="place-overlay">&#9673; click map to place &nbsp;·&nbsp; ESC to cancel</div>
+    <div id="map"></div>
+  </div>
+
+  <div class="vdiv-r" id="vdiv-r"></div>
+
+  <!-- ── STRATEGY ──────────────────────────────── -->
+  <div id="panel-str">
+    <div class="ph">
+      <span class="ph-title">Strategy</span>
+      <span class="ph-badge" id="str-badge">empty</span>
+    </div>
+    <div class="str-anc-wrap">
+      <div class="str-anc-title">Anchor coverage · avg. placed CPMs</div>
+      <div id="anc-coverage"></div>
+    </div>
+    <div class="str-sec-hdr">Placed CPMs</div>
+    <div id="str-list"></div>
+    <div id="str-foot">
+      <div class="str-stats-grid" id="str-stats"></div>
+      <button class="btn danger" style="width:100%" onclick="clearStrategy()">clear all &times;</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="data/studies.js"></script>
+<script src="data/speculative.js"></script>
+<script src="data/standard.js"></script>
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────
+const GN={A:'Grey',B:'Green',C:'Hybrid',D:'Amphibious',E:'LoTek'};
+const GC={A:'#1D9E75',B:'#639922',C:'#7F77DD',D:'#378ADD',E:'#EF9F27'};
+const FN={'1':'Edge Defense','2':'Shoreline Inundation','3':'Productive Landscapes','4':'Civic Living'};
+const FC={'1':'#888780','2':'#378ADD','3':'#639922','4':'#9F77DD'};
+const ANC=['structural','ecological','economic','social','authorship'];
+const ANC_SHORT=['str','eco','econ','soc','auth'];
+
+// ── SEQ2: WEIGHT PROFILES (stub — not a real inference engine) ──────────
+// Hardcoded stub profiles keyed to the Site tab's tags. Just enough to make the
+// composite/Pcn scoring visibly respond to site characterization. No siteContext
+// present → equal weights (matches original arithmetic-mean behaviour) — this
+// matters more here than in Seq1 since site characterization is optional, not a gate.
+const WEIGHT_PROFILES={
+  default:{structural:0.20,ecological:0.20,economic:0.20,social:0.20,authorship:0.20},
+  'industrial-heavy':{structural:0.32,ecological:0.10,economic:0.30,social:0.18,authorship:0.10},
+  'ecological-priority':{structural:0.12,ecological:0.34,economic:0.12,social:0.30,authorship:0.12}
+};
+function pickWeightProfile(ctx){
+  if(!ctx||!ctx.tags)return{key:'default',weights:WEIGHT_PROFILES.default};
+  const infra=(ctx.tags.infrastructural||[]).length;
+  const eco=(ctx.tags.ecological||[]).length;
+  const industrialFlag=(ctx.tags.infrastructural||[]).some(t=>['Desalination Plant','Pumping Station','Tidal Gates','Levee'].includes(t))
+    ||(ctx.tags.programmatic||[]).some(t=>['Port','Industrial'].includes(t));
+  if(industrialFlag&&infra>=eco)return{key:'industrial-heavy',weights:WEIGHT_PROFILES['industrial-heavy']};
+  if(eco>0&&eco>=infra)return{key:'ecological-priority',weights:WEIGHT_PROFILES['ecological-priority']};
+  return{key:'default',weights:WEIGHT_PROFILES.default};
+}
+
+// ── STATE ─────────────────────────────────────────────────
+let allCPMs=[];
+let filteredCPMs=[];
+let selectedCPM=null;
+let strategy=[];
+let sMap=null;
+let grpFilter='all',fnFilter='all';
+let nextId=1;
+let siteContext=null;
+let weightProfileKey='default';
+let weights=WEIGHT_PROFILES.default;
+
+// ── SEQ2: HANDOFF FROM TYPOLOGY PANEL ─────────────────────
+function loadHandoff(){
+  let cpmId=null;
+  try{
+    const raw=localStorage.getItem('waveSeq2Handoff');
+    if(raw){
+      const handoff=JSON.parse(raw);
+      siteContext=handoff.siteContext||null;
+      cpmId=handoff.cpmId||null;
+      localStorage.removeItem('waveSeq2Handoff');
+    } else {
+      const rawCtx=localStorage.getItem('waveSeq2SiteContext');
+      if(rawCtx)siteContext=JSON.parse(rawCtx);
+    }
+  }catch(e){}
+  return cpmId;
+}
+
+// ── SCORE COMPUTATION ─────────────────────────────────────
+// Weighted geometric mean across whichever anchors have data, weights renormalized
+// to the available subset so a missing anchor doesn't collapse the composite to 0.
+function weightedGeoMean(scoreByAnchor,w){
+  const avail=ANC.filter(a=>scoreByAnchor[a]!=null);
+  if(!avail.length)return null;
+  const wSum=avail.reduce((s,a)=>s+(w[a]||0),0);
+  let logSum=0;
+  avail.forEach(a=>{
+    const wa=wSum>0?(w[a]||0)/wSum:1/avail.length;
+    logSum+=wa*Math.log(Math.max(scoreByAnchor[a],0.01));
+  });
+  return Math.exp(logSum);
+}
+function computeScore(obj){
+  const stds=STUDIES.filter(s=>s.func_code+s.group_code===obj.typology_id);
+  if(!stds.length) return{composite:null,anchors:{},n:0};
+  const ancScores={};
+  ANC.forEach(a=>{
+    // Raw per-anchor scores stay an arithmetic mean of study data — unchanged, these are raw inputs.
+    const vals=stds.map(s=>{
+      const anc=s.anchors&&s.anchors[a];
+      return(anc&&anc.score!=null)?anc.score:null;
+    }).filter(v=>v!==null);
+    ancScores[a]=vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:null;
+  });
+  return{
+    composite:weightedGeoMean(ancScores,weights),
+    anchors:ancScores,
+    n:stds.length
+  };
+}
+
+function scoreClass(s){
+  if(s===null||s===undefined) return'na';
+  if(s>=7.5) return'hi';
+  if(s>=5.5) return'md';
+  return'lo';
+}
+
+// ── INIT ──────────────────────────────────────────────────
+function init(){
+  const incomingCpmId=loadHandoff();
+  const profile=pickWeightProfile(siteContext);
+  weightProfileKey=profile.key;weights=profile.weights;
+  document.getElementById('s-weightprofile').textContent=weightProfileKey;
+  if(siteContext){
+    document.getElementById('s-site-wrap').style.display='';
+    document.getElementById('s-site').textContent=`${siteContext.city} (${siteContext.scaleLabel||'–'})`;
+  }
+  allCPMs=REALISTIC.map(obj=>({...obj,_s:computeScore(obj)}));
+  allCPMs.sort((a,b)=>{
+    const sa=a._s.composite,sb=b._s.composite;
+    if(sa===null&&sb===null) return 0;
+    if(sa===null) return 1;
+    if(sb===null) return -1;
+    return sb-sa;
+  });
+  filteredCPMs=[...allCPMs];
+  const scored=allCPMs.filter(c=>c._s.composite!==null).length;
+  document.getElementById('s-total').textContent=allCPMs.length;
+  document.getElementById('s-scored').textContent=scored;
+  initMap();
+  renderLibList();
+  renderAncCoverage();
+  renderStratList();
+  renderStrStats();
+  initResizers();
+  if(siteContext&&siteContext.boundingBox){
+    const bb=siteContext.boundingBox;
+    sMap.fitBounds([[bb.south,bb.west],[bb.north,bb.east]],{maxZoom:12,padding:[20,20]});
+  }
+  if(incomingCpmId){
+    const el=document.querySelector(`.cpm-item[data-id="${incomingCpmId}"]`);
+    const cpm=allCPMs.find(c=>c.id===incomingCpmId);
+    if(cpm&&el)selectCPM(incomingCpmId,el);
+  }
+}
+
+// ── MAP ───────────────────────────────────────────────────
+function initMap(){
+  sMap=L.map('map',{center:[20,10],zoom:2});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; <a href="https://openstreetmap.org">OSM</a> &copy; <a href="https://carto.com">CARTO</a>',
+    subdomains:'abcd',maxZoom:19
+  }).addTo(sMap);
+  sMap.on('click',function(e){
+    if(!selectedCPM) return;
+    placeCPM(selectedCPM,e.latlng.lat,e.latlng.lng);
+    deselectCPM();
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape') deselectCPM();
+  });
+}
+
+function makeIcon(color){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="22" height="30" viewBox="0 0 22 30">
+    <circle cx="11" cy="11" r="9" fill="${color}" fill-opacity="0.82" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+    <circle cx="11" cy="11" r="3.5" fill="rgba(255,255,255,0.3)"/>
+    <line x1="11" y1="20" x2="11" y2="29" stroke="${color}" stroke-width="1.5" stroke-opacity="0.65"/>
+  </svg>`;
+  return L.divIcon({className:'',html:svg,iconSize:[22,30],iconAnchor:[11,29],popupAnchor:[0,-28]});
+}
+
+function placeCPM(cpm,lat,lng){
+  const color=GC[cpm.group]||'#7F77DD';
+  const marker=L.marker([lat,lng],{icon:makeIcon(color),draggable:true}).addTo(sMap);
+  const sc=cpm._s.composite;
+  const scStr=sc!==null?sc.toFixed(1):'–';
+  const scClass=scoreClass(sc);
+  const scColor={hi:'#1D9E75',md:'#EF9F27',lo:'#c0544e',na:'#4e4d4a'}[scClass];
+  marker.bindPopup(
+    `<div style="font-size:8px;color:#4e4d4a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">${cpm.typology_id} · ${GN[cpm.group]||cpm.group}</div>`+
+    `<div style="font-size:11px;color:#dedad0;margin-bottom:6px;line-height:1.3">${cpm.name}</div>`+
+    `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">`+
+    `<span style="font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid rgba(255,255,255,0.1);color:#8a8880">${cpm.scale}</span>`+
+    `<span style="font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid rgba(255,255,255,0.1);color:#8a8880">${FN[cpm.fn]||cpm.fn}</span>`+
+    (sc!==null?`<span style="font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid ${scColor}55;color:${scColor};font-weight:bold">${scStr}/10</span>`:`<span style="font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid rgba(255,255,255,0.07);color:#4e4d4a">no study data</span>`)+
+    `</div>`+
+    `<div style="font-size:8px;color:#8a8880;line-height:1.55">${(cpm.desc||'').substring(0,100)}${(cpm.desc||'').length>100?'…':''}</div>`+
+    `<div style="font-size:7px;color:#4e4d4a;margin-top:6px;letter-spacing:.03em">${lat.toFixed(4)}, ${lng.toFixed(4)}</div>`
+  );
+  const id=nextId++;
+  strategy.push({cpm,lat,lng,marker,id});
+  marker.on('dragend',()=>{
+    const ll=marker.getLatLng();
+    const item=strategy.find(x=>x.marker===marker);
+    if(item){item.lat=ll.lat;item.lng=ll.lng;}
+    recomputeCloisters();
+  });
+  document.getElementById('s-placed').textContent=strategy.length;
+  renderLibList();
+  renderAncCoverage();
+  recomputeCloisters();
+}
+
+function removeFromStrategy(id){
+  const idx=strategy.findIndex(s=>s.id===id);
+  if(idx===-1) return;
+  sMap.removeLayer(strategy[idx].marker);
+  strategy.splice(idx,1);
+  manualSeparate.delete(id);
+  manualUnions=manualUnions.filter(([a,b])=>a!==id&&b!==id);
+  document.getElementById('s-placed').textContent=strategy.length;
+  renderLibList();
+  renderAncCoverage();
+  recomputeCloisters();
+}
+
+function clearStrategy(){
+  if(!strategy.length) return;
+  strategy.forEach(s=>sMap.removeLayer(s.marker));
+  strategy=[];
+  manualSeparate=new Set();
+  manualUnions=[];
+  document.getElementById('s-placed').textContent=0;
+  renderLibList();
+  renderAncCoverage();
+  recomputeCloisters();
+}
+
+function deselectCPM(){
+  selectedCPM=null;
+  document.getElementById('place-overlay').classList.remove('show');
+  document.querySelectorAll('.cpm-item.selected').forEach(el=>el.classList.remove('selected'));
+  document.body.style.cursor='';
+}
+
+// ── FILTERS ───────────────────────────────────────────────
+function applyFilters(){
+  const minScore=parseFloat(document.getElementById('score-range').value);
+  document.getElementById('score-val').textContent=minScore.toFixed(1);
+  filteredCPMs=allCPMs.filter(c=>{
+    if(grpFilter!=='all'&&c.group!==grpFilter) return false;
+    if(fnFilter!=='all'&&c.fn!==fnFilter) return false;
+    if(c._s.composite===null&&minScore>0) return false;
+    if(c._s.composite!==null&&c._s.composite<minScore) return false;
+    return true;
+  });
+  renderLibList();
+}
+
+function setGrp(g,btn){
+  grpFilter=g;
+  document.getElementById('grp-btns').querySelectorAll('.flt-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  applyFilters();
+}
+
+function setFn(f,btn){
+  fnFilter=f;
+  document.getElementById('fn-btns').querySelectorAll('.flt-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  applyFilters();
+}
+
+// ── CPM LIBRARY RENDER ────────────────────────────────────
+function renderLibList(){
+  const list=document.getElementById('lib-list');
+  document.getElementById('lib-count').textContent=filteredCPMs.length;
+  if(!filteredCPMs.length){
+    list.innerHTML=`<div style="padding:20px 10px;text-align:center;font-size:9px;color:var(--t3)">No CPMs match the current filters.</div>`;
+    return;
+  }
+  const ancColors=['#7F77DD','#1D9E75','#378ADD','#EF9F27','#9F77DD'];
+  list.innerHTML=filteredCPMs.map(c=>{
+    const sc=c._s.composite;
+    const cls=scoreClass(sc);
+    const scStr=sc!==null?sc.toFixed(1):'–';
+    const isSelected=selectedCPM&&selectedCPM.id===c.id;
+    const placedCount=strategy.filter(s=>s.cpm.id===c.id).length;
+    const bars=ANC.map((a,i)=>{
+      const av=c._s.anchors[a];
+      const pct=av!=null?Math.round((av/10)*100):0;
+      const fill=av!=null?`background:${ancColors[i]};opacity:${0.5+av/20}`:'background:rgba(255,255,255,0.05)';
+      return`<div class="ci-bar-wrap"><div class="ci-bar-bg"><div class="ci-bar-fill" style="height:${pct}%;${fill}"></div></div></div>`;
+    }).join('');
+    const placedTag=placedCount?`<span class="ci-tag placed-tag">&#10003; ×${placedCount}</span>`:'';
+    const studyTag=c._s.n
+      ?`<span class="ci-tag" style="border-color:rgba(127,119,221,.2);color:rgba(127,119,221,.65)">${c._s.n} ${c._s.n===1?'study':'studies'}</span>`
+      :`<span class="ci-tag nd">no data</span>`;
+    return`<div class="cpm-item${isSelected?' selected':''}${sc===null?' no-data':''}" data-id="${c.id}" onclick="selectCPM('${c.id}',this)">
+      <div class="ci-top">
+        <div class="ci-name">${c.name}</div>
+        <div class="ci-score ${cls}">${scStr}</div>
+      </div>
+      <div class="ci-bars">${bars}</div>
+      <div class="ci-tags">
+        <span class="ci-tag grp-${c.group}">${GN[c.group]||c.group}</span>
+        <span class="ci-tag" style="border-color:${(FC[c.fn]||'#888')+'40'};color:${FC[c.fn]||'#888'}">${FN[c.fn]||c.fn}</span>
+        <span class="ci-tag">${c.scale}</span>
+        ${studyTag}
+        ${placedTag}
+      </div>
+      <div class="ci-place-hint">&#9673; click map to place this CPM</div>
+    </div>`;
+  }).join('');
+}
+
+function selectCPM(id,el){
+  const cpm=allCPMs.find(c=>c.id===id);
+  if(!cpm) return;
+  if(selectedCPM&&selectedCPM.id===id){deselectCPM();return;}
+  selectedCPM=cpm;
+  document.querySelectorAll('.cpm-item').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('place-overlay').classList.add('show');
+  document.body.style.cursor='crosshair';
+}
+
+// ── SEQ2: CLOISTER GROUPING ─────────────────────────────────
+// STUB — random proximity-based clustering. Future version replaces this with a real
+// similarity metric combining (1) spatial proximity and (2) anchor-profile similarity
+// between CPMs, with a derived confidence value (e.g. from anchor-profile variance
+// within the cluster) surfaced to the user. Not implemented here.
+const PROXIMITY_PX=140;
+const CLOISTER_PALETTE=['#7F77DD','#1D9E75','#EF9F27','#378ADD','#c0544e','#9F77DD','#639922'];
+let cloisters=[];
+let manualUnions=[];      // [[idA,idB], ...] user-forced pairings, overrides the random pass
+let manualSeparate=new Set(); // stratIds the user dragged out — excluded from the random pass
+let cloisterLayers=[];
+
+function _seedHash(str){let h=0;for(let i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))>>>0;}return h;}
+function seededRand(key){return(_seedHash(key)%1000)/1000;}
+
+function computeCloisterPcn(members){
+  const ancAvg={};
+  ANC.forEach(a=>{
+    const vals=members.map(m=>m.cpm._s.anchors[a]).filter(v=>v!=null);
+    ancAvg[a]=vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:null;
+  });
+  return weightedGeoMean(ancAvg,weights);
+}
+
+function computeEP(){
+  const pcns=cloisters.map(c=>c.pcn).filter(v=>v!=null);
+  if(!pcns.length)return null;
+  const logSum=pcns.reduce((s,v)=>s+Math.log(Math.max(v,0.01)),0);
+  return Math.exp(logSum/pcns.length);
+}
+
+function recomputeCloisters(){
+  if(!sMap||!strategy.length){
+    cloisters=[];
+    renderCloisterOverlay();renderStratList();renderStrStats();
+    return;
+  }
+  const parent={};
+  strategy.forEach(s=>parent[s.id]=s.id);
+  function find(x){while(parent[x]!==x)x=parent[x];return x;}
+  function union(a,b){const ra=find(a),rb=find(b);if(ra!==rb)parent[ra]=rb;}
+  for(let i=0;i<strategy.length;i++){
+    for(let j=i+1;j<strategy.length;j++){
+      const a=strategy[i],b=strategy[j];
+      if(manualSeparate.has(a.id)||manualSeparate.has(b.id))continue;
+      const pa=sMap.latLngToContainerPoint([a.lat,a.lng]);
+      const pb=sMap.latLngToContainerPoint([b.lat,b.lng]);
+      if(pa.distanceTo(pb)<PROXIMITY_PX){
+        const key=[a.id,b.id].sort((x,y)=>x-y).join(':');
+        if(seededRand('cloister:'+key)<0.65)union(a.id,b.id);
+      }
+    }
+  }
+  manualUnions.forEach(([a,b])=>{
+    if(strategy.find(s=>s.id===a)&&strategy.find(s=>s.id===b))union(a,b);
+  });
+  const groups={};
+  strategy.forEach(s=>{const r=find(s.id);(groups[r]=groups[r]||[]).push(s.id);});
+  cloisters=Object.values(groups).map((ids,i)=>{
+    const members=strategy.filter(s=>ids.includes(s.id));
+    return{id:'cl'+i,ids,color:CLOISTER_PALETTE[i%CLOISTER_PALETTE.length],pcn:computeCloisterPcn(members)};
+  });
+  renderCloisterOverlay();
+  renderStratList();
+  renderStrStats();
+}
+
+function renderCloisterOverlay(){
+  cloisterLayers.forEach(l=>sMap.removeLayer(l));
+  cloisterLayers=[];
+  cloisters.forEach(c=>{
+    if(c.ids.length<2)return;
+    const members=strategy.filter(s=>c.ids.includes(s.id));
+    const latlngs=members.map(m=>[m.lat,m.lng]);
+    const bounds=L.latLngBounds(latlngs);
+    const center=bounds.getCenter();
+    let maxDist=0;
+    latlngs.forEach(ll=>{const d=center.distanceTo(ll);if(d>maxDist)maxDist=d;});
+    const circle=L.circle(center,{radius:maxDist+35000,color:c.color,weight:1.5,fillColor:c.color,fillOpacity:0.06,dashArray:'4,4',interactive:false});
+    circle.addTo(sMap);
+    cloisterLayers.push(circle);
+  });
+}
+
+function onStratDragStart(e,id){e.dataTransfer.setData('text/plain',String(id));}
+function onStratDrop(e,targetRepId){
+  e.preventDefault();
+  const draggedId=parseInt(e.dataTransfer.getData('text/plain'),10);
+  if(!draggedId)return;
+  manualUnions=manualUnions.filter(([a,b])=>a!==draggedId&&b!==draggedId);
+  if(targetRepId==='out'){
+    manualSeparate.add(draggedId);
+  }else{
+    manualSeparate.delete(draggedId);
+    const rep=parseInt(targetRepId,10);
+    if(rep!==draggedId)manualUnions.push([draggedId,rep]);
+  }
+  recomputeCloisters();
+}
+
+function renderStratItem(s,i){
+  const c=s.cpm;
+  const sc=c._s.composite;
+  const cls=scoreClass(sc);
+  const scStr=sc!==null?sc.toFixed(1):'–';
+  const groupColor=GC[c.group]||'#888';
+  return`<div class="str-item" draggable="true" ondragstart="onStratDragStart(event,${s.id})">
+      <div class="si-top">
+        <div class="si-num">${i+1}</div>
+        <div class="si-name">${c.name}</div>
+        <button class="si-remove" onclick="removeFromStrategy(${s.id})">&times;</button>
+      </div>
+      <div class="si-meta">
+        <span class="si-score-badge ${cls}">${scStr}/10</span>
+        <span class="si-tag" style="border-color:${groupColor}40;color:${groupColor}">${GN[c.group]||c.group}</span>
+        <span class="si-tag" style="border-color:${(FC[c.fn]||'#888')+'40'};color:${FC[c.fn]||'#888'}">${FN[c.fn]||c.fn}</span>
+        <span class="si-tag">${c.scale}</span>
+      </div>
+      <div class="si-loc">&#9673; ${s.lat.toFixed(3)}&deg;, ${s.lng.toFixed(3)}&deg;</div>
+    </div>`;
+}
+
+function renderStratList(){
+  const list=document.getElementById('str-list');
+  const badge=document.getElementById('str-badge');
+  badge.textContent=strategy.length?`${strategy.length} placed &middot; ${cloisters.length} cloister${cloisters.length===1?'':'s'}`:'empty';
+  if(!strategy.length){
+    list.innerHTML=`<div class="str-empty">
+      <div class="str-empty-icon">&#8982;</div>
+      <div class="str-empty-msg">No CPMs placed yet</div>
+      <div class="str-empty-hint">Select a CPM from the library,<br>then click the map to position it.</div>
+    </div>`;
+    return;
+  }
+  let n=0;
+  const groupsHTML=cloisters.map((c,ci)=>{
+    const members=strategy.filter(s=>c.ids.includes(s.id));
+    const pcnStr=c.pcn!=null?c.pcn.toFixed(1):'–';
+    const label=c.ids.length>1?`Cloister ${ci+1}`:`Cloister ${ci+1} (solo)`;
+    const itemsHTML=members.map(s=>renderStratItem(s,n++)).join('');
+    return`<div class="cloister-group" ondragover="event.preventDefault()" ondrop="onStratDrop(event,'${c.ids[0]}')">
+      <div class="cloister-hdr" style="border-color:${c.color}55"><span class="cloister-name" style="color:${c.color}">${label}</span><span class="cloister-pcn">Pcn ${pcnStr}</span></div>
+      ${itemsHTML}
+    </div>`;
+  }).join('');
+  const ungroupZone=`<div class="cloister-group cloister-ungroup-zone" ondragover="event.preventDefault()" ondrop="onStratDrop(event,'out')">
+      <div class="cloister-hdr"><span class="cloister-name" style="color:var(--t3)">drag here to detach from a cloister</span></div>
+    </div>`;
+  list.innerHTML=groupsHTML+ungroupZone;
+}
+
+// ── ANCHOR COVERAGE ────────────────────────────────────────
+function renderAncCoverage(){
+  const el=document.getElementById('anc-coverage');
+  const avgAnc={};
+  ANC.forEach(a=>{
+    const vals=strategy.map(s=>s.cpm._s.anchors[a]).filter(v=>v!=null);
+    avgAnc[a]=vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:null;
+  });
+  el.innerHTML=ANC.map(a=>{
+    const v=avgAnc[a];
+    const pct=v!=null?Math.round((v/10)*100):0;
+    const vStr=v!=null?v.toFixed(1):'–';
+    const barColor=v!=null?(v>=7.5?'var(--hi)':v>=5.5?'var(--md)':'var(--lo)'):'rgba(255,255,255,.06)';
+    return`<div class="anc-row">
+      <div class="anc-name">${a}</div>
+      <div class="anc-bar-bg"><div class="anc-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="anc-val">${vStr}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── STRATEGY STATS ─────────────────────────────────────────
+function renderStrStats(){
+  const el=document.getElementById('str-stats');
+  const placed=strategy.length;
+  // EP = geometric mean across cloister Pcn values, not an arithmetic mean of raw CPM composites.
+  const ep=computeEP();
+  const scales=new Set(strategy.map(s=>s.cpm.scale));
+  const fns=new Set(strategy.map(s=>s.cpm.fn));
+  const epCol=ep!==null?(ep>=7.5?'var(--hi)':ep>=5.5?'var(--md)':'var(--lo)'):'var(--t3)';
+  el.innerHTML=`
+    <div class="str-stat"><div class="str-stat-lbl">placed</div><div class="str-stat-val">${placed}</div></div>
+    <div class="str-stat"><div class="str-stat-lbl">EP score</div><div class="str-stat-val" style="color:${epCol}">${ep!==null?ep.toFixed(1):'–'}</div></div>
+    <div class="str-stat"><div class="str-stat-lbl">scales</div><div class="str-stat-val">${scales.size}<span style="font-size:9px;color:var(--t3)">/3</span></div></div>
+    <div class="str-stat"><div class="str-stat-lbl">functions</div><div class="str-stat-val">${fns.size}<span style="font-size:9px;color:var(--t3)">/4</span></div></div>`;
+}
+
+// ── EXPORT ─────────────────────────────────────────────────
+function exportStrategy(){
+  if(!strategy.length){
+    document.getElementById('str-badge').textContent='nothing to export';
+    setTimeout(()=>{document.getElementById('str-badge').textContent='empty';},1800);
+    return;
+  }
+  const ep=computeEP();
+  const avgAnc={};
+  ANC.forEach(a=>{
+    const vals=strategy.map(s=>s.cpm._s.anchors[a]).filter(v=>v!=null);
+    avgAnc[a]=vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:null;
+  });
+  const lines=[
+    'WAVE CATALOGUE — SPATIAL STRATEGY EXPORT (SEQ2 TEST BUILD)',
+    'Generated: '+new Date().toLocaleString(),
+    siteContext?`Site: ${siteContext.city} (${siteContext.scaleLabel||'–'} scale, ${Math.round(siteContext.areaM2||0).toLocaleString()} m²)`:'Site: (none — not characterized)',
+    `Weight profile: ${weightProfileKey}`,
+    '─'.repeat(56),'',
+    `CPMs placed: ${strategy.length}`,
+    `Cloisters formed: ${cloisters.length}`,
+    `Strategy score (EP, geometric mean of cloister Pcn): ${ep!==null?ep.toFixed(2):'–'}`,
+    `Scales covered: ${[...new Set(strategy.map(s=>s.cpm.scale))].join(', ')||'–'}`,
+    `Functions covered: ${[...new Set(strategy.map(s=>FN[s.cpm.fn]))].join(', ')||'–'}`,
+    '','CLOISTERS:','─'.repeat(56)
+  ];
+  cloisters.forEach((c,ci)=>{
+    lines.push(`Cloister ${ci+1} — Pcn ${c.pcn!==null?c.pcn.toFixed(2):'–'}  (${c.ids.length} member${c.ids.length===1?'':'s'})`);
+    strategy.filter(s=>c.ids.includes(s.id)).forEach(s=>lines.push(`   · ${s.cpm.name}`));
+  });
+  lines.push('','PLACED CPMs:','─'.repeat(56));
+  strategy.forEach((s,i)=>{
+    const c=s.cpm;
+    const sc=c._s.composite;
+    lines.push(`${i+1}. ${c.name}`);
+    lines.push(`   ID: ${c.id}  |  Typology: ${c.typology_id}  |  Scale: ${c.scale}`);
+    lines.push(`   Group: ${GN[c.group]||c.group}  |  Function: ${FN[c.fn]||c.fn}`);
+    lines.push(`   Composite Score: ${sc!==null?sc.toFixed(2):'no study data'}`);
+    if(sc!==null){
+      const ancStr=ANC.map(a=>{const v=c._s.anchors[a];return`${a}: ${v!==null?v.toFixed(1):'–'}`;}).join('  |  ');
+      lines.push(`   Anchors: ${ancStr}`);
+    }
+    lines.push(`   Position: ${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}`);
+    lines.push('');
+  });
+  lines.push('ANCHOR AVERAGES (raw, arithmetic mean across all placed CPMs):');
+  ANC.forEach(a=>lines.push(`  ${a.padEnd(12)}: ${avgAnc[a]!==null?avgAnc[a].toFixed(2):'–'}`));
+  const blob=new Blob([lines.join('\n')],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='wave-spatial-strategy.txt';a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── PANEL RESIZERS ─────────────────────────────────────────
+function initResizers(){
+  makeResizer('vdiv-l','panel-lib',true);
+  makeResizer('vdiv-r','panel-str',false);
+}
+
+function makeResizer(divId,panelId,leftSide){
+  const div=document.getElementById(divId);
+  const panel=document.getElementById(panelId);
+  let startX,startW;
+  div.addEventListener('mousedown',function(e){
+    e.preventDefault();
+    div.classList.add('dragging');
+    startX=e.clientX;
+    startW=panel.offsetWidth;
+    function onMove(e2){
+      const dx=e2.clientX-startX;
+      const nw=leftSide?Math.max(180,Math.min(480,startW+dx)):Math.max(180,Math.min(480,startW-dx));
+      panel.style.width=nw+'px';panel.style.minWidth=nw+'px';
+      if(sMap) sMap.invalidateSize();
+    }
+    function onUp(){
+      div.classList.remove('dragging');
+      document.removeEventListener('mousemove',onMove);
+      document.removeEventListener('mouseup',onUp);
+    }
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  });
+}
+
+// ── SEQ2: ADAPTIVE PATHWAYS HANDOFF ─────────────────────────
+function openAdaptivePathways(){
+  const payload={
+    siteContext,
+    cloisters:cloisters.map((c,i)=>({label:`Cloister ${i+1}`,pcn:c.pcn,color:c.color,n:c.ids.length}))
+  };
+  try{localStorage.setItem('waveSeq2Pathways',JSON.stringify(payload));}catch(e){}
+  window.open('adaptive-pathways-seq2.html','_blank');
+}
+
+// ── START ──────────────────────────────────────────────────
+window.addEventListener('load',init);
+</script>
+</body>
+</html>
