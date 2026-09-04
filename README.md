@@ -1,8 +1,10 @@
-# wave-database
+# the-wave-database
 a catalogue of hybrid nature-based solutions (HNbS) for coastal territories. Completed as the extension and practical application of my PhD Thesis at SUTD and NUS. My work is in developing the Five Anchors Framework — a theoretically grounded, rule-based evaluative logic for assessing hybrid nature-based coastal protection measures as relational spatial strategies. 
 
 
-Scope note: 2D Mapping as part of spatial builder
+~~
+
+# Scope note: 2D Mapping as part of spatial builder
 
 The Spatial Builder, the mapping extension of the catalogue, is demonstrator tool. As the framework's contribution, within my PhD, is explicitly the evaluative logic itself, analogous to a pattern language, rather than a computational too; computational instantiation is intentionally scoped as postdoctoral work, not thesis work. I.e. Making the 2D evaluative logic work first is prioritised for my thesis scope, extending to 3D computation is a valuable next step reserved for post-doc. 
 
