@@ -1,9 +1,29 @@
+/**
+ * Location model note (Sep 2026): the existing `position`/`material` fields
+ * on each record are a single cross-shore point, already used by index.html's
+ * studiesForCell() to place studies on Screen One's Position × Material matrix.
+ * `location` (added below) extends this to the same three-shape model used in
+ * data/standard.js — Point / Span / Discrete-multi — for cases whose real
+ * footprint isn't a single point. `position`/`material` are left untouched
+ * for backward compatibility with the existing matrix-cell lookup; index.html
+ * does not yet consume `location` for studies (only for Standard Objects via
+ * standardObjectsForCell()) — wiring that up is a follow-on, not done here.
+ *
+ * `location_status`: 'confirmed' | 'low-confidence' — whether the shape/extent
+ * was determined with reasonable confidence from the study's own typological/
+ * operational description and site data, or is a provisional draft pending
+ * Sarah's review (see `location_reviewNotes`). Do not treat 'low-confidence'
+ * records as settled — override in that field once reviewed.
+ */
 var STUDIES=[
 {
   asa_code:'A-19-BSDH',title:'Buried Seawall–Dune Hybrid System',
   group_type:'Hybrid',function_type:'Edge Defense',group_code:'C',func_code:'1',
   subtype:'1C · Hybrid Edge Defense',citation:'Almarshed et al. (2019)',
   position:'Edge',material:'Hybrid',
+  location:{type:'Point',position:'Edge'},
+  location_status:'confirmed',
+  location_reviewNotes:'Buried seawall/dike core sits beneath the dune crest at the beach edge across all five cited sites (Katwijk, Noordwijk, Dam Neck, Maui, Bay Head) — typological_logic describes a single-zone dune-over-structure system, not a cross-shore span. High confidence.',
   provenance:4,land_use_relationality:4,
   structural_mode:'fixed',strategic_intent:'protect',
   scale:'territorial',
@@ -61,6 +81,9 @@ var STUDIES=[
   group_type:'LoTek',function_type:'Productive Landscapes',group_code:'E',func_code:'3',
   subtype:'3E · LoTek Productive Landscapes',citation:'Basyuni et al. (2018)',
   position:'Shoreline',material:'Green',
+  location:{type:'Span',start:'Shoreline',end:'Inland'},
+  location_status:'low-confidence',
+  location_reviewNotes:'DRAFT — study describes embanked mangrove-aquaculture ponds behind the immediate coast (three North Sumatra villages, lat/lng given only at village resolution, not pond-plan geometry), which typologically suggests a Shoreline→Inland span rather than the single Shoreline point currently on `position`. No site plan/transect in the extracted record confirms the seaward or landward extent — needs Sarah\'s review against the source paper (Basyuni et al. 2018) before treating as settled. Grey draft cell — amber override pending.',
   provenance:1,land_use_relationality:5,
   structural_mode:'fixed',strategic_intent:'accommodate',
   strategic_intent_note:'Tentative — inferred from productive/ecological framing rather than an explicitly stated policy intent in the source study.',

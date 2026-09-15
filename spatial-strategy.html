@@ -49,19 +49,36 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 /* CPM LIBRARY */
 #panel-lib{width:264px;min-width:180px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg)}
 
+#queued-banner{padding:7px 10px;border-bottom:1px solid var(--bd);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(155,149,240,0.06)}
+#queued-banner-label{font-size:8px;color:#9b95f0;letter-spacing:.03em}
+#queued-toggle-btn{border-color:rgba(155,149,240,0.4);color:#9b95f0;flex-shrink:0}
+#queued-toggle-btn:hover{background:rgba(155,149,240,0.12)}
 #lib-filters{padding:8px 10px;border-bottom:1px solid var(--bd);flex-shrink:0;display:flex;flex-direction:column;gap:6px}
 .flt-row{display:flex;gap:3px;flex-wrap:wrap}
 .flt-btn{font-size:8px;padding:2px 7px;border:1px solid var(--bd);border-radius:3px;background:transparent;color:var(--t3);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:.03em;transition:all .12s;white-space:nowrap}
 .flt-btn:hover{border-color:var(--bd2);color:var(--t2)}
 .flt-btn.on{border-color:rgba(127,119,221,.45);color:var(--ac);background:rgba(127,119,221,.07)}
-.flt-btn.fn1.on{border-color:rgba(136,135,128,.55);color:#888780;background:rgba(136,135,128,.07)}
-.flt-btn.fn2.on{border-color:rgba(55,138,221,.55);color:#378ADD;background:rgba(55,138,221,.07)}
-.flt-btn.fn3.on{border-color:rgba(99,153,34,.55);color:#639922;background:rgba(99,153,34,.07)}
-.flt-btn.fn4.on{border-color:rgba(159,119,221,.55);color:#9F77DD;background:rgba(159,119,221,.07)}
 #score-filter-wrap{display:flex;align-items:center;gap:8px}
 .sf-label{font-size:8px;color:var(--t3);white-space:nowrap}
 #score-range{flex:1;accent-color:var(--ac);cursor:pointer;height:3px}
 #score-val{font-size:9px;color:var(--ac);font-weight:bold;white-space:nowrap;min-width:22px;text-align:right}
+
+/* MINI WAVE MATRIX (CPM library filter/highlight) */
+#lib-matrix-sec{margin:0 -10px}
+.lib-matrix-hdr{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;cursor:pointer;font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);user-select:none}
+.lib-matrix-hdr:hover{color:var(--t2)}
+#lib-matrix-body{padding:2px 10px 4px}
+#lib-matrix-body.collapsed{display:none}
+.lm-col-heads{display:grid;grid-template-columns:13px repeat(4,1fr);gap:2px;margin-bottom:2px}
+.lm-col-head{font-size:6px;color:var(--t3);text-align:center;letter-spacing:.02em}
+.lm-row{display:grid;grid-template-columns:13px repeat(4,1fr);gap:2px;margin-bottom:2px}
+.lm-rh{font-size:7px;font-weight:bold;display:flex;align-items:center;justify-content:center}
+.lm-cell{height:16px;border-radius:2px;border:1px solid var(--bd);background:var(--bg3);transition:all .12s}
+.lm-cell.lm-clickable{cursor:pointer}
+.lm-cell.lm-clickable:hover{border-color:var(--bd2)}
+.lm-cell.lm-incl{border-color:var(--ac);background:rgba(127,119,221,.28)}
+.lm-cell.lm-hl{box-shadow:0 0 0 1.5px #9b95f0 inset}
+#lib-matrix-hint{font-size:7px;color:var(--t3);font-style:italic;margin-top:3px;line-height:1.5}
 
 #lib-list{flex:1;overflow-y:auto;padding:6px}
 ::-webkit-scrollbar{width:3px;height:3px}
@@ -86,12 +103,8 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 .ci-bar-lbl{font-size:5px;color:var(--t3);letter-spacing:.03em;text-transform:uppercase;text-align:center;line-height:1}
 .ci-tags{display:flex;gap:3px;flex-wrap:wrap}
 .ci-tag{font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid var(--bd);color:var(--t3)}
-.ci-tag.grp-A{border-color:rgba(29,158,117,.3);color:var(--cA)}
-.ci-tag.grp-B{border-color:rgba(99,153,34,.3);color:var(--cB)}
-.ci-tag.grp-C{border-color:rgba(127,119,221,.3);color:var(--cC)}
-.ci-tag.grp-D{border-color:rgba(55,138,221,.3);color:var(--cD)}
-.ci-tag.grp-E{border-color:rgba(239,159,39,.3);color:var(--cE)}
 .ci-tag.nd{font-style:italic;opacity:.6}
+.ci-tag.study-tag{border-color:rgba(127,119,221,.35);color:var(--ac)}
 .ci-tag.placed-tag{border-color:rgba(29,158,117,.35);color:var(--hi)}
 .ci-place-hint{display:none;font-size:7px;color:var(--ac);margin-top:4px;letter-spacing:.05em}
 .cpm-item.selected .ci-place-hint{display:block}
@@ -209,26 +222,30 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
       <span class="ph-title">CPM Library</span>
       <span class="ph-badge" id="lib-count">–</span>
     </div>
+    <div id="queued-banner" style="display:none">
+      <span id="queued-banner-label"></span>
+      <button class="flt-btn" id="queued-toggle-btn" onclick="toggleQueuedOnly()"></button>
+    </div>
     <div id="lib-filters">
       <div id="score-filter-wrap">
         <span class="sf-label">min score</span>
         <input type="range" id="score-range" min="0" max="10" step="0.5" value="0" oninput="applyFilters()">
         <span id="score-val">0.0</span>
       </div>
-      <div class="flt-row" id="grp-btns">
-        <button class="flt-btn on" onclick="setGrp('all',this)">All</button>
-        <button class="flt-btn" onclick="setGrp('A',this)">Grey</button>
-        <button class="flt-btn" onclick="setGrp('B',this)">Green</button>
-        <button class="flt-btn" onclick="setGrp('C',this)">Hybrid</button>
-        <button class="flt-btn" onclick="setGrp('D',this)">Amph.</button>
-        <button class="flt-btn" onclick="setGrp('E',this)">LoTek</button>
+      <div id="lib-matrix-sec">
+        <div class="lib-matrix-hdr" onclick="toggleLibMatrix()">
+          <span>Wave Matrix</span>
+          <span id="lib-matrix-chevron">&#9662;</span>
+        </div>
+        <div id="lib-matrix-body">
+          <div id="lib-matrix-grid"></div>
+          <div id="lib-matrix-hint"></div>
+        </div>
       </div>
-      <div class="flt-row" id="fn-btns">
-        <button class="flt-btn fn1 on" onclick="setFn('all',this)">All fn.</button>
-        <button class="flt-btn fn1" onclick="setFn('1',this)">1·Edge</button>
-        <button class="flt-btn fn2" onclick="setFn('2',this)">2·Shore</button>
-        <button class="flt-btn fn3" onclick="setFn('3',this)">3·Prod.</button>
-        <button class="flt-btn fn4" onclick="setFn('4',this)">4·Civic</button>
+      <div class="flt-row" id="kind-btns">
+        <button class="flt-btn on" onclick="setKind('all',this)">All kinds</button>
+        <button class="flt-btn" onclick="setKind('standard',this)">Standard</button>
+        <button class="flt-btn" onclick="setKind('study',this)">Studied</button>
       </div>
     </div>
     <div id="lib-list"></div>
@@ -290,10 +307,29 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 <script src="data/standard.js"></script>
 <script>
 // ── CONSTANTS ─────────────────────────────────────────────
-const GN={A:'Grey',B:'Green',C:'Hybrid',D:'Amphibious',E:'LoTek'};
-const GC={A:'#1D9E75',B:'#639922',C:'#7F77DD',D:'#378ADD',E:'#EF9F27'};
-const FN={'1':'Edge Defense','2':'Shoreline Inundation','3':'Productive Landscapes','4':'Civic Living'};
-const FC={'1':'#888780','2':'#378ADD','3':'#639922','4':'#9F77DD'};
+// Material colors match the Wave Matrix's own scheme (index.html MAT_COLORS) — the
+// old letter-coded group system (A-E, Amphibious/LoTek) is retired along with typology_id.
+const MAT_COLORS={Grey:'#8a8880',Hybrid:'#7F77DD',Green:'#1D9E75'};
+const POS_ORDER=['Offshore','Edge','Shoreline','Inland'];
+function locationCoversPosition(location,position){
+  if(!location)return false;
+  if(location.type==='Point')return location.position===position;
+  if(location.type==='Span'){
+    const si=POS_ORDER.indexOf(location.start),ei=POS_ORDER.indexOf(location.end),pi=POS_ORDER.indexOf(position);
+    if(si===-1||ei===-1||pi===-1)return false;
+    const lo=Math.min(si,ei),hi=Math.max(si,ei);
+    return pi>=lo&&pi<=hi;
+  }
+  if(location.type==='Discrete-multi')return(location.positions||[]).includes(position);
+  return false;
+}
+function locationLabel(location){
+  if(!location)return'–';
+  if(location.type==='Point')return location.position;
+  if(location.type==='Span')return`${location.start}→${location.end}`;
+  if(location.type==='Discrete-multi')return(location.positions||[]).join('+');
+  return'–';
+}
 const ANC=['structural','ecological','economic','social','authorship'];
 const ANC_SHORT=['str','eco','econ','soc','auth'];
 
@@ -323,7 +359,10 @@ let filteredCPMs=[];
 let selectedCPM=null;
 let strategy=[];
 let sMap=null;
-let grpFilter='all',fnFilter='all';
+let kindFilter='all',showOnlyQueued=false;
+let libMatrixIncluded=new Set(); // empty = no matrix filter (show all); clicking a cell adds it
+let libMatrixCollapsed=false;
+let highlightedCells=new Set(); // cell(s) the currently-selected CPM belongs to
 let nextId=1;
 let siteContext=null;
 let weightProfileKey='default';
@@ -362,8 +401,33 @@ function weightedGeoMean(scoreByAnchor,w){
   });
   return Math.exp(logSum);
 }
+// The CPM library draws from both Studied Objects (their own records, one CPM each) and
+// Standard Objects (data/standard.js). Speculative objects are intentionally excluded —
+// browsable in the catalogue, not yet placeable here.
+function buildCpmPool(){
+  const studyCpms=STUDIES.map(s=>({
+    id:s.asa_code,name:s.title,material:s.material,
+    location:{type:'Point',position:s.position},
+    newCode:null,scale:s.scale||null,
+    desc:s.citation||'',source:s.citation||'',
+    kind:'study',_study:s
+  }));
+  const standardCpms=STANDARD.map(o=>({...o,kind:'standard'}));
+  return[...studyCpms,...standardCpms];
+}
 function computeScore(obj){
-  const stds=STUDIES.filter(s=>s.func_code+s.group_code===obj.typology_id);
+  if(obj.kind==='study'){
+    // A studied object carries its own anchor scores directly — no lookup needed, n=1 (itself).
+    const s=obj._study;
+    const ancScores={};
+    ANC.forEach(a=>{
+      const anc=s.anchors&&s.anchors[a];
+      ancScores[a]=(anc&&anc.score!=null)?anc.score:null;
+    });
+    return{composite:weightedGeoMean(ancScores,weights),anchors:ancScores,n:1};
+  }
+  // Standard object — linked to supporting studies by material + cross-shore location, not typology_id.
+  const stds=STUDIES.filter(s=>s.material===obj.material&&locationCoversPosition(obj.location,s.position));
   if(!stds.length) return{composite:null,anchors:{},n:0};
   const ancScores={};
   ANC.forEach(a=>{
@@ -392,6 +456,7 @@ function scoreClass(s){
 function init(){
   const incomingCpmIds=loadHandoff();
   queuedCpmIds=incomingCpmIds;
+  showOnlyQueued=incomingCpmIds.length>0;
   const profile=pickWeightProfile(siteContext);
   weightProfileKey=profile.key;weights=profile.weights;
   document.getElementById('s-weightprofile').textContent=weightProfileKey;
@@ -399,7 +464,7 @@ function init(){
     document.getElementById('s-site-wrap').style.display='';
     document.getElementById('s-site').textContent=`${siteContext.city} (${siteContext.scaleLabel||'–'})`;
   }
-  allCPMs=REALISTIC.map(obj=>({...obj,_s:computeScore(obj)}));
+  allCPMs=buildCpmPool().map(obj=>({...obj,_s:computeScore(obj)}));
   allCPMs.sort((a,b)=>{
     const sa=a._s.composite,sb=b._s.composite;
     if(sa===null&&sb===null) return 0;
@@ -407,13 +472,14 @@ function init(){
     if(sb===null) return -1;
     return sb-sa;
   });
-  filteredCPMs=[...allCPMs];
   const scored=allCPMs.filter(c=>c._s.composite!==null).length;
   document.getElementById('s-total').textContent=allCPMs.length;
   document.getElementById('s-scored').textContent=scored;
   initMap();
   drawSiteBoundary();
-  renderLibList();
+  updateQueuedBanner();
+  renderLibMatrix();
+  applyFilters();
   renderAncCoverage();
   recomputeCloisters();
   initResizers();
@@ -468,18 +534,18 @@ function makeIcon(color){
 }
 
 function placeCPM(cpm,lat,lng){
-  const color=GC[cpm.group]||'#7F77DD';
+  const color=MAT_COLORS[cpm.material]||'#7F77DD';
   const marker=L.marker([lat,lng],{icon:makeIcon(color),draggable:true}).addTo(sMap);
   const sc=cpm._s.composite;
   const scStr=sc!==null?sc.toFixed(1):'–';
   const scClass=scoreClass(sc);
   const scColor={hi:'#1D9E75',md:'#EF9F27',lo:'#c0544e',na:'#4e4d4a'}[scClass];
   marker.bindPopup(
-    `<div style="font-size:8px;color:#4e4d4a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">${cpm.typology_id} · ${GN[cpm.group]||cpm.group}</div>`+
+    `<div style="font-size:8px;color:#4e4d4a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">${cpm.newCode||locationLabel(cpm.location)} · ${cpm.material}</div>`+
     `<div style="font-size:11px;color:#dedad0;margin-bottom:6px;line-height:1.3">${cpm.name}</div>`+
     `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">`+
-    `<span style="font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid rgba(255,255,255,0.1);color:#8a8880">${cpm.scale}</span>`+
-    `<span style="font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid rgba(255,255,255,0.1);color:#8a8880">${FN[cpm.fn]||cpm.fn}</span>`+
+    `<span style="font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid rgba(255,255,255,0.1);color:#8a8880">${cpm.scale||'–'}</span>`+
+    `<span style="font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid rgba(255,255,255,0.1);color:#8a8880">${cpm.kind==='study'?'studied object':'standard object'}</span>`+
     (sc!==null?`<span style="font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid ${scColor}55;color:${scColor};font-weight:bold">${scStr}/10</span>`:`<span style="font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid rgba(255,255,255,0.07);color:#4e4d4a">no study data</span>`)+
     `</div>`+
     `<div style="font-size:8px;color:#8a8880;line-height:1.55">${(cpm.desc||'').substring(0,100)}${(cpm.desc||'').length>100?'…':''}</div>`+
@@ -529,6 +595,8 @@ function deselectCPM(){
   document.getElementById('place-overlay').classList.remove('show');
   document.querySelectorAll('.cpm-item.selected').forEach(el=>el.classList.remove('selected'));
   document.body.style.cursor='';
+  highlightedCells=new Set();
+  renderLibMatrix();
 }
 
 function flashOutsideBoundary(){
@@ -543,9 +611,12 @@ function flashOutsideBoundary(){
 function applyFilters(){
   const minScore=parseFloat(document.getElementById('score-range').value);
   document.getElementById('score-val').textContent=minScore.toFixed(1);
-  filteredCPMs=allCPMs.filter(c=>{
-    if(grpFilter!=='all'&&c.group!==grpFilter) return false;
-    if(fnFilter!=='all'&&c.fn!==fnFilter) return false;
+  let pool=showOnlyQueued?allCPMs.filter(c=>queuedCpmIds.includes(c.id)):allCPMs;
+  if(!showOnlyQueued&&libMatrixIncluded.size){
+    pool=pool.filter(c=>cellsForCpm(c).some(cid=>libMatrixIncluded.has(cid)));
+  }
+  filteredCPMs=pool.filter(c=>{
+    if(kindFilter!=='all'&&c.kind!==kindFilter) return false;
     if(c._s.composite===null&&minScore>0) return false;
     if(c._s.composite!==null&&c._s.composite<minScore) return false;
     return true;
@@ -553,16 +624,68 @@ function applyFilters(){
   renderLibList();
 }
 
-function setGrp(g,btn){
-  grpFilter=g;
-  document.getElementById('grp-btns').querySelectorAll('.flt-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
+function updateQueuedBanner(){
+  const banner=document.getElementById('queued-banner');
+  if(!queuedCpmIds.length){banner.style.display='none';return;}
+  banner.style.display='flex';
+  document.getElementById('queued-banner-label').textContent=`${queuedCpmIds.length} item${queuedCpmIds.length===1?'':'s'} sent from site panel`;
+  document.getElementById('queued-toggle-btn').textContent=showOnlyQueued?'browse full library →':'show queued only';
+}
+function toggleQueuedOnly(){
+  showOnlyQueued=!showOnlyQueued;
+  updateQueuedBanner();
   applyFilters();
+  renderLibMatrix();
 }
 
-function setFn(f,btn){
-  fnFilter=f;
-  document.getElementById('fn-btns').querySelectorAll('.flt-btn').forEach(b=>b.classList.remove('on'));
+// ── MINI WAVE MATRIX (CPM library filter/highlight) ────────
+// Queued view: display-only — highlights whichever cell(s) the selected CPM belongs to.
+// Full-library view: clickable — cells start unselected (list shows everything); clicking
+// a cell adds it to the include-set and narrows the list to CPMs touching a selected cell.
+const MAT_ROWS=['Grey','Hybrid','Green'];
+function cellKey(pos,mat){return pos+'|'+mat;}
+function cellsForCpm(cpm){
+  if(!cpm.location||!cpm.material)return[];
+  return POS_ORDER.filter(pos=>locationCoversPosition(cpm.location,pos)).map(pos=>cellKey(pos,cpm.material));
+}
+function renderLibMatrix(){
+  const grid=document.getElementById('lib-matrix-grid');
+  if(!grid)return;
+  const clickable=!showOnlyQueued;
+  let h='<div class="lm-col-heads"><div></div>'+POS_ORDER.map(p=>`<div class="lm-col-head">${p.slice(0,3)}</div>`).join('')+'</div>';
+  MAT_ROWS.forEach(mat=>{
+    h+=`<div class="lm-row"><div class="lm-rh" style="color:${MAT_COLORS[mat]}">${mat.slice(0,1)}</div>`;
+    POS_ORDER.forEach(pos=>{
+      const cid=cellKey(pos,mat);
+      const cls=['lm-cell'];
+      if(clickable)cls.push('lm-clickable');
+      if(clickable&&libMatrixIncluded.has(cid))cls.push('lm-incl');
+      if(highlightedCells.has(cid))cls.push('lm-hl');
+      h+=`<div class="${cls.join(' ')}" ${clickable?`onclick="toggleLibMatrixCell('${cid}')"`:''} title="${pos} · ${mat}"></div>`;
+    });
+    h+='</div>';
+  });
+  grid.innerHTML=h;
+  const hint=document.getElementById('lib-matrix-hint');
+  hint.textContent=clickable
+    ?(libMatrixIncluded.size?`showing CPMs in ${libMatrixIncluded.size} selected cell${libMatrixIncluded.size===1?'':'s'}`:'click cells to filter the library by matrix position × material')
+    :'highlights where the selected CPM sits — click "browse full library" to filter by cell';
+}
+function toggleLibMatrixCell(cid){
+  if(showOnlyQueued)return;
+  if(libMatrixIncluded.has(cid))libMatrixIncluded.delete(cid);else libMatrixIncluded.add(cid);
+  renderLibMatrix();
+  applyFilters();
+}
+function toggleLibMatrix(){
+  libMatrixCollapsed=!libMatrixCollapsed;
+  document.getElementById('lib-matrix-body').classList.toggle('collapsed',libMatrixCollapsed);
+  document.getElementById('lib-matrix-chevron').innerHTML=libMatrixCollapsed?'&#9656;':'&#9662;';
+}
+
+function setKind(k,btn){
+  kindFilter=k;
+  document.getElementById('kind-btns').querySelectorAll('.flt-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   applyFilters();
 }
@@ -590,19 +713,21 @@ function renderLibList(){
     }).join('');
     const placedTag=placedCount?`<span class="ci-tag placed-tag">&#10003; ×${placedCount}</span>`:'';
     const queuedTag=(queuedCpmIds.includes(c.id)&&!placedCount)?`<span class="ci-tag" style="border-color:rgba(239,159,39,.4);color:var(--ac2)">queued from site</span>`:'';
-    const studyTag=c._s.n
-      ?`<span class="ci-tag" style="border-color:rgba(127,119,221,.2);color:rgba(127,119,221,.65)">${c._s.n} ${c._s.n===1?'study':'studies'}</span>`
-      :`<span class="ci-tag nd">no data</span>`;
-    return`<div class="cpm-item${isSelected?' selected':''}${sc===null?' no-data':''}" data-id="${c.id}" onclick="selectCPM('${c.id}',this)">
+    const studyTag=c.kind==='study'
+      ?`<span class="ci-tag study-tag">studied object</span>`
+      :(c._s.n?`<span class="ci-tag" style="border-color:rgba(127,119,221,.2);color:rgba(127,119,221,.65)">${c._s.n} supporting ${c._s.n===1?'study':'studies'}</span>`:`<span class="ci-tag nd">no data</span>`);
+    const matColor=MAT_COLORS[c.material]||'#888';
+    const placedStyle=placedCount?` style="border-color:${matColor};background:${matColor}1a;box-shadow:0 0 0 1px ${matColor}55"`:'';
+    return`<div class="cpm-item${isSelected?' selected':''}${sc===null?' no-data':''}${placedCount?' placed':''}" data-id="${c.id}" onclick="selectCPM('${c.id}',this)"${placedStyle}>
       <div class="ci-top">
         <div class="ci-name">${c.name}</div>
         <div class="ci-score ${cls}">${scStr}</div>
       </div>
       <div class="ci-bars">${bars}</div>
       <div class="ci-tags">
-        <span class="ci-tag grp-${c.group}">${GN[c.group]||c.group}</span>
-        <span class="ci-tag" style="border-color:${(FC[c.fn]||'#888')+'40'};color:${FC[c.fn]||'#888'}">${FN[c.fn]||c.fn}</span>
-        <span class="ci-tag">${c.scale}</span>
+        <span class="ci-tag" style="border-color:${matColor}40;color:${matColor}">${c.material}</span>
+        <span class="ci-tag">${locationLabel(c.location)}</span>
+        <span class="ci-tag">${c.scale||'–'}</span>
         ${studyTag}
         ${placedTag}
         ${queuedTag}
@@ -621,6 +746,8 @@ function selectCPM(id,el){
   el.classList.add('selected');
   document.getElementById('place-overlay').classList.add('show');
   document.body.style.cursor='crosshair';
+  highlightedCells=new Set(cellsForCpm(cpm));
+  renderLibMatrix();
 }
 
 // ── CLOISTER GROUPING ───────────────────────────────────────
@@ -782,7 +909,7 @@ function renderStratItem(s,i){
   const sc=c._s.composite;
   const cls=scoreClass(sc);
   const scStr=sc!==null?sc.toFixed(1):'–';
-  const groupColor=GC[c.group]||'#888';
+  const groupColor=MAT_COLORS[c.material]||'#888';
   return`<div class="str-item" draggable="true" ondragstart="onStratDragStart(event,${s.id})">
       <div class="si-top">
         <div class="si-num">${i+1}</div>
@@ -791,9 +918,9 @@ function renderStratItem(s,i){
       </div>
       <div class="si-meta">
         <span class="si-score-badge ${cls}">${scStr}/10</span>
-        <span class="si-tag" style="border-color:${groupColor}40;color:${groupColor}">${GN[c.group]||c.group}</span>
-        <span class="si-tag" style="border-color:${(FC[c.fn]||'#888')+'40'};color:${FC[c.fn]||'#888'}">${FN[c.fn]||c.fn}</span>
-        <span class="si-tag">${c.scale}</span>
+        <span class="si-tag" style="border-color:${groupColor}40;color:${groupColor}">${c.material}</span>
+        <span class="si-tag">${locationLabel(c.location)}</span>
+        <span class="si-tag">${c.scale||'–'}</span>
       </div>
       <div class="si-loc">&#9673; ${s.lat.toFixed(3)}&deg;, ${s.lng.toFixed(3)}&deg;</div>
     </div>`;
@@ -858,13 +985,13 @@ function renderStrStats(){
   // EP = geometric mean across cloister Pcn values, not an arithmetic mean of raw CPM composites.
   const ep=computeEP();
   const scales=new Set(strategy.map(s=>s.cpm.scale));
-  const fns=new Set(strategy.map(s=>s.cpm.fn));
+  const materials=new Set(strategy.map(s=>s.cpm.material));
   const epCol=ep!==null?(ep>=7.5?'var(--hi)':ep>=5.5?'var(--md)':'var(--lo)'):'var(--t3)';
   el.innerHTML=`
     <div class="str-stat"><div class="str-stat-lbl">placed</div><div class="str-stat-val">${placed}</div></div>
     <div class="str-stat"><div class="str-stat-lbl">EP score</div><div class="str-stat-val" style="color:${epCol}">${ep!==null?ep.toFixed(1):'–'}</div></div>
     <div class="str-stat"><div class="str-stat-lbl">scales</div><div class="str-stat-val">${scales.size}<span style="font-size:9px;color:var(--t3)">/3</span></div></div>
-    <div class="str-stat"><div class="str-stat-lbl">functions</div><div class="str-stat-val">${fns.size}<span style="font-size:9px;color:var(--t3)">/4</span></div></div>`;
+    <div class="str-stat"><div class="str-stat-lbl">materials</div><div class="str-stat-val">${materials.size}<span style="font-size:9px;color:var(--t3)">/3</span></div></div>`;
 }
 
 // ── EXPORT ─────────────────────────────────────────────────
@@ -890,7 +1017,7 @@ function exportStrategy(){
     `Cloisters formed: ${cloisters.length}`,
     `Strategy score (EP, geometric mean of cloister Pcn): ${ep!==null?ep.toFixed(2):'–'}`,
     `Scales covered: ${[...new Set(strategy.map(s=>s.cpm.scale))].join(', ')||'–'}`,
-    `Functions covered: ${[...new Set(strategy.map(s=>FN[s.cpm.fn]))].join(', ')||'–'}`,
+    `Materials covered: ${[...new Set(strategy.map(s=>s.cpm.material))].join(', ')||'–'}`,
     '','CLOISTERS:','─'.repeat(56)
   ];
   cloisters.forEach((c,ci)=>{
@@ -902,8 +1029,8 @@ function exportStrategy(){
     const c=s.cpm;
     const sc=c._s.composite;
     lines.push(`${i+1}. ${c.name}`);
-    lines.push(`   ID: ${c.id}  |  Typology: ${c.typology_id}  |  Scale: ${c.scale}`);
-    lines.push(`   Group: ${GN[c.group]||c.group}  |  Function: ${FN[c.fn]||c.fn}`);
+    lines.push(`   ID: ${c.id}  |  Code: ${c.newCode||locationLabel(c.location)}  |  Scale: ${c.scale||'–'}`);
+    lines.push(`   Material: ${c.material}  |  Kind: ${c.kind==='study'?'studied object':'standard object'}`);
     lines.push(`   Composite Score: ${sc!==null?sc.toFixed(2):'no study data'}`);
     if(sc!==null){
       const ancStr=ANC.map(a=>{const v=c._s.anchors[a];return`${a}: ${v!==null?v.toFixed(1):'–'}`;}).join('  |  ');

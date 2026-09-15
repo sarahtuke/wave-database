@@ -162,22 +162,55 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 /* Screen 1 (position×material grid) no longer flex-grows to fill the panel, so Screen 2
    (bivariate key, below) sits directly under it instead of being pushed to the panel's bottom. */
 #mx-body{flex:0 0 auto;overflow:visible}
+/* Toggle sits in the seam between the panel header and the grid — one matrix component,
+   switched here, rather than two views stacked permanently on top of each other. */
+.mx-screen-toggle{display:flex;gap:4px;padding:0 10px 8px}
+.mx-st-btn{flex:1;font-size:7.5px;padding:5px 6px;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-r,5px);background:transparent;color:var(--sas-t3,#4e4d4a);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.02em;transition:all 0.12s}
+.mx-st-btn:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13));color:var(--sas-t2,#8a8880)}
+.mx-st-btn.on{border-color:rgba(127,119,221,0.5);color:var(--sas-ac,#7F77DD);background:rgba(127,119,221,0.08)}
+.mx-col-heads.s2,.mx-row.s2{grid-template-columns:44px repeat(5,1fr)}
+/* SPAN VIEW (Screen 1 only) — placeholder visualisation of Standard Objects' cross-shore
+   footprint as literal lines/dots instead of discrete-cell counts, pending Studied Objects
+   gaining the same location parameter. */
+.mx-span-toggle{display:flex;align-items:center;gap:8px;padding:0 10px 8px}
+.mx-span-btn{font-size:7.5px;padding:4px 9px;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-r,5px);background:transparent;color:var(--sas-t3,#4e4d4a);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.02em;transition:all 0.12s;flex-shrink:0}
+.mx-span-btn:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13));color:var(--sas-t2,#8a8880)}
+.mx-span-btn.on{border-color:rgba(239,159,39,0.5);color:var(--sas-ac2,#EF9F27);background:rgba(239,159,39,0.08)}
+.mx-span-hint{font-size:7px;color:var(--sas-t3,#4e4d4a);line-height:1.4}
+.mx-span-row{display:grid;grid-template-columns:44px 1fr;gap:2px;margin-bottom:2px}
+.mx-span-lane{position:relative;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-r,5px);background:var(--sas-bg3,#171c2e);padding:5px 0;display:flex;flex-direction:column;gap:2px;min-height:52px}
+.mx-span-item{position:relative;height:5px;margin:0 1px}
+.mx-span-bar{position:absolute;top:0;height:5px;border-radius:2px;cursor:pointer;opacity:0.7;transition:opacity 0.12s}
+.mx-span-bar:hover{opacity:1}
+.mx-span-dot{position:absolute;top:-1px;width:7px;height:7px;border-radius:50%;cursor:pointer;opacity:0.75;transform:translateX(-50%);transition:opacity 0.12s}
+.mx-span-dot:hover{opacity:1}
+.mx-span-empty{font-size:7px;color:var(--sas-t3,#4e4d4a);padding:4px 8px;opacity:0.6}
+/* AXIS CAPTION — names the two axes currently on screen, rendered as the first line
+   inside #mx-body so it swaps automatically with whichever screen/view is active. */
+.mx-axis-caption{font-size:7px;letter-spacing:0.08em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);padding:0 2px 6px}
+/* SCREEN 2 HOVER TOOLTIP — floats near the cursor (like the native title tooltip it
+   replaces), rather than a fixed box under the grid. */
+.mx-s2-tip{display:none;position:fixed;z-index:300;pointer-events:none;width:250px;padding:6px 9px;border:1px solid var(--sas-bd2,rgba(255,255,255,0.13));border-radius:var(--sas-r,5px);background:var(--sas-bg2,#10152a);box-shadow:0 4px 14px rgba(0,0,0,0.4);font-size:8px;color:var(--sas-t1,#dedad0);line-height:1.55}
+.mx-s2-tip b{color:var(--sas-ac,#7F77DD);font-weight:normal}
+.mx-s2-tip .mx-hover-empty{color:var(--sas-t3,#4e4d4a);font-style:italic}
+.mx-s2-tip .mx-hover-sub{color:var(--sas-t3,#4e4d4a)}
+.mx-s2-tip .mx-hover-study{color:var(--sas-t2,#8a8880);display:block;padding-left:6px}
 .mx-legend{padding:8px 10px 4px;border-top:1px solid var(--sas-bd,rgba(255,255,255,0.07));margin-top:4px;flex-shrink:0}
 .mxl-title{font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t1,#dedad0);margin-bottom:5px}
 .mxl-row{display:flex;align-items:center;gap:5px;margin-bottom:3px}
 .mxl-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .mxl-label{font-size:8px;color:var(--sas-t1,#dedad0)}
-/* BIVARIATE CHOROPLETH KEY (Screen 2 overlay) */
-.mx-biv-key{padding:8px 10px 12px;border-top:1px solid var(--sas-bd,rgba(255,255,255,0.07));flex-shrink:0;opacity:0;transition:opacity 0.5s ease}
-#panel-m.wm-legend-revealed .mx-biv-key,#panel-m.wm-legend-revealed .mx-legend{opacity:1}
+/* SCREEN 2 LEGEND (additive-encoding key, shown only while Screen 2 is active) */
+.mx-biv-key{display:none;padding:8px 10px 12px;border-top:1px solid var(--sas-bd,rgba(255,255,255,0.07));flex-shrink:0}
 .mbk-title{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t1,#dedad0);margin-bottom:8px}
-/* Same 44px gutter + gap as .mx-row/.mx-col-heads, so Screen 2's grid starts and spans the
-   same x-axis extent as Screen 1's — the two read as one continued coordinate system. */
-.mbk-row{display:grid;grid-template-columns:44px 1fr;gap:2px;align-items:stretch}
-.mbk-ylabel{writing-mode:vertical-rl;transform:rotate(180deg);font-size:7.5px;color:var(--sas-t1,#dedad0);letter-spacing:0.04em;line-height:1.3;display:flex;align-items:center;justify-content:center}
-.mbk-grid{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,20px);gap:2px}
-.mbk-sw{border-radius:2px}
-.mbk-xlabel{font-size:7.5px;color:var(--sas-t1,#dedad0);letter-spacing:0.04em;margin-top:6px;margin-left:46px}
+.mbk-note{font-size:7.5px;color:var(--sas-t3,#4e4d4a);line-height:1.55;margin-top:6px}
+/* SCREEN 2 CELL — two same-hue bars + a literal "+", so the cell reads as an additive
+   sum of its row/column contributions, never as a blended two-hue interaction color. */
+.mc2-bars{display:flex;align-items:flex-end;gap:3px;height:28px}
+.mc2-bar{width:8px;border-radius:2px 2px 0 0;background:#D85A30;opacity:0.9;transition:height 0.2s ease}
+.mc2-bar.lur{background:#EF9F27}
+.mc2-plus{font-size:9px;color:var(--sas-t3,#4e4d4a);align-self:center;margin:0 1px}
+.mc2-count{position:absolute;bottom:3px;right:4px;font-size:7px;color:var(--sas-t3,#4e4d4a)}
 
 /* TYPOLOGY */
 #panel-t{flex:1;min-width:0}
@@ -278,8 +311,8 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .bc-empty{font-size:8px;color:var(--sas-t3,#4e4d4a);text-align:center;opacity:0.5;padding:8px 0}
 .bc-arrow{font-size:7px;color:var(--sas-t3,#4e4d4a);text-align:right;padding:3px 9px 6px;letter-spacing:0.04em}
 .bc-add-row{display:flex;gap:4px;padding:0 9px 9px;cursor:default}
-.bc-add-btn{flex:1;font-size:7px;padding:4px 5px;border:1px solid rgba(239,159,39,0.3);border-radius:3px;background:rgba(239,159,39,0.05);color:var(--sas-ac2,#EF9F27);cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.02em;transition:all 0.12s}
-.bc-add-btn:hover{border-color:rgba(239,159,39,0.55);background:rgba(239,159,39,0.1)}
+.bc-add-btn{flex:1;font-size:7px;padding:4px 5px;border:1px solid rgba(155,149,240,0.4);border-radius:3px;background:rgba(155,149,240,0.07);color:#9b95f0;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.02em;transition:all 0.12s}
+.bc-add-btn:hover{border-color:rgba(155,149,240,0.65);background:rgba(155,149,240,0.14)}
 .bc-add-btn:disabled{opacity:0.35;cursor:not-allowed;pointer-events:none}
 .browse-card.bc-disabled{cursor:default;opacity:0.45}
 .dtag{font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid rgba(127,119,221,0.25);color:var(--sas-ac,#7F77DD);background:rgba(127,119,221,0.07)}
@@ -291,14 +324,14 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 /* OBJECT BROWSE MODAL */
 #ob{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.55)}
 #ob.open{display:block}
-#ob-inner{position:absolute;top:0;right:0;bottom:0;width:640px;background:var(--sas-bg2,#10152a);border-left:1px solid var(--sas-bd2,rgba(255,255,255,0.13));overflow-y:auto;padding:16px}
+#ob-inner{position:absolute;top:0;left:0;bottom:0;width:640px;background:var(--sas-bg2,#10152a);border-right:1px solid var(--sas-bd2,rgba(255,255,255,0.13));overflow-y:auto;padding:16px}
 .ob-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
 .ob-card{border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-rl,9px);background:var(--sas-bg3,#171c2e);overflow:hidden;transition:border-color 0.15s;cursor:pointer}
 .ob-card:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13))}
 .ob-card.expanded{border-color:rgba(127,119,221,0.4)!important}
 .ob-card-vis{min-height:90px;background:var(--sas-bg2,#10152a);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07));position:relative}
-.ob-card-add{position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;border:1px solid rgba(239,159,39,0.4);background:rgba(12,15,28,0.85);color:var(--sas-ac2,#EF9F27);font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.ob-card-add:hover{background:rgba(239,159,39,0.15)}
+.ob-card-add{position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;border:1px solid rgba(155,149,240,0.5);background:rgba(12,15,28,0.85);color:#9b95f0;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ob-card-add:hover{background:rgba(155,149,240,0.18)}
 .ob-card-add:disabled{opacity:0.35;cursor:not-allowed;pointer-events:none}
 .ob-card-vis img{width:100%;max-height:90px;object-fit:contain}
 .ob-card-body{padding:9px 11px}
@@ -326,11 +359,12 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .site-tab-note strong{color:var(--sas-t1,#dedad0)}
 .staged-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-r,5px);background:var(--sas-bg3,#171c2e);margin-bottom:4px}
 .staged-item-name{font-size:9px;color:var(--sas-t1,#dedad0);flex:1}
-.staged-item-cell{font-size:7px;color:var(--sas-ac,#7F77DD);border:1px solid rgba(127,119,221,0.3);border-radius:3px;padding:1px 5px;letter-spacing:0.04em;flex-shrink:0}
-.staged-item-kind{font-size:7px;color:var(--sas-ac2,#EF9F27);letter-spacing:0.04em;flex-shrink:0}
+.staged-item-cell{font-size:7px;color:#9b95f0;border:1px solid rgba(155,149,240,0.4);border-radius:3px;padding:1px 5px;letter-spacing:0.04em;flex-shrink:0}
+.staged-item-kind{font-size:7px;color:#9b95f0;letter-spacing:0.04em;flex-shrink:0;opacity:0.75}
 .staged-item-rm{background:none;border:1px solid rgba(192,84,78,0.22);color:#f09595;font-size:7px;padding:1px 5px;border-radius:3px;cursor:pointer;font-family:'Courier New',monospace}
 .staged-empty{font-size:9px;color:var(--sas-t3,#4e4d4a);padding:8px 0;font-style:italic}
-.site-tab-launch{width:100%;margin-top:6px}
+.site-tab-launch{width:100%;margin-top:6px;border-color:rgba(155,149,240,0.5)!important;color:#9b95f0!important}
+.site-tab-launch:hover{background:rgba(155,149,240,0.1)!important}
 .sc{border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-rl,9px);padding:9px;margin-bottom:7px;cursor:pointer;transition:all 0.12s;background:var(--sas-bg3,#171c2e)}
 .sc:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13));background:var(--sas-bg4,#1e2438)}
 .sc-asa{font-size:8px;letter-spacing:0.07em;margin-bottom:3px}
@@ -407,7 +441,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 /* STUDY MODAL */
 #sm{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.55)}
 #sm.open{display:block}
-#sm-inner{position:absolute;top:0;right:0;bottom:0;width:540px;background:var(--sas-bg2,#10152a);border-left:1px solid var(--sas-bd2,rgba(255,255,255,0.13));overflow-y:auto;padding:16px}
+#sm-inner{position:absolute;top:0;left:0;bottom:0;width:540px;background:var(--sas-bg2,#10152a);border-right:1px solid var(--sas-bd2,rgba(255,255,255,0.13));overflow-y:auto;padding:16px}
 .sm-close-bar{display:flex;justify-content:space-between;align-items:center;margin:-16px -16px 14px;padding:14px 16px;border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07));position:sticky;top:-16px;background:var(--sas-bg2,#10152a);z-index:10}
 .sm-close-btn{background:none;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));color:var(--sas-t2,#8a8880);cursor:pointer;font-size:8px;padding:3px 9px;border-radius:var(--sas-r,5px);font-family:'Courier New',monospace;letter-spacing:0.05em}
 .sm-close-btn:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13));color:var(--sas-t1,#dedad0)}
@@ -518,6 +552,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
           </div>
 
           <button class="btn ac sc-submit" id="sc-submit-btn" onclick="completeSiteCharacterization()" disabled>enter catalogue &rarr;</button>
+          <button class="btn sc-submit" style="margin-top:6px" onclick="skipSiteCharacterization()">skip for now &rarr;</button>
         </div>
       </div>
       <div id="oo-gate-right"></div>
@@ -551,9 +586,18 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 
     <!-- MATRIX -->
     <div id="panel-m" class="panel">
-      <div class="ph"><span class="ph-title">Wave Matrix</span><span class="ph-badge">4 &times; 3</span></div>
+      <div class="ph"><span class="ph-title">Wave Matrix</span><span class="ph-badge" id="mx-badge">4 &times; 3</span></div>
+      <div class="mx-screen-toggle" id="mx-screen-toggle">
+        <button class="mx-st-btn on" onclick="setMatrixScreen(1)">Position &times; Material</button>
+        <button class="mx-st-btn" onclick="setMatrixScreen(2)">Provenance &times; Relationality</button>
+      </div>
+      <div class="mx-span-toggle" id="mx-span-toggle">
+        <button class="mx-span-btn" id="mx-span-btn" onclick="toggleSpanView()">view by span</button>
+        <span class="mx-span-hint">Standard Objects only — placeholder until Studied Objects carry location too</span>
+      </div>
       <div class="pb" id="mx-body"></div>
-      <div class="mx-legend">
+      <div class="mx-s2-tip" id="mx-s2-tip"></div>
+      <div class="mx-legend" id="mx-legend">
         <div class="mxl-title">Material</div>
         <div class="mxl-row"><div class="mxl-dot" style="background:#8a8880"></div><div class="mxl-label">Grey</div></div>
         <div class="mxl-row"><div class="mxl-dot" style="background:#7F77DD"></div><div class="mxl-label">Hybrid</div></div>
@@ -687,10 +731,52 @@ function bivariateColor(prov,lur){
   const[r,g,b]=_lerpRGB(top,bot,ty).map(Math.round);
   return`rgb(${r},${g},${b})`;
 }
+// Single-hue sequential ramp on the SUMMED value (prov+lur), used only for the Screen 2
+// matrix cell fill. Deliberately not bivariateColor() above: a two-hue blend reads as an
+// interaction between the axes, which is wrong for a relationship the framework treats as
+// additive. bivariateColor() itself stays in use for per-study points (each dot already
+// carries its own two values individually, e.g. the Screen 1 scatter overlay and the study
+// modal) — that reversible-code use case is unaffected by this distinction.
+// Light → deep blue, kept clear of the Provenance/Relationality bars' red/orange so the two
+// legends never get confused for each other. Still driven by t alone — the single summed
+// value — so it stays a scalar/sequential encoding, never a function of prov and lur
+// independently.
+const SCREEN2_LOW=[142,197,229],SCREEN2_HIGH=[26,64,128];
+function screen2SumColor(prov,lur){
+  const t=(prov+lur-2)/8;
+  const[r,g,b]=_lerpRGB(SCREEN2_LOW,SCREEN2_HIGH,t).map(Math.round);
+  return`rgba(${r},${g},${b},0.5)`;
+}
 function cellId(pos,mat){return`${POS_CODE[pos]}-${MAT_CODE[mat]}`}
 const POS_CODE_REV=Object.fromEntries(Object.entries(POS_CODE).map(([k,v])=>[v,k]));
 const MAT_CODE_REV=Object.fromEntries(Object.entries(MAT_CODE).map(([k,v])=>[v,k]));
 function decodeCellId(cid){const[pc,mc]=cid.split('-');return{position:POS_CODE_REV[pc],material:MAT_CODE_REV[mc]};}
+// Standard Objects (data/standard.js) carry a cross-shore `location` (Point/Span/Discrete-multi
+// over Offshore/Edge/Shoreline/Inland) plus a `material` (Grey/Green/Hybrid) — the same axes as
+// the Wave Matrix itself. A Span/Discrete-multi object legitimately belongs to more than one cell.
+function locationCoversPosition(location,position){
+  if(!location)return false;
+  if(location.type==='Point')return location.position===position;
+  if(location.type==='Span'){
+    const si=POS.indexOf(location.start),ei=POS.indexOf(location.end),pi=POS.indexOf(position);
+    if(si===-1||ei===-1||pi===-1)return false;
+    const lo=Math.min(si,ei),hi=Math.max(si,ei);
+    return pi>=lo&&pi<=hi;
+  }
+  if(location.type==='Discrete-multi')return(location.positions||[]).includes(position);
+  return false;
+}
+function locationLabel(location){
+  if(!location)return'–';
+  if(location.type==='Point')return location.position;
+  if(location.type==='Span')return`${location.start}→${location.end}`;
+  if(location.type==='Discrete-multi')return(location.positions||[]).join('+');
+  return'–';
+}
+function standardObjectsForCell(cid){
+  const{position,material}=decodeCellId(cid);
+  return STANDARD.filter(o=>o.material===material&&locationCoversPosition(o.location,position));
+}
 function screen2Summary(stds){
   const provs=stds.map(s=>s.provenance).filter(v=>v!=null);
   const lurs=stds.map(s=>s.land_use_relationality).filter(v=>v!=null);
@@ -706,7 +792,7 @@ let briefMode=false,briefAnchors=new Set(),briefCustomAnchors=[];
 
 // ── HELPERS ──────────────────────────────────────────────
 function studiesForCell(cid){return STUDIES.filter(s=>cellId(s.position,s.material)===cid)}
-function objectsForCell(cid){return [...SPECULATIVE,...REALISTIC].filter(o=>o.typology_id===cid)}
+function objectsForCell(cid){return [...SPECULATIVE.filter(o=>o.typology_id===cid),...standardObjectsForCell(cid)]}
 function anchorScore(studies,anchor){
   if(!studies.length)return{score:0,conf:'na'};
   let pts=0;studies.forEach(s=>{const a=s.anchors&&s.anchors[anchor];if(!a||!a.has)return;if(a.score!=null)pts+=a.score/10;else if(a.quant&&a.qual)pts+=1;else if(a.quant||a.qual)pts+=0.5;});
@@ -729,10 +815,12 @@ function updateStats(){
   const filled=new Set(STUDIES.filter(s=>s.position&&s.material).map(s=>cellId(s.position,s.material))).size;
   document.getElementById('s-typos').textContent=filled;
   document.getElementById('s-spec').textContent=SPECULATIVE.length;
-  document.getElementById('s-real').textContent=REALISTIC.length;
+  document.getElementById('s-real').textContent=STANDARD.length;
   if(STUDIES.length){let t=0;STUDIES.forEach(s=>ANC.forEach(a=>{if(s.anchors&&s.anchors[a]&&s.anchors[a].has)t++;}));document.getElementById('s-anc').textContent=Math.round((t/(STUDIES.length*5))*100)+'%';}
   const sLocs=STUDIES.reduce((n,s)=>n+(s.locations||[]).length,0);
-  const oLocs=[...SPECULATIVE,...REALISTIC].filter(o=>o.location).length;
+  // Standard Objects no longer carry geographic coordinates (location is now the cross-shore
+  // position axis, not lat/lng) — only Speculative Objects remain atlas-plottable.
+  const oLocs=SPECULATIVE.filter(o=>o.location).length;
   document.getElementById('atlas-toggle-stats').textContent=`${sLocs} study sites · ${oLocs} object sites`;
 }
 
@@ -742,9 +830,39 @@ function _jitter(seed,i){
   const h=_seedHash(seed+':'+i);
   return{x:22+((h%977)/977)*56,y:22+(((Math.floor(h/977))%977)/977)*56};
 }
+// ── MATRIX SCREEN TOGGLE ──
+// One matrix component, two axis-pairs. Screen 1 (Position × Material) and Screen 2
+// (Provenance × Relationality) are rendered by the same #mx-body element, swapped by
+// setMatrixScreen() — never shown simultaneously as two separate grids. Screen 1 is the
+// default on load, confirmed with Sarah Sep 2026.
+let activeScreen=1;
+function setMatrixScreen(n){
+  if(activeScreen===n)return;
+  activeScreen=n;
+  document.querySelectorAll('.mx-st-btn').forEach((b,i)=>b.classList.toggle('on',i===n-1));
+  document.getElementById('mx-badge').textContent=n===1?'4 × 3':'5 × 5';
+  document.getElementById('mx-legend').style.display=n===1?'block':'none';
+  document.getElementById('mx-biv-key').style.display=n===2?'block':'none';
+  if(n!==2)hideScreen2Tip();
+  // Span view only makes sense against the spatial (Position × Material) face.
+  document.getElementById('mx-span-toggle').style.display=n===1?'flex':'none';
+  renderMatrix();
+}
+// Span view (Screen 1 only) — see renderMatrixScreen1Span() below.
+let spanView=false;
+function toggleSpanView(){
+  spanView=!spanView;
+  document.getElementById('mx-span-btn').classList.toggle('on',spanView);
+  renderMatrix();
+}
 function renderMatrix(){
+  if(activeScreen===2){renderMatrixScreen2();return;}
+  if(spanView){renderMatrixScreen1Span();return;}
+  renderMatrixScreen1();
+}
+function renderMatrixScreen1(){
   const body=document.getElementById('mx-body');
-  let h='<div class="mx-col-heads"><div></div>'+POS.map(p=>`<div class="mx-col-head">${p}</div>`).join('')+'</div>';
+  let h='<div class="mx-axis-caption">Material &darr; &times; Position &rarr;</div><div class="mx-col-heads"><div></div>'+POS.map(p=>`<div class="mx-col-head">${p}</div>`).join('')+'</div>';
   MAT.forEach(mat=>{
     h+=`<div class="mx-row"><div class="mx-rh" style="border-color:${MAT_COLORS[mat]}30"><div class="mx-rh-n" style="color:${MAT_COLORS[mat]}">${mat}</div></div>`;
     POS.forEach(pos=>{
@@ -768,13 +886,137 @@ function renderMatrix(){
   });
   body.innerHTML=h;
 }
-function renderBivKey(){
+// SPAN VIEW — placeholder visualisation of Standard Objects' real cross-shore footprint
+// (Point/Span/Discrete-multi, per data/standard.js `location`) as literal marks across
+// the row instead of being bucketed into one column at a time. Studied Objects don't yet
+// carry `location` at any real scale (only 2 records do, added Sep 2026, one still
+// low-confidence) — this pulls from Standard Objects only until that changes, at which
+// point studies should be folded in the same way. Not wired to selCell/renderTypology;
+// clicking a mark reuses the existing per-cell object-browse drawer (openObjBrowse).
+function renderMatrixScreen1Span(){
+  const body=document.getElementById('mx-body');
+  let h='<div class="mx-axis-caption">Material &darr; &times; Position &rarr;</div><div class="mx-col-heads"><div></div>'+POS.map(p=>`<div class="mx-col-head">${p}</div>`).join('')+'</div>';
+  MAT.forEach(mat=>{
+    const objs=STANDARD.filter(o=>o.material===mat&&o.location);
+    const col=MAT_COLORS[mat];
+    const items=objs.map(o=>{
+      const loc=o.location;
+      if(loc.type==='Point'){
+        const i=POS.indexOf(loc.position);
+        if(i===-1)return'';
+        const left=((i+0.5)/POS.length*100).toFixed(2);
+        return`<div class="mx-span-item"><div class="mx-span-dot" style="left:${left}%;background:${col}" title="${o.name} · ${loc.position}" onclick="openSpanObject('${loc.position}','${mat}')"></div></div>`;
+      }
+      if(loc.type==='Span'){
+        const si=POS.indexOf(loc.start),ei=POS.indexOf(loc.end);
+        if(si===-1||ei===-1)return'';
+        const lo=Math.min(si,ei),hi=Math.max(si,ei);
+        const left=(lo/POS.length*100).toFixed(2),width=(((hi-lo+1)/POS.length)*100).toFixed(2);
+        return`<div class="mx-span-item"><div class="mx-span-bar" style="left:${left}%;width:${width}%;background:${col}" title="${o.name} · ${loc.start} → ${loc.end}" onclick="openSpanObject('${POS[lo]}','${mat}')"></div></div>`;
+      }
+      if(loc.type==='Discrete-multi'){
+        const dots=(loc.positions||[]).map(p=>{
+          const i=POS.indexOf(p);
+          if(i===-1)return'';
+          const left=((i+0.5)/POS.length*100).toFixed(2);
+          return`<div class="mx-span-dot" style="left:${left}%;background:${col}" title="${o.name} · ${p}" onclick="openSpanObject('${p}','${mat}')"></div>`;
+        }).join('');
+        return`<div class="mx-span-item">${dots}</div>`;
+      }
+      return'';
+    }).join('');
+    h+=`<div class="mx-span-row"><div class="mx-rh" style="border-color:${col}30"><div class="mx-rh-n" style="color:${col}">${mat}</div><div class="mx-rh-c">${objs.length}</div></div><div class="mx-span-lane">${items||'<div class="mx-span-empty">no standard objects</div>'}</div></div>`;
+  });
+  body.innerHTML=h;
+}
+function openSpanObject(pos,mat){
+  openObjBrowse(cellId(pos,mat),'realistic');
+}
+// Screen 2 is deliberately NOT rendered as a bivariate-choropleth color blend (that visual
+// language reads as an interaction/product of its two axes). Each cell instead shows two
+// same-hue bars — one per axis — meeting at a literal "+", so the encoding itself says
+// "summed", matching the additive (not geometric-mean) scoring used here.
+//
+// A cell is populated by Screen 1 TYPOLOGY GROUPS, not raw studies: for every Screen 1 cell
+// (Position × Material) that has at least one study, average that group's Provenance and
+// Relationality scores across its studies, then bucket the group onto Screen 2 by rounding
+// that average to the nearest integer axis value. So "4+4" means "these Screen 1 typologies
+// average out to Exogenous/Symbiotic across their studies" — not "these individual studies
+// happen to score exactly 4 and 4". With today's 2-study dataset every populated group still
+// has n=1, so averaging is a no-op in practice — the grouping is real, there's just nothing
+// yet to average over.
+function screen1GroupsForScreen2(){
+  const groups=[];
+  MAT.forEach(mat=>POS.forEach(pos=>{
+    const cid=cellId(pos,mat);
+    const stds=studiesForCell(cid).filter(s=>s.provenance!=null&&s.land_use_relationality!=null);
+    if(!stds.length)return;
+    const avgProv=stds.reduce((a,s)=>a+s.provenance,0)/stds.length;
+    const avgLur=stds.reduce((a,s)=>a+s.land_use_relationality,0)/stds.length;
+    groups.push({cid,pos,mat,avgProv,avgLur,
+      prov:Math.min(5,Math.max(1,Math.round(avgProv))),
+      lur:Math.min(5,Math.max(1,Math.round(avgLur))),
+      studies:stds});
+  }));
+  return groups;
+}
+function renderMatrixScreen2(){
+  const body=document.getElementById('mx-body');
+  const groups=screen1GroupsForScreen2();
+  let h='<div class="mx-axis-caption">Relationality &darr; &times; Provenance &rarr;</div><div class="mx-col-heads s2"><div></div>'+[1,2,3,4,5].map(p=>`<div class="mx-col-head" title="${PROV_LABELS[p]}">${p}</div>`).join('')+'</div>';
+  for(let lur=5;lur>=1;lur--){
+    h+=`<div class="mx-row s2"><div class="mx-rh" style="border-color:rgba(127,119,221,0.3)" title="${LUR_LABELS[lur]}"><div class="mx-rh-n" style="color:var(--sas-ac,#7F77DD)">${lur}</div></div>`;
+    for(let prov=1;prov<=5;prov++){
+      const cellGroups=groups.filter(g=>g.prov===prov&&g.lur===lur);
+      const allStds=cellGroups.flatMap(g=>g.studies);
+      const provPct=Math.round((prov/5)*100),lurPct=Math.round((lur/5)*100);
+      const click=allStds.length===1?`openStudy('${allStds[0].asa_code}')`:'void(0)';
+      h+=`<div class="mc${cellGroups.length?' pop':''}" style="background:${screen2SumColor(prov,lur)}" onclick="${click}" onmousemove="showScreen2Tip(event,${prov},${lur})" onmouseleave="hideScreen2Tip()">
+        <div class="mc-code">${prov}${lur}</div>
+        <div class="mc2-bars"><div class="mc2-bar" style="height:${provPct}%"></div><div class="mc2-plus">+</div><div class="mc2-bar lur" style="height:${lurPct}%"></div></div>
+        ${cellGroups.length?`<div class="mc2-count">${cellGroups.length}</div>`:''}
+      </div>`;
+    }
+    h+='</div>';
+  }
+  body.innerHTML=h;
+  renderScreen2Legend();
+}
+// Cursor-following tooltip (mirrors the old native title-attribute behaviour, positioned at
+// the mouse tip) — shows which Screen 1 typology GROUP(S) average onto this cell, each with
+// its averaged score and constituent studies, not just a raw study list.
+function showScreen2Tip(e,prov,lur){
+  const el=document.getElementById('mx-s2-tip');
+  if(!el)return;
+  const groups=screen1GroupsForScreen2().filter(g=>g.prov===prov&&g.lur===lur);
+  const label=`${PROV_LABELS[prov]} + ${LUR_LABELS[lur]}`;
+  el.innerHTML=groups.length
+    ?`<b>${label}</b><br>`+groups.map(g=>
+        `${g.mat} · ${g.pos} <span class="mx-hover-sub">(avg ${g.avgProv.toFixed(1)}+${g.avgLur.toFixed(1)}, n=${g.studies.length})</span>`
+        +g.studies.map(s=>`<span class="mx-hover-study">${s.title}</span>`).join('')
+      ).join('')
+    :`<b>${label}</b><br><span class="mx-hover-empty">no typologies average here yet</span>`;
+  el.style.display='block';
+  const tipW=250,tipH=el.offsetHeight||60;
+  const overflowsRight=e.clientX+14+tipW>window.innerWidth;
+  const overflowsBottom=e.clientY+14+tipH>window.innerHeight;
+  el.style.left=(overflowsRight?e.clientX-14-tipW:e.clientX+14)+'px';
+  el.style.top=(overflowsBottom?e.clientY-14-tipH:e.clientY+14)+'px';
+}
+function hideScreen2Tip(){
+  const el=document.getElementById('mx-s2-tip');
+  if(el)el.style.display='none';
+}
+function renderScreen2Legend(){
   const el=document.getElementById('mx-biv-key');
   if(!el)return;
-  let sw='';
-  for(let lur=5;lur>=1;lur--)for(let prov=1;prov<=5;prov++)
-    sw+=`<div class="mbk-sw" style="background:${bivariateColor(prov,lur)}" title="${PROV_LABELS[prov]} · ${LUR_LABELS[lur]}"></div>`;
-  el.innerHTML=`<div class="mbk-title">Provenance &times; Land-use Relationality</div><div class="mbk-row"><div class="mbk-ylabel">Solitary &rarr; Symbiotic</div><div class="mbk-grid">${sw}</div></div><div class="mbk-xlabel">Endogenous &rarr; Exogenous</div>`;
+  el.innerHTML=`<div class="mbk-title">Provenance + Relationality (additive)</div>
+    <div class="mxl-row"><div class="mxl-dot" style="border-radius:2px;width:8px;height:8px;background:${screen2SumColor(1,1)}"></div><div class="mxl-label">low combined score</div></div>
+    <div class="mxl-row"><div class="mxl-dot" style="border-radius:2px;width:8px;height:8px;background:${screen2SumColor(5,5)}"></div><div class="mxl-label">high combined score</div></div>
+    <div class="mxl-row"><div class="mc2-bar" style="width:8px;height:8px;border-radius:2px"></div><div class="mxl-label">Provenance — Endogenous &rarr; Exogenous</div></div>
+    <div class="mxl-row"><div class="mc2-bar lur" style="width:8px;height:8px;border-radius:2px"></div><div class="mxl-label">Relationality — Solitary &rarr; Symbiotic</div></div>
+    <div class="mbk-note">Cell fill is one hue, ramped by the summed score — not a two-hue blend, which would read as an interaction between the axes. The bars underneath show the same sum split back into its two parts. Unlike the Screen 1 grid (independent axes, never combined) and unlike the Five Anchors' own geometric-mean scoring, this is a plain additive combination.</div>
+    <div class="mbk-note">Hover a cell — each one is populated by Screen 1 typology groups (Position × Material) averaged across their studies, not by individual studies directly.</div>`;
 }
 // ── ENTRY SEQUENCE (sequential reveal: Screen 1 alone → Screen 2 animates in → legend) ──
 // Renders the actual left-column Wave Matrix already in its final, revealed state —
@@ -782,7 +1024,7 @@ function renderBivKey(){
 // finishes and the overlay fades, the persistent matrix is simply already there.
 function playEntrySequence(){
   const panel=document.getElementById('panel-m');
-  renderMatrix();renderBivKey();
+  renderMatrix();
   panel.classList.add('wm-revealed','wm-legend-revealed');
 }
 
@@ -872,7 +1114,7 @@ function renderTypology(){
   const empty=document.getElementById('ty-empty'),content=document.getElementById('ty-content'),badge=document.getElementById('ty-badge');
   if(!selCell){empty.style.display='flex';content.style.display='none';badge.textContent='–';return;}
   const stds=studiesForCell(selCell);
-  const realObjs=REALISTIC.filter(o=>o.typology_id===selCell);
+  const realObjs=standardObjectsForCell(selCell);
   const specObjs=SPECULATIVE.filter(o=>o.typology_id===selCell);
   const{position:pos,material:mat}=decodeCellId(selCell);
   const mc=MAT_COLORS[mat]||'#888';
@@ -1011,12 +1253,12 @@ function renderBrowseSection(cid,stds,realObjs,specObjs){
       name=item.title;sub=item.citation;
       const gc2=MAT_COLORS[item.material]||'#888';
       tags=`<span class="bc-tag" style="color:var(--sas-t3,#4e4d4a)">${item.position||'–'}</span><span class="bc-tag" style="border-color:${gc2}40;color:${gc2}">${item.material||'–'}</span>`;
-      arrow='open study →';
+      arrow=count>1?`browse all ${count} →`:'open study →';
     } else if(type==='realistic'){
       vis=item.src?`<img src="${item.src}" alt="${item.name}">`:cube();
       name=item.name;sub=item.source;
-      const dp=item.disturbance&&item.disturbance.primary,ds=item.disturbance&&item.disturbance.secondary;
-      tags=`<span class="bc-tag">${item.scale||'–'}</span>${dp?`<span class="bc-tag dtag ${dp}">${dp}</span>`:''}${ds?`<span class="bc-tag dtag ${ds}">${ds}</span>`:''}`;
+      const dp=item.disturbance&&item.disturbance.primary,dsRaw=item.disturbance&&item.disturbance.secondary,ds=(dsRaw&&dsRaw!=='null')?dsRaw:null;
+      tags=`<span class="bc-tag">${item.scale||'–'}</span><span class="bc-tag">${locationLabel(item.location)}</span>${dp&&dp!=='null'?`<span class="bc-tag dtag ${dp}">${dp}</span>`:''}${ds?`<span class="bc-tag dtag ${ds}">${ds}</span>`:''}`;
       arrow=`browse all ${count} →`;
     } else {
       vis=item.src?`<img src="${item.src}" alt="${item.name}">`:cube();
@@ -1034,12 +1276,15 @@ function renderBrowseSection(cid,stds,realObjs,specObjs){
   const tt1={kws:'peer-reviewed · analytically evidenced · SAS-examined',desc:'CPMs documented through research with full multi-dimensional evidence records across all five anchors.',cta:'→ open study record'};
   const tt2={kws:'established · deployed · institutionally trusted',desc:'CPMs embedded in coastal engineering practice. Real and widely built — but not yet subjected to the full evaluative rigour of this framework.',cta:'→ browse standard objects'};
   const tt3={kws:'unbuilt · projective · design imaginaries',desc:'CPMs that do not yet exist as built works. Propositions for what coastal protection could become.',cta:'→ browse speculative objects'};
-  const c1=card('study','Studied Objects','#7F77DD','rgba(127,119,221,0.25)',stds[0]||null,stds.length,stds[0]?`openStudy('${stds[0].asa_code}')`:'void(0)',tt1);
-  const atLimit=stagedItems.length>=MAX_STAGED_ITEMS;
-  const limitTitle=atLimit?` title="limit of ${MAX_STAGED_ITEMS} reached — remove one in the Site panel to add more"`:'';
+  const studyFooter=stds.length?`<div class="bc-add-row" onclick="event.stopPropagation()">
+      <button class="bc-add-btn" onclick="stageObject('${cid}','${stds[0].asa_code}','${stds[0].title.replace(/'/g,"\\'")}','study')">+ add object</button>
+      <button class="bc-add-btn" onclick="stageWholeCell('${cid}','study')">+ add whole cell (${stds.length})</button>
+    </div>`:'';
+  const studyOnclick=stds.length>1?`openObjBrowse('${cid}','study')`:(stds[0]?`openStudy('${stds[0].asa_code}')`:'void(0)');
+  const c1=card('study','Studied Objects','#7F77DD','rgba(127,119,221,0.25)',stds[0]||null,stds.length,studyOnclick,tt1,studyFooter);
   const realFooter=realObjs.length?`<div class="bc-add-row" onclick="event.stopPropagation()">
-      <button class="bc-add-btn" ${atLimit?'disabled':''}${limitTitle} onclick="stageObject('${cid}','${realObjs[0].id}','${realObjs[0].name.replace(/'/g,"\\'")}')">+ add object</button>
-      <button class="bc-add-btn" ${atLimit?'disabled':''}${limitTitle} onclick="stageWholeCell('${cid}')">+ add whole cell (${realObjs.length})</button>
+      <button class="bc-add-btn" onclick="stageObject('${cid}','${realObjs[0].id}','${realObjs[0].name.replace(/'/g,"\\'")}','standard')">+ add object</button>
+      <button class="bc-add-btn" onclick="stageWholeCell('${cid}','standard')">+ add whole cell (${realObjs.length})</button>
     </div>`:'';
   const c2=card('realistic','Standard Objects','#EF9F27','rgba(239,159,39,0.25)',realObjs[0]||null,realObjs.length,realObjs.length?`openObjBrowse('${cid}','realistic')`:'void(0)',tt2,realFooter);
   const c3=card('speculative','Speculative Objects','#9F77DD','rgba(159,119,221,0.25)',specObjs[0]||null,specObjs.length,specObjs.length?`openObjBrowse('${cid}','speculative')`:'void(0)',tt3);
@@ -1090,13 +1335,13 @@ function _redrawSpecCar(id){
 let obBrowseCid=null,obBrowseType=null;
 function openObjBrowse(cid,type){
   obBrowseCid=cid;obBrowseType=type;
-  const g=cid.slice(1),f=cid.slice(0,1);
-  const objs=type==='realistic'?REALISTIC.filter(o=>o.typology_id===cid):SPECULATIVE.filter(o=>o.typology_id===cid);
-  const color=type==='realistic'?'#EF9F27':'#9F77DD';
-  const typeLabel=type==='realistic'?'Standard Objects':'Speculative Objects';
+  const{position:pos,material:mat}=decodeCellId(cid);
+  const objs=type==='study'?studiesForCell(cid):type==='realistic'?standardObjectsForCell(cid):SPECULATIVE.filter(o=>o.typology_id===cid);
+  const color=type==='study'?'#7F77DD':type==='realistic'?'#EF9F27':'#9F77DD';
+  const typeLabel=type==='study'?'Studied Objects':type==='realistic'?'Standard Objects':'Speculative Objects';
   document.getElementById('ob-inner').innerHTML=`
     <div class="sm-close-bar">
-      <div><div class="sm-asa" style="color:${color}">${cid} · ${GN[g]} ${FN[f]}</div><div style="font-size:13px;color:var(--sas-t1,#dedad0);margin:4px 0 3px">${typeLabel} (${objs.length})</div></div>
+      <div><div class="sm-asa" style="color:${color}">${cid} · ${pos} ${mat}</div><div style="font-size:13px;color:var(--sas-t1,#dedad0);margin:4px 0 3px">${typeLabel} (${objs.length})</div></div>
       <button class="sm-close-btn" onclick="closeObjBrowse()">&times; close</button>
     </div>
     <div class="ob-grid">${objs.map((o,i)=>renderObjCard(o,type,i)).join('')}</div>`;
@@ -1106,27 +1351,38 @@ function closeObjBrowse(){document.getElementById('ob').classList.remove('open')
 document.getElementById('ob').onclick=function(e){if(e.target===this)closeObjBrowse();};
 function toggleObjCard(i){const c=document.getElementById(`ob-card-${i}`);if(c)c.classList.toggle('expanded');}
 function renderObjCard(o,type,i){
-  let vis,byline,tags,expand;
-  if(type==='realistic'){
+  let vis,name,byline,tags,expand;
+  if(type==='study'){
+    name=o.title;
+    vis=`<div style="font-size:10px;color:rgba(127,119,221,0.45);letter-spacing:0.1em;text-transform:uppercase;padding:10px;text-align:center">${o.asa_code}</div>`;
+    byline=`<div class="ob-card-byline">${o.citation||'–'}</div>`;
+    const gc2=MAT_COLORS[o.material]||'#888';
+    tags=`<span class="bc-tag" style="color:var(--sas-t3,#4e4d4a)">${o.position||'–'}</span><span class="bc-tag" style="border-color:${gc2}40;color:${gc2}">${o.material||'–'}</span>`;
+    expand='';
+  } else if(type==='realistic'){
+    name=o.name;
     vis=o.src?`<img src="${o.src}" alt="${o.name}" style="width:100%;max-height:90px;object-fit:contain">`:cube();
     byline=`<div class="ob-card-byline">${o.source||'–'}</div>`;
-    const dp=o.disturbance&&o.disturbance.primary,ds=o.disturbance&&o.disturbance.secondary;
-    tags=`<span class="bc-tag">${o.scale||'–'}</span>${dp?`<span class="bc-tag dtag ${dp}">${dp}</span>`:''}${ds?`<span class="bc-tag dtag ${ds}">${ds}</span>`:''}`;
+    const dp=o.disturbance&&o.disturbance.primary,dsRaw=o.disturbance&&o.disturbance.secondary,ds=(dsRaw&&dsRaw!=='null')?dsRaw:null;
+    tags=`<span class="bc-tag">${o.scale||'–'}</span><span class="bc-tag">${locationLabel(o.location)}</span>${dp&&dp!=='null'?`<span class="bc-tag dtag ${dp}">${dp}</span>`:''}${ds?`<span class="bc-tag dtag ${ds}">${ds}</span>`:''}`;
     expand=`<div style="margin-bottom:6px"><div style="font-size:8.5px;color:var(--sas-t2,#8a8880);line-height:1.55">${o.desc||'–'}</div></div>
       ${(o.tags||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${o.tags.map(t=>`<span class="bc-tag">${t}</span>`).join('')}</div>`:''}`;
   } else {
+    name=o.name;
     vis=o.src?`<img src="${o.src}" alt="${o.name}" style="width:100%;max-height:90px;object-fit:contain">`:cube();
     byline=`<div class="ob-card-byline">${o.author||'–'} &middot; ${o.year||'–'}</div>`;
     tags=o.coastal_context?`<span class="bc-tag" style="white-space:normal;line-height:1.4">${o.coastal_context}</span>`:'';
     expand=`<div style="font-size:8.5px;color:var(--sas-t2,#8a8880);line-height:1.55;margin-bottom:6px">${o.description||'–'}</div>
       ${o.location?`<div style="font-size:7px;color:var(--sas-t3,#4e4d4a)">&#9679; ${o.location.label}</div>`:''}`;
   }
-  const atLimit=stagedItems.length>=MAX_STAGED_ITEMS;
-  const addBtn=type==='realistic'?`<button class="ob-card-add" ${atLimit?'disabled':''} title="${atLimit?`limit of ${MAX_STAGED_ITEMS} reached`:'add to spatial builder'}" onclick="event.stopPropagation();stageObject('${o.typology_id}','${o.id}','${o.name.replace(/'/g,"\\'")}')">+</button>`:'';
-  return`<div class="ob-card" id="ob-card-${i}" onclick="toggleObjCard(${i})">
+  const addBtn=(type==='realistic'||type==='study')
+    ?`<button class="ob-card-add" title="add to spatial builder" onclick="event.stopPropagation();stageObject('${obBrowseCid}','${type==='study'?o.asa_code:o.id}','${name.replace(/'/g,"\\'")}','${type==='study'?'study':'standard'}')">+</button>`
+    :'';
+  const clickHandler=type==='study'?`openStudy('${o.asa_code}')`:`toggleObjCard(${i})`;
+  return`<div class="ob-card" id="ob-card-${i}" onclick="${clickHandler}">
     <div class="ob-card-vis">${vis}${addBtn}</div>
-    <div class="ob-card-body"><div class="ob-card-name">${o.name}</div>${byline}<div class="ob-card-tags">${tags}</div></div>
-    <div class="ob-card-expand">${expand}</div>
+    <div class="ob-card-body"><div class="ob-card-name">${name}</div>${byline}<div class="ob-card-tags">${tags}</div></div>
+    ${type==='study'?'':`<div class="ob-card-expand">${expand}</div>`}
   </div>`;}
 
 function toggleSec(el){const b=el.nextElementSibling,t=el.querySelector('span');const col=b.classList.toggle('col');t.textContent=col?'▸':'▾';if(!col)b.style.maxHeight=b.scrollHeight+'px';}
@@ -1138,9 +1394,8 @@ function renderRecords(){
 
 // ── SITE TAB (boundary preview + staged CPMs) ─────────────
 // Staged entries are either a single object ({type:'object', cid, id, name}) or a whole
-// matrix cell's worth of standard objects ({type:'cell', cid, objectIds}). Capped at
-// MAX_STAGED_ITEMS to keep this test's spatial-builder handoff small and legible.
-const MAX_STAGED_ITEMS=2;
+// matrix cell's worth of standard objects ({type:'cell', cid, objectIds}). No cap — any
+// number of objects and whole-cell adds can be staged for the spatial builder handoff.
 let stagedItems=[];
 let siteTabMap=null;
 function updateStagedBadge(){
@@ -1153,8 +1408,9 @@ function renderSiteTab(body){
     tags.length?`<strong>${cat}:</strong> ${tags.join(', ')}`:''
   ).filter(Boolean).join('<br>'):'';
   const itemsHTML=stagedItems.map(it=>{
-    const label=it.type==='object'?it.name:`All Standard Objects (${it.objectIds.length})`;
-    const kindTag=it.type==='object'?'by object':'whole cell';
+    const kindWord=it.kind==='study'?'Studied':'Standard';
+    const label=it.type==='object'?it.name:`All ${kindWord} Objects (${it.objectIds.length})`;
+    const kindTag=`${it.kind==='study'?'studied':'standard'} · ${it.type==='object'?'by object':'whole cell'}`;
     return`<div class="staged-item">
       <span class="staged-item-name">${label}</span>
       <span class="staged-item-cell">${it.cid}</span>
@@ -1170,7 +1426,7 @@ function renderSiteTab(body){
     </div>
     ${tagsHTML?`<div class="site-tab-sec"><div class="site-tab-sec-title">Processes (notes)</div><div class="site-tab-note">${tagsHTML}</div></div>`:''}
     <div class="site-tab-sec">
-      <div class="site-tab-sec-title">Staged for Spatial Builder (${stagedItems.length}/${MAX_STAGED_ITEMS})</div>
+      <div class="site-tab-sec-title">Staged for Spatial Builder (${stagedItems.length})</div>
       <div id="staged-list">${itemsHTML||'<div class="staged-empty">Use "+ add object" or "+ add whole cell" in a typology\'s Browse by Object section to queue CPMs here.</div>'}</div>
       <button class="btn ac site-tab-launch" ${stagedItems.length?'':'disabled'} onclick="launchSpatialBuilder()">open spatial builder &rarr;</button>
       <div id="spatial-builder-status" style="font-size:8px;color:var(--sas-ac2,#EF9F27);margin-top:4px;min-height:10px"></div>
@@ -1195,19 +1451,19 @@ function refreshAfterStageChange(){
   renderRecords();
   if(document.getElementById('ob').classList.contains('open')&&obBrowseCid)openObjBrowse(obBrowseCid,obBrowseType);
 }
-function stageObject(cid,objId,objName){
-  if(stagedItems.length>=MAX_STAGED_ITEMS)return;
+function stageObject(cid,objId,objName,kind){
+  kind=kind||'standard';
   const key='obj:'+objId;
-  if(!stagedItems.find(it=>it.key===key))stagedItems.push({key,type:'object',cid,id:objId,name:objName});
+  if(!stagedItems.find(it=>it.key===key))stagedItems.push({key,type:'object',cid,id:objId,name:objName,kind});
   refreshAfterStageChange();
 }
-function stageWholeCell(cid){
-  if(stagedItems.length>=MAX_STAGED_ITEMS)return;
-  const key='cell:'+cid;
+function stageWholeCell(cid,kind){
+  kind=kind||'standard';
+  const key='cell:'+kind+':'+cid;
   if(!stagedItems.find(it=>it.key===key)){
-    const objectIds=REALISTIC.filter(o=>o.typology_id===cid).map(o=>o.id);
+    const objectIds=kind==='study'?studiesForCell(cid).map(s=>s.asa_code):standardObjectsForCell(cid).map(o=>o.id);
     if(!objectIds.length)return;
-    stagedItems.push({key,type:'cell',cid,objectIds});
+    stagedItems.push({key,type:'cell',cid,objectIds,kind});
   }
   refreshAfterStageChange();
 }
@@ -1271,7 +1527,9 @@ function plotAtlasMarkers(){
   }
 
   if(showObjects){
-    [...SPECULATIVE,...REALISTIC].forEach(o=>{
+    // Standard Objects no longer carry geographic coordinates (location is the cross-shore
+    // position axis now) — only Speculative Objects remain atlas-plottable.
+    SPECULATIVE.forEach(o=>{
       if(!o.location)return;
       const m=L.circleMarker([o.location.lat,o.location.lng],{radius:5,fillColor:'#EF9F27',color:'rgba(255,255,255,0.3)',weight:1,opacity:1,fillOpacity:0.75,dashArray:'3,3'});
       m.typologyId=o.typology_id||null;
@@ -1351,7 +1609,7 @@ function openStudy(asa){
   const sensHtml=(s.sensory||[]).map(x=>`<tr><td>${x.sense}</td><td>${x.obs}</td></tr>`).join('');
   const locHtml=(s.locations||[]).length?`<div class="ms"><div class="ms-title" onclick="toggleMs(this)">Site Locations<span class="ms-toggle">&#9662;</span></div><div class="ms-body" style="max-height:200px">${s.locations.map(l=>`<div style="font-size:9px;color:var(--sas-t2,#8a8880);padding:3px 0;border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07));display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:var(--sas-t3,#4e4d4a)">&#9679;</span>${l.label} <span style="font-size:8px;color:var(--sas-t3,#4e4d4a);margin-left:auto">${l.lat.toFixed(3)}&deg;, ${l.lng.toFixed(3)}&deg;</span></div>`).join('')}</div></div>`:'';
   document.getElementById('sm-inner').innerHTML=`
-    <div class="sm-close-bar"><div><div class="sm-asa">${s.asa_code} &middot; ${s.subtype}</div></div><button class="sm-close-btn" onclick="closeStudy()">&times; close</button></div>
+    <div class="sm-close-bar"><div><div class="sm-asa">${s.asa_code} &middot; ${s.subtype}</div></div><div style="display:flex;gap:6px"><button class="sm-close-btn" style="border-color:rgba(155,149,240,0.5);color:#9b95f0" onclick="stageObject('${(s.position&&s.material)?cellId(s.position,s.material):''}','${s.asa_code}','${s.title.replace(/'/g,"\\'")}','study')">+ add to spatial builder</button><button class="sm-close-btn" onclick="closeStudy()">&times; close</button></div></div>
     <div class="sm-title">${s.title}</div><div class="sm-cite">${s.citation}</div>
     ${s.note?`<div class="warn">&#9651; ${s.note}</div>`:''}
     <div class="sm-badges">${s.position?`<span class="sm-badge" style="border-color:var(--sas-bd2,rgba(255,255,255,0.13));color:var(--sas-t2,#8a8880)">${s.position}</span>`:''}${s.material?`<span class="sm-badge" style="border-color:${gc}55;color:${gc};background:${gc}0d">${s.material}</span>`:''}${s.region?`<span class="sm-badge" style="border-color:var(--sas-bd,rgba(255,255,255,0.07));color:var(--sas-t2,#8a8880)">${s.region}</span>`:''}${s.doc_type?`<span class="sm-badge" style="border-color:var(--sas-bd,rgba(255,255,255,0.07));color:var(--sas-t3,#4e4d4a)">${s.doc_type}</span>`:''}</div>
@@ -1628,6 +1886,16 @@ function completeSiteCharacterization(){
     }
   };
   try{localStorage.setItem('waveSiteContext',JSON.stringify(siteContext));}catch(e){}
+  _enterCatalogue();
+}
+// "skip for now" — same transition into the main catalogue, but leaves siteContext at its
+// default null rather than requiring the form to be filled first. Every siteContext read
+// downstream already guards with `siteContext?`/`siteContext||null` (see renderSiteTab,
+// launchSpatialBuilder), so skipping needs no further special-casing there.
+function skipSiteCharacterization(){
+  _enterCatalogue();
+}
+function _enterCatalogue(){
   restoreComponentsFromGate();
   renderRecords();
   const ov=document.getElementById('opening-overlay');
