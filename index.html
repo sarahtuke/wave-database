@@ -263,6 +263,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 /* OBJECT CAROUSEL */
 .obj-carousel{border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-rl,9px);overflow:hidden}
 .obj-car-vis{position:relative;background:var(--sas-bg3,#171c2e);min-height:130px;display:flex;align-items:center;justify-content:center}
+.obj-car-vis img{max-height:160px;max-width:100%;object-fit:contain;display:block}
 .obj-car-img{width:100%;max-height:150px;object-fit:contain;display:block}
 .obj-car-nav{position:absolute;top:50%;transform:translateY(-50%);width:100%;display:flex;justify-content:space-between;padding:0 6px;pointer-events:none}
 .obj-nav-btn{pointer-events:all;background:rgba(12,15,28,0.75);border:1px solid var(--sas-bd2,rgba(255,255,255,0.13));color:var(--sas-t2,#8a8880);cursor:pointer;font-size:10px;padding:3px 7px;border-radius:var(--sas-r,5px);font-family:'Courier New',monospace}
@@ -295,31 +296,55 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .constellation-wrap{width:100%;margin-bottom:4px}
 
 /* BROWSE STRIP */
-.browse-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px}
-.browse-card{border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-rl,9px);cursor:pointer;transition:all 0.15s;background:var(--sas-bg3,#171c2e);overflow:hidden;display:flex;flex-direction:column}
-.browse-card:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13));background:var(--sas-bg4,#1e2438)}
-.bc-head{padding:5px 9px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07))}
-.bc-label{font-size:7px;letter-spacing:0.1em;text-transform:uppercase;font-weight:bold}
-.bc-count{font-size:7px;color:var(--sas-t3,#4e4d4a)}
-.bc-vis{min-height:72px;display:flex;align-items:center;justify-content:center;background:var(--sas-bg2,#10152a);border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07))}
-.bc-vis img{width:100%;max-height:72px;object-fit:contain}
-.bc-meta{padding:7px 9px;flex:1}
-.bc-name{font-size:9px;color:var(--sas-t1,#dedad0);margin-bottom:2px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bc-sub{font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bc-tags{display:flex;gap:3px;flex-wrap:wrap}
-.bc-tag{font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));color:var(--sas-t3,#4e4d4a)}
-.bc-empty{font-size:8px;color:var(--sas-t3,#4e4d4a);text-align:center;opacity:0.5;padding:8px 0}
-.bc-arrow{font-size:7px;color:var(--sas-t3,#4e4d4a);text-align:right;padding:3px 9px 6px;letter-spacing:0.04em}
-.bc-add-row{display:flex;gap:4px;padding:0 9px 9px;cursor:default}
+.browse-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px;align-items:start}
+.bc-add-row{display:flex;gap:4px;padding:7px 9px 9px;cursor:default}
 .bc-add-btn{flex:1;font-size:7px;padding:4px 5px;border:1px solid rgba(155,149,240,0.4);border-radius:3px;background:rgba(155,149,240,0.07);color:#9b95f0;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.02em;transition:all 0.12s}
 .bc-add-btn:hover{border-color:rgba(155,149,240,0.65);background:rgba(155,149,240,0.14)}
 .bc-add-btn:disabled{opacity:0.35;cursor:not-allowed;pointer-events:none}
-.browse-card.bc-disabled{cursor:default;opacity:0.45}
 .dtag{font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid rgba(127,119,221,0.25);color:var(--sas-ac,#7F77DD);background:rgba(127,119,221,0.07)}
 .dtag.ramp{border-color:rgba(239,159,39,0.3);color:var(--sas-ac2,#EF9F27);background:rgba(239,159,39,0.07)}
 .dtag.pulse{border-color:rgba(192,84,78,0.3);color:#f09595;background:rgba(192,84,78,0.07)}
 .dtag.press{border-color:rgba(99,153,34,0.3);color:#8dc63f;background:rgba(99,153,34,0.07)}
 .dtag.sustained{border-color:rgba(55,138,221,0.3);color:#7db8e8;background:rgba(55,138,221,0.07)}
+
+/* OBJECT MINI CARD (Browse by Object — vertical carousel card) */
+.omc{border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-rl,9px);background:var(--sas-bg3,#171c2e);overflow:hidden;display:flex;flex-direction:column;transition:border-color 0.15s}
+.omc:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13))}
+.omc-head{padding:5px 9px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07))}
+.omc-label{font-size:7px;letter-spacing:0.1em;text-transform:uppercase;font-weight:bold}
+.omc-count{font-size:7px;color:var(--sas-t3,#4e4d4a)}
+.omc-browse{font-size:7px;color:#4ade80;cursor:pointer;letter-spacing:0.03em;white-space:nowrap;padding:2px 6px;border-radius:3px;border:1px solid rgba(74,222,128,0.3);background:rgba(74,222,128,0.08);transition:all 0.12s}
+.omc-browse:hover{border-color:rgba(74,222,128,0.55);background:rgba(74,222,128,0.14)}
+.omc-vis{position:relative;min-height:86px;display:flex;align-items:center;justify-content:center;background:var(--sas-bg2,#10152a);border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07));cursor:pointer}
+.omc-vis img{width:100%;max-height:86px;object-fit:contain}
+.omc-nav{position:absolute;top:50%;transform:translateY(-50%);width:100%;display:flex;justify-content:space-between;padding:0 4px;pointer-events:none}
+.omc-nav-btn{pointer-events:all;background:rgba(12,15,28,0.75);border:1px solid var(--sas-bd2,rgba(255,255,255,0.13));color:var(--sas-t2,#8a8880);cursor:pointer;font-size:9px;padding:2px 6px;border-radius:var(--sas-r,5px);font-family:'Courier New',monospace}
+.omc-nav-btn:hover{background:rgba(12,15,28,0.92);color:var(--sas-t1,#dedad0)}
+.omc-body{padding:7px 9px;flex:1;cursor:pointer}
+.omc-name{font-size:9px;color:var(--sas-t1,#dedad0);margin-bottom:2px;line-height:1.3}
+.omc-byline{font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:5px}
+.omc-desc{font-size:7.5px;color:var(--sas-t2,#8a8880);line-height:1.5;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.omc-tags{display:flex;flex-wrap:wrap;gap:3px}
+.omc-tag{font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid var(--sas-bd,rgba(255,255,255,0.07));color:var(--sas-t3,#4e4d4a)}
+.omc-tag.ctx{border-color:rgba(239,159,39,0.25);color:var(--sas-ac2,#EF9F27);background:rgba(239,159,39,0.07)}
+.omc-fp{margin-top:8px;padding-top:8px;border-top:1px solid var(--sas-bd,rgba(255,255,255,0.07))}
+.omc-foot{padding:5px 9px 6px;border-top:1px solid var(--sas-bd,rgba(255,255,255,0.07));display:flex;align-items:center;justify-content:center}
+.omc-dots{display:flex;gap:3px;align-items:center}
+.omc-dot{width:4px;height:4px;border-radius:50%;border:1px solid var(--sas-bd2,rgba(255,255,255,0.13));cursor:pointer;transition:all 0.12s}
+.omc-dot.on{background:var(--sas-ac,#7F77DD);border-color:var(--sas-ac,#7F77DD)}
+.omc-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:150px;padding:10px;opacity:0.45}
+
+/* OBJECT DETAIL FLOATING DECK (image-1 style, opened from mini card or browse-all grid).
+   Default mode is a centered modal with a blocking backdrop (opened from a typology mini
+   card, nothing behind it to interact with). ".docked" mode is used instead when it's opened
+   from the browse-all grid (#ob): it drops the backdrop and floats beside the grid instead of
+   over it, so the grid stays clickable and browsing happens there while this stays "just a
+   display" that updates to reflect whichever card was clicked. */
+#od{display:none;position:fixed;inset:0;z-index:110;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+#od.open{display:flex}
+#od.docked{background:transparent;pointer-events:none;justify-content:flex-start;padding:24px 24px 24px 664px;align-items:flex-start}
+#od-inner{width:420px;max-width:100%;max-height:90vh;overflow-y:auto;background:var(--sas-bg2,#10152a);border:1px solid var(--sas-bd2,rgba(255,255,255,0.13));border-radius:var(--sas-rl,9px);padding:16px;box-shadow:0 12px 40px rgba(0,0,0,0.5);pointer-events:all}
+.ob-card.active{border-color:rgba(155,149,240,0.6)!important;background:var(--sas-bg4,#1e2438)}
 
 /* OBJECT BROWSE MODAL */
 #ob{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.55)}
@@ -328,7 +353,6 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .ob-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
 .ob-card{border:1px solid var(--sas-bd,rgba(255,255,255,0.07));border-radius:var(--sas-rl,9px);background:var(--sas-bg3,#171c2e);overflow:hidden;transition:border-color 0.15s;cursor:pointer}
 .ob-card:hover{border-color:var(--sas-bd2,rgba(255,255,255,0.13))}
-.ob-card.expanded{border-color:rgba(127,119,221,0.4)!important}
 .ob-card-vis{min-height:90px;background:var(--sas-bg2,#10152a);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--sas-bd,rgba(255,255,255,0.07));position:relative}
 .ob-card-add{position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;border:1px solid rgba(155,149,240,0.5);background:rgba(12,15,28,0.85);color:#9b95f0;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .ob-card-add:hover{background:rgba(155,149,240,0.18)}
@@ -338,8 +362,6 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 .ob-card-name{font-size:10px;color:var(--sas-t1,#dedad0);margin-bottom:3px;line-height:1.3}
 .ob-card-byline{font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:5px}
 .ob-card-tags{display:flex;gap:3px;flex-wrap:wrap}
-.ob-card-expand{font-size:9px;color:var(--sas-t2,#8a8880);line-height:1.55;border-top:1px solid var(--sas-bd,rgba(255,255,255,0.07));padding:9px 11px;display:none}
-.ob-card.expanded .ob-card-expand{display:block}
 
 /* RECORDS */
 #panel-r{width:252px;min-width:252px}
@@ -669,6 +691,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 
 <!-- OBJECT BROWSE MODAL -->
 <div id="ob"><div id="ob-inner"></div></div>
+<div id="od"><div id="od-inner"></div></div>
 
 <!-- STUDY MODAL -->
 <div id="sm"><div id="sm-inner"></div></div>
@@ -792,7 +815,8 @@ let briefMode=false,briefAnchors=new Set(),briefCustomAnchors=[];
 
 // ── HELPERS ──────────────────────────────────────────────
 function studiesForCell(cid){return STUDIES.filter(s=>cellId(s.position,s.material)===cid)}
-function objectsForCell(cid){return [...SPECULATIVE.filter(o=>o.typology_id===cid),...standardObjectsForCell(cid)]}
+function speculativeForCell(cid){return SPECULATIVE.filter(o=>cellId(o.position,o.material)===cid)}
+function objectsForCell(cid){return [...speculativeForCell(cid),...standardObjectsForCell(cid)]}
 function anchorScore(studies,anchor){
   if(!studies.length)return{score:0,conf:'na'};
   let pts=0;studies.forEach(s=>{const a=s.anchors&&s.anchors[anchor];if(!a||!a.has)return;if(a.score!=null)pts+=a.score/10;else if(a.quant&&a.qual)pts+=1;else if(a.quant||a.qual)pts+=0.5;});
@@ -1115,7 +1139,7 @@ function renderTypology(){
   if(!selCell){empty.style.display='flex';content.style.display='none';badge.textContent='–';return;}
   const stds=studiesForCell(selCell);
   const realObjs=standardObjectsForCell(selCell);
-  const specObjs=SPECULATIVE.filter(o=>o.typology_id===selCell);
+  const specObjs=speculativeForCell(selCell);
   const{position:pos,material:mat}=decodeCellId(selCell);
   const mc=MAT_COLORS[mat]||'#888';
   empty.style.display='none';content.style.display='flex';badge.textContent=selCell;
@@ -1135,7 +1159,7 @@ function renderTypology(){
   if(allEmpty){
     document.getElementById('ty-body').innerHTML=`
       <div class="ty-full"><div class="gap-state"><div class="gap-code">${selCell}</div><div style="font-size:10px;color:var(--sas-t2,#8a8880)">${pos} &middot; ${mat}</div><p style="font-size:9px;line-height:1.6;margin-top:6px;opacity:0.6">No studies or objects catalogued for this cell. This is a gap in the current evidence base — a Position &times; Material combination with no documented internal-resilience data yet.</p><div class="gap-note">In the Wave Catalogue, empty cells are findings — they signal where research and design attention has not yet focused.</div></div></div>
-      <div class="ty-full">${renderBrowseSection(selCell,stds,realObjs,specObjs)}</div>`;
+      <div class="ty-full">${renderBrowseSection(selCell)}</div>`;
     if(radarChart){radarChart.destroy();radarChart=null;}return;
   }
   const ancData=ANC.map(a=>anchorScore(stds,a));
@@ -1167,13 +1191,8 @@ function renderTypology(){
     </div>
     <div class="ty-full">
       <div class="ty-sec-title" onclick="toggleSec(this)">Browse by Object<span>&#9662;</span></div>
-      <div class="sec-body" style="max-height:500px">${renderBrowseSection(selCell,stds,realObjs,specObjs)}</div>
+      <div class="sec-body" style="max-height:640px">${renderBrowseSection(selCell)}</div>
     </div>
-    ${specObjs.length?`
-    <div class="ty-full">
-      <div class="ty-sec-title" onclick="toggleSec(this)">Speculative Objects (${specObjs.length})<span>&#9662;</span></div>
-      <div class="sec-body" style="max-height:700px"><div class="obj-carousel" id="scar-${selCell}"></div></div>
-    </div>`:''}
     <div class="ty-full">
       <div class="ty-sec-title" onclick="toggleSec(this)">Metrics &amp; Equations by Anchor<span>&#9662;</span></div>
       <div class="sec-body" style="max-height:600px">
@@ -1198,7 +1217,10 @@ function renderTypology(){
     const wrap=document.getElementById(`cons-${selCell}`);
     if(wrap)wrap.innerHTML=renderConstellation(stds,ancData);
     if(radarChart){radarChart.destroy();radarChart=null;}
-    const scarId=`scar-${selCell}`;if(document.getElementById(scarId))initSpecCar(scarId,selCell);
+    ['study','realistic','speculative'].forEach(t=>{
+      const elId=`omc-${selCell}-${t}`;
+      if(document.getElementById(elId))initObjCar(elId,selCell,t);
+    });
   },30);
 }
 
@@ -1238,97 +1260,166 @@ function renderConstellation(stds,ancData){
 }
 
 // ── BROWSE BY OBJECT ─────────────────────────────────────
-function renderBrowseSection(cid,stds,realObjs,specObjs){
-  function card(type,label,color,borderColor,item,count,onclick,tt,extraFooterHTML){
-    const tipAttr=tt?` data-tip-kws="${tt.kws}" data-tip-desc="${tt.desc}" data-tip-cta="${tt.cta}"`:'';
-    if(!item){
-      return`<div class="browse-card bc-disabled">
-        <div class="bc-head"><span class="bc-label" style="color:${color}"${tipAttr}>${label}</span><span class="bc-count">0</span></div>
-        <div class="bc-vis"><div style="font-size:8px;color:var(--sas-t3,#4e4d4a)">–</div></div>
-        <div class="bc-meta"><div class="bc-empty">none catalogued yet</div></div>
-      </div>`;}
-    let vis,name,sub,tags,arrow;
-    if(type==='study'){
-      vis=`<div style="font-size:9px;color:rgba(127,119,221,0.4);letter-spacing:0.1em;text-transform:uppercase;padding:6px">${item.asa_code}</div>`;
-      name=item.title;sub=item.citation;
-      const gc2=MAT_COLORS[item.material]||'#888';
-      tags=`<span class="bc-tag" style="color:var(--sas-t3,#4e4d4a)">${item.position||'–'}</span><span class="bc-tag" style="border-color:${gc2}40;color:${gc2}">${item.material||'–'}</span>`;
-      arrow=count>1?`browse all ${count} →`:'open study →';
-    } else if(type==='realistic'){
-      vis=item.src?`<img src="${item.src}" alt="${item.name}">`:cube();
-      name=item.name;sub=item.source;
-      const dp=item.disturbance&&item.disturbance.primary,dsRaw=item.disturbance&&item.disturbance.secondary,ds=(dsRaw&&dsRaw!=='null')?dsRaw:null;
-      tags=`<span class="bc-tag">${item.scale||'–'}</span><span class="bc-tag">${locationLabel(item.location)}</span>${dp&&dp!=='null'?`<span class="bc-tag dtag ${dp}">${dp}</span>`:''}${ds?`<span class="bc-tag dtag ${ds}">${ds}</span>`:''}`;
-      arrow=`browse all ${count} →`;
-    } else {
-      vis=item.src?`<img src="${item.src}" alt="${item.name}">`:cube();
-      name=item.name;sub=`${item.author} · ${item.year}`;
-      tags=item.coastal_context?`<span class="bc-tag" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">${item.coastal_context.substring(0,42)}…</span>`:'';
-      arrow=`browse all ${count} →`;
-    }
-    return`<div class="browse-card" style="border-color:${borderColor}" onclick="${onclick}">
-      <div class="bc-head"><span class="bc-label" style="color:${color}"${tipAttr}>${label}</span><span class="bc-count">${count}</span></div>
-      <div class="bc-vis">${vis}</div>
-      <div class="bc-meta"><div class="bc-name">${name}</div><div class="bc-sub">${sub}</div><div class="bc-tags">${tags}</div></div>
-      <div class="bc-arrow">${arrow}</div>
-      ${extraFooterHTML||''}
-    </div>`;}
-  const tt1={kws:'peer-reviewed · analytically evidenced · SAS-examined',desc:'CPMs documented through research with full multi-dimensional evidence records across all five anchors.',cta:'→ open study record'};
-  const tt2={kws:'established · deployed · institutionally trusted',desc:'CPMs embedded in coastal engineering practice. Real and widely built — but not yet subjected to the full evaluative rigour of this framework.',cta:'→ browse standard objects'};
-  const tt3={kws:'unbuilt · projective · design imaginaries',desc:'CPMs that do not yet exist as built works. Propositions for what coastal protection could become.',cta:'→ browse speculative objects'};
-  const studyFooter=stds.length?`<div class="bc-add-row" onclick="event.stopPropagation()">
-      <button class="bc-add-btn" onclick="stageObject('${cid}','${stds[0].asa_code}','${stds[0].title.replace(/'/g,"\\'")}','study')">+ add object</button>
-      <button class="bc-add-btn" onclick="stageWholeCell('${cid}','study')">+ add whole cell (${stds.length})</button>
+const TYPE_META={
+  study:{label:'Studied Objects',color:'#7F77DD',tag:'studied',
+    tt:{kws:'peer-reviewed · analytically evidenced · SAS-examined',desc:'CPMs documented through research with full multi-dimensional evidence records across all five anchors.',cta:'→ open study record'}},
+  realistic:{label:'Standard Objects',color:'#EF9F27',tag:'standard',
+    tt:{kws:'established · deployed · institutionally trusted',desc:'CPMs embedded in coastal engineering practice. Real and widely built — but not yet subjected to the full evaluative rigour of this framework.',cta:'→ browse standard objects'}},
+  speculative:{label:'Speculative Objects',color:'#9F77DD',tag:'speculative',
+    tt:{kws:'unbuilt · projective · design imaginaries',desc:'CPMs that do not yet exist as built works. Propositions for what coastal protection could become.',cta:'→ browse speculative objects'}}
+};
+function objsForType(cid,type){
+  return type==='study'?studiesForCell(cid):type==='realistic'?standardObjectsForCell(cid):speculativeForCell(cid);
+}
+// Normalises the three very different data shapes (literature study / built CPM / speculative
+// proposal) into one shape the mini-card and floating detail deck can both render generically.
+function objFields(o,type){
+  if(type==='study'){
+    const gc2=MAT_COLORS[o.material]||'#888';
+    return{
+      vis:`<div style="font-size:9px;color:rgba(127,119,221,0.4);letter-spacing:0.1em;text-transform:uppercase;padding:6px;text-align:center">${o.asa_code}</div>`,
+      name:o.title,byline:o.citation||'–',desc:null,location:null,footprint:null,
+      tags:[{cls:'',text:o.position||'–'},{cls:'',text:o.material||'–',color:gc2}]
+    };
+  }
+  if(type==='realistic'){
+    const dp=o.disturbance&&o.disturbance.primary,dsRaw=o.disturbance&&o.disturbance.secondary,ds=(dsRaw&&dsRaw!=='null')?dsRaw:null;
+    return{
+      vis:o.src?`<img src="${o.src}" alt="${o.name}">`:cube(),
+      name:o.name,byline:o.source||'–',desc:o.desc||null,location:o.location?{label:locationLabel(o.location)}:null,footprint:null,
+      tags:[o.scale?{cls:'',text:o.scale}:null,{cls:'',text:locationLabel(o.location)},dp&&dp!=='null'?{cls:'dtag '+dp,text:dp}:null,ds?{cls:'dtag '+ds,text:ds}:null].filter(Boolean)
+    };
+  }
+  return{
+    vis:o.src?`<img src="${o.src}" alt="${o.name}">`:cube(),
+    name:o.name,byline:`${o.author} &middot; ${o.year}`,desc:o.description||null,location:o.location||null,footprint:o.footprint||null,
+    tags:[o.coastal_context?{cls:'ctx',text:o.coastal_context}:null,o.scale?{cls:'',text:o.scale}:null].filter(Boolean)
+  };
+}
+function objTagsHTML(tags){
+  return(tags||[]).map(t=>`<span class="omc-tag ${t.cls||''}"${t.color?` style="border-color:${t.color}40;color:${t.color}"`:''}>${t.text}</span>`).join('');
+}
+// Renders the "Scale Footprint" grid + caption (only when the object actually carries footprint
+// data — currently Speculative objects only; Standard/Study records have no rows/cols to plot).
+function footprintBlockHTML(o,f){
+  if(!f.footprint)return'';
+  const fp=f.footprint,gs=9;
+  const grid=Array.from({length:gs*gs},(_,i)=>{const r=Math.floor(i/gs),c=i%gs;const on=r<fp.rows&&c<fp.cols;return`<div style="width:7px;height:7px;border-radius:1px;background:${on?'rgba(127,119,221,0.45)':'rgba(255,255,255,0.04)'}"></div>`;}).join('');
+  return`<div style="font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);margin:2px 0 5px">Scale Footprint</div>
+    <div style="display:flex;align-items:flex-start;gap:10px">
+      <div style="display:inline-grid;grid-template-columns:repeat(${gs},8px);gap:1px;flex-shrink:0">${grid}</div>
+      <div>
+        <div style="font-size:8px;font-weight:bold;color:var(--sas-t2,#8a8880);margin-bottom:3px">${o.scale||'unit scale'}</div>
+        <div style="font-size:7px;color:var(--sas-t3,#4e4d4a);font-style:italic;line-height:1.5">Shaded area = approx. ground coverage. Each cell = 1 m.</div>
+      </div>
+    </div>`;
+}
+function renderOmcCard(cid,type){
+  const meta=TYPE_META[type];
+  const objs=objsForType(cid,type);
+  const tipAttr=` data-tip-kws="${meta.tt.kws}" data-tip-desc="${meta.tt.desc}" data-tip-cta="${meta.tt.cta}"`;
+  if(!objs.length){
+    return`<div class="omc">
+      <div class="omc-head"><span class="omc-label" style="color:${meta.color}"${tipAttr}>${meta.label}</span><span class="omc-count">0</span></div>
+      <div class="omc-empty"><div style="font-size:8px;color:var(--sas-t3,#4e4d4a)">none catalogued yet</div></div>
+    </div>`;
+  }
+  const elId=`omc-${cid}-${type}`;
+  const addFooter=(type==='study'||type==='realistic')?`<div class="bc-add-row" onclick="event.stopPropagation()">
+      <button class="bc-add-btn" onclick="stageObject('${cid}','${type==='study'?objs[0].asa_code:objs[0].id}','${(type==='study'?objs[0].title:objs[0].name).replace(/'/g,"\\'")}','${type==='study'?'study':'standard'}')">+ add object</button>
+      <button class="bc-add-btn" onclick="stageWholeCell('${cid}','${type==='study'?'study':'standard'}')">+ add whole cell (${objs.length})</button>
     </div>`:'';
-  const studyOnclick=stds.length>1?`openObjBrowse('${cid}','study')`:(stds[0]?`openStudy('${stds[0].asa_code}')`:'void(0)');
-  const c1=card('study','Studied Objects','#7F77DD','rgba(127,119,221,0.25)',stds[0]||null,stds.length,studyOnclick,tt1,studyFooter);
-  const realFooter=realObjs.length?`<div class="bc-add-row" onclick="event.stopPropagation()">
-      <button class="bc-add-btn" onclick="stageObject('${cid}','${realObjs[0].id}','${realObjs[0].name.replace(/'/g,"\\'")}','standard')">+ add object</button>
-      <button class="bc-add-btn" onclick="stageWholeCell('${cid}','standard')">+ add whole cell (${realObjs.length})</button>
-    </div>`:'';
-  const c2=card('realistic','Standard Objects','#EF9F27','rgba(239,159,39,0.25)',realObjs[0]||null,realObjs.length,realObjs.length?`openObjBrowse('${cid}','realistic')`:'void(0)',tt2,realFooter);
-  const c3=card('speculative','Speculative Objects','#9F77DD','rgba(159,119,221,0.25)',specObjs[0]||null,specObjs.length,specObjs.length?`openObjBrowse('${cid}','speculative')`:'void(0)',tt3);
-  return`<div style="font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:8px;font-style:italic;letter-spacing:0.04em">Studied Objects &nbsp;&#8594;&nbsp; Standard Objects &nbsp;&#8594;&nbsp; Speculative Objects</div><div class="browse-strip">${c1}${c2}${c3}</div>`;
+  return`<div class="omc">
+    <div class="omc-head"><span class="omc-label" style="color:${meta.color}"${tipAttr}>${meta.label}</span><span class="omc-browse" onclick="openObjBrowse('${cid}','${type}')">browse all ${objs.length} &rarr;</span></div>
+    <div id="${elId}"></div>
+    ${addFooter}
+  </div>`;
+}
+function renderBrowseSection(cid){
+  return`<div style="font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:8px;font-style:italic;letter-spacing:0.04em">Studied Objects &nbsp;&#8594;&nbsp; Standard Objects &nbsp;&#8594;&nbsp; Speculative Objects</div>
+    <div class="browse-strip">${renderOmcCard(cid,'study')}${renderOmcCard(cid,'realistic')}${renderOmcCard(cid,'speculative')}</div>`;
 }
 
-// ── SPECULATIVE CAROUSEL ─────────────────────────────────
-let _scs={};
-function initSpecCar(id,tid){_scs[id]={tid,idx:0};_redrawSpecCar(id);}
-function stepSpecCar(id,d){const s=_scs[id];if(!s)return;const n=SPECULATIVE.filter(o=>o.typology_id===s.tid).length;s.idx=(s.idx+d+n)%n;_redrawSpecCar(id);}
-function goSpecCar(id,i){const s=_scs[id];if(!s)return;s.idx=i;_redrawSpecCar(id);}
-function _redrawSpecCar(id){
-  const s=_scs[id];if(!s)return;
-  const objs=SPECULATIVE.filter(o=>o.typology_id===s.tid);
+// ── OBJECT MINI CAROUSEL (vertical card, flip within a type in-place) ────
+let _omc={};
+function initObjCar(id,cid,type){_omc[id]={cid,type,idx:0};_redrawObjCar(id);}
+function stepObjCar(id,d){const s=_omc[id];if(!s)return;const n=objsForType(s.cid,s.type).length;if(!n)return;s.idx=(s.idx+d+n)%n;_redrawObjCar(id);}
+function goObjCar(id,i){const s=_omc[id];if(!s)return;s.idx=i;_redrawObjCar(id);}
+function omcOpen(id){
+  const s=_omc[id];if(!s)return;
+  const o=objsForType(s.cid,s.type)[s.idx];if(!o)return;
+  if(s.type==='study')openStudy(o.asa_code);else openObjDetail(s.cid,s.type,s.idx);
+}
+function _redrawObjCar(id){
+  const s=_omc[id];if(!s)return;
+  const objs=objsForType(s.cid,s.type);
   const o=objs[s.idx];if(!o)return;
-  const fp=o.footprint||{rows:2,cols:3};const gs=9;
-  const grid=Array.from({length:gs*gs},(_,i)=>{const r=Math.floor(i/gs),c=i%gs;const f=r<fp.rows&&c<fp.cols;return`<div style="width:7px;height:7px;border-radius:1px;background:${f?'rgba(127,119,221,0.45)':'rgba(255,255,255,0.04)'}"></div>`;}).join('');
-  const vis=o.src?`<img src="${o.src}" alt="${o.name}" style="max-height:120px;max-width:100%;object-fit:contain">`:`<div style="text-align:center;padding:4px 0"><div style="font-size:7px;color:rgba(127,119,221,0.3);margin-bottom:4px">set src to activate GIF</div>${cube()}</div>`;
+  const f=objFields(o,s.type);
   const el=document.getElementById(id);if(!el)return;
+  const navHTML=objs.length>1?`<div class="omc-nav"><button class="omc-nav-btn" onclick="event.stopPropagation();stepObjCar('${id}',-1)">&#8592;</button><button class="omc-nav-btn" onclick="event.stopPropagation();stepObjCar('${id}',1)">&#8594;</button></div>`:'';
   el.innerHTML=`
-    <div class="obj-car-vis">${vis}<div class="obj-car-nav"><button class="obj-nav-btn" onclick="stepSpecCar('${id}',-1)">&#8592;</button><button class="obj-nav-btn" onclick="stepSpecCar('${id}',1)">&#8594;</button></div></div>
-    <div class="obj-car-meta">
-      <div class="obj-car-name">${o.name}</div>
-      <div class="obj-car-byline">${o.author} &middot; ${o.year}</div>
-      <div class="obj-car-desc">${o.description}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px">
-        ${o.coastal_context?`<span class="obj-car-ctx">${o.coastal_context}</span>`:''}
-        ${o.scale?`<span style="font-size:7px;padding:2px 6px;border-radius:3px;border:1px solid rgba(255,255,255,0.12);color:var(--sas-t2,#8a8880)">&#9679; ${o.scale}</span>`:''}
+    <div class="omc-vis" onclick="omcOpen('${id}')">${f.vis}${navHTML}</div>
+    <div class="omc-body" onclick="omcOpen('${id}')">
+      <div class="omc-name">${f.name}</div>
+      <div class="omc-byline">${f.byline}</div>
+      ${f.desc?`<div class="omc-desc">${f.desc}</div>`:''}
+      <div class="omc-tags">${objTagsHTML(f.tags)}</div>
+      ${f.footprint?`<div class="omc-fp">${footprintBlockHTML(o,f)}</div>`:''}
+    </div>
+    ${objs.length>1?`<div class="omc-foot"><div class="omc-dots">${objs.map((_,j)=>`<div class="omc-dot ${j===s.idx?'on':''}" onclick="goObjCar('${id}',${j})"></div>`).join('')}</div></div>`:''}`;
+}
+
+// ── OBJECT DETAIL FLOATING DECK (image-1 style; opened from a mini card or the browse-all grid) ─
+let _od=null;
+function openObjDetail(cid,type,idx){
+  _od={cid,type,idx};
+  const odEl=document.getElementById('od');
+  odEl.classList.toggle('docked',document.getElementById('ob').classList.contains('open'));
+  odEl.classList.add('open');
+  _redrawObjDetail();
+}
+function stepObjDetail(d){if(!_od)return;const n=objsForType(_od.cid,_od.type).length;if(!n)return;_od.idx=(_od.idx+d+n)%n;_redrawObjDetail();}
+function goObjDetail(i){if(!_od)return;_od.idx=i;_redrawObjDetail();}
+function closeObjDetail(){document.getElementById('od').classList.remove('open','docked');_od=null;}
+document.getElementById('od').onclick=function(e){if(e.target===this)closeObjDetail();};
+// Mirrors the currently displayed object back onto the browse-all grid card so the grid — the
+// thing actually being "browsed" — shows which card the floating deck is displaying.
+function syncObGridActive(){
+  if(!_od)return;
+  document.querySelectorAll('.ob-card').forEach((c,i)=>c.classList.toggle('active',i===_od.idx&&obBrowseCid===_od.cid&&obBrowseType===_od.type));
+}
+function _redrawObjDetail(){
+  if(!_od)return;
+  const{cid,type,idx}=_od;
+  const objs=objsForType(cid,type);
+  const o=objs[idx];if(!o)return;
+  const f=objFields(o,type);
+  const meta=TYPE_META[type];
+  const fpHTML=footprintBlockHTML(o,f);
+  const navHTML=objs.length>1?`<div class="obj-car-nav"><button class="obj-nav-btn" onclick="stepObjDetail(-1)">&#8592;</button><button class="obj-nav-btn" onclick="stepObjDetail(1)">&#8594;</button></div>`:'';
+  const dotsHTML=objs.length>1?`<div class="obj-dots">${objs.map((_,j)=>`<div class="obj-dot ${j===idx?'on':''}" onclick="goObjDetail(${j})"></div>`).join('')}</div>`:'<span></span>';
+  const addBtn=(type==='realistic'||type==='study')?`<button class="bc-add-btn" onclick="stageObject('${cid}','${type==='study'?o.asa_code:o.id}','${f.name.replace(/'/g,"\\'")}','${type==='study'?'study':'standard'}')">+ add to spatial builder</button>`:'';
+  document.getElementById('od-inner').innerHTML=`
+    <div class="sm-close-bar">
+      <div><div class="sm-asa" style="color:${meta.color}">${cid} &middot; ${meta.label}</div><div style="font-size:12px;color:var(--sas-t1,#dedad0);margin:4px 0 0">${f.name}</div></div>
+      <button class="sm-close-btn" onclick="closeObjDetail()">&times; close</button>
+    </div>
+    <div class="obj-carousel">
+      <div class="obj-car-vis">${f.vis}${navHTML}</div>
+      <div class="obj-car-meta">
+        <div class="obj-car-byline">${f.byline}</div>
+        ${f.desc?`<div class="obj-car-desc">${f.desc}</div>`:''}
+        <div class="omc-tags" style="margin-bottom:6px">${objTagsHTML(f.tags)}</div>
+        ${f.location?`<div style="font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:8px">&#9679; ${f.location.label}</div>`:''}
+        ${fpHTML}
       </div>
-      ${o.location?`<div style="font-size:7px;color:var(--sas-t3,#4e4d4a);margin-bottom:8px">&#9679; ${o.location.label}</div>`:''}
-      <div style="font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3,#4e4d4a);margin-bottom:5px">Scale Footprint</div>
-      <div style="display:flex;align-items:flex-start;gap:10px">
-        <div style="display:inline-grid;grid-template-columns:repeat(${gs},8px);gap:1px;flex-shrink:0">${grid}</div>
-        <div>
-          <div style="font-size:8px;font-weight:bold;color:var(--sas-t2,#8a8880);margin-bottom:3px">${o.scale||'unit scale'}</div>
-          <div style="font-size:7px;color:var(--sas-t3,#4e4d4a);font-style:italic;line-height:1.5">Shaded area = approx. ground coverage. Each cell = 1 m.</div>
-          <div style="font-size:7px;color:var(--sas-t3,#4e4d4a);margin-top:8px;border-top:1px solid rgba(255,255,255,0.05);padding-top:4px">1 cell = 1 m</div>
-        </div>
+      <div class="obj-car-foot">
+        ${dotsHTML}
+        <div style="display:flex;align-items:center;gap:6px"><span class="obj-count">${idx+1}/${objs.length}</span><span class="obj-spec-tag" style="color:${meta.color};border-color:${meta.color}40">${meta.tag}</span></div>
       </div>
     </div>
-    <div class="obj-car-foot">
-      <div class="obj-dots">${objs.map((_,j)=>`<div class="obj-dot ${j===s.idx?'on':''}" onclick="goSpecCar('${id}',${j})"></div>`).join('')}</div>
-      <div style="display:flex;align-items:center;gap:6px"><span class="obj-count">${s.idx+1}/${objs.length}</span><span class="obj-spec-tag">speculative</span></div>
-    </div>`;
+    ${addBtn?`<div style="margin-top:10px">${addBtn}</div>`:''}`;
+  syncObGridActive();
 }
 
 // ── OBJECT BROWSE MODAL ──────────────────────────────────
@@ -1336,7 +1427,7 @@ let obBrowseCid=null,obBrowseType=null;
 function openObjBrowse(cid,type){
   obBrowseCid=cid;obBrowseType=type;
   const{position:pos,material:mat}=decodeCellId(cid);
-  const objs=type==='study'?studiesForCell(cid):type==='realistic'?standardObjectsForCell(cid):SPECULATIVE.filter(o=>o.typology_id===cid);
+  const objs=type==='study'?studiesForCell(cid):type==='realistic'?standardObjectsForCell(cid):speculativeForCell(cid);
   const color=type==='study'?'#7F77DD':type==='realistic'?'#EF9F27':'#9F77DD';
   const typeLabel=type==='study'?'Studied Objects':type==='realistic'?'Standard Objects':'Speculative Objects';
   document.getElementById('ob-inner').innerHTML=`
@@ -1347,42 +1438,20 @@ function openObjBrowse(cid,type){
     <div class="ob-grid">${objs.map((o,i)=>renderObjCard(o,type,i)).join('')}</div>`;
   document.getElementById('ob').classList.add('open');
 }
-function closeObjBrowse(){document.getElementById('ob').classList.remove('open');obBrowseCid=null;obBrowseType=null;}
+function closeObjBrowse(){
+  document.getElementById('ob').classList.remove('open');obBrowseCid=null;obBrowseType=null;
+  if(document.getElementById('od').classList.contains('docked'))closeObjDetail();
+}
 document.getElementById('ob').onclick=function(e){if(e.target===this)closeObjBrowse();};
-function toggleObjCard(i){const c=document.getElementById(`ob-card-${i}`);if(c)c.classList.toggle('expanded');}
 function renderObjCard(o,type,i){
-  let vis,name,byline,tags,expand;
-  if(type==='study'){
-    name=o.title;
-    vis=`<div style="font-size:10px;color:rgba(127,119,221,0.45);letter-spacing:0.1em;text-transform:uppercase;padding:10px;text-align:center">${o.asa_code}</div>`;
-    byline=`<div class="ob-card-byline">${o.citation||'–'}</div>`;
-    const gc2=MAT_COLORS[o.material]||'#888';
-    tags=`<span class="bc-tag" style="color:var(--sas-t3,#4e4d4a)">${o.position||'–'}</span><span class="bc-tag" style="border-color:${gc2}40;color:${gc2}">${o.material||'–'}</span>`;
-    expand='';
-  } else if(type==='realistic'){
-    name=o.name;
-    vis=o.src?`<img src="${o.src}" alt="${o.name}" style="width:100%;max-height:90px;object-fit:contain">`:cube();
-    byline=`<div class="ob-card-byline">${o.source||'–'}</div>`;
-    const dp=o.disturbance&&o.disturbance.primary,dsRaw=o.disturbance&&o.disturbance.secondary,ds=(dsRaw&&dsRaw!=='null')?dsRaw:null;
-    tags=`<span class="bc-tag">${o.scale||'–'}</span><span class="bc-tag">${locationLabel(o.location)}</span>${dp&&dp!=='null'?`<span class="bc-tag dtag ${dp}">${dp}</span>`:''}${ds?`<span class="bc-tag dtag ${ds}">${ds}</span>`:''}`;
-    expand=`<div style="margin-bottom:6px"><div style="font-size:8.5px;color:var(--sas-t2,#8a8880);line-height:1.55">${o.desc||'–'}</div></div>
-      ${(o.tags||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${o.tags.map(t=>`<span class="bc-tag">${t}</span>`).join('')}</div>`:''}`;
-  } else {
-    name=o.name;
-    vis=o.src?`<img src="${o.src}" alt="${o.name}" style="width:100%;max-height:90px;object-fit:contain">`:cube();
-    byline=`<div class="ob-card-byline">${o.author||'–'} &middot; ${o.year||'–'}</div>`;
-    tags=o.coastal_context?`<span class="bc-tag" style="white-space:normal;line-height:1.4">${o.coastal_context}</span>`:'';
-    expand=`<div style="font-size:8.5px;color:var(--sas-t2,#8a8880);line-height:1.55;margin-bottom:6px">${o.description||'–'}</div>
-      ${o.location?`<div style="font-size:7px;color:var(--sas-t3,#4e4d4a)">&#9679; ${o.location.label}</div>`:''}`;
-  }
+  const f=objFields(o,type);
   const addBtn=(type==='realistic'||type==='study')
-    ?`<button class="ob-card-add" title="add to spatial builder" onclick="event.stopPropagation();stageObject('${obBrowseCid}','${type==='study'?o.asa_code:o.id}','${name.replace(/'/g,"\\'")}','${type==='study'?'study':'standard'}')">+</button>`
+    ?`<button class="ob-card-add" title="add to spatial builder" onclick="event.stopPropagation();stageObject('${obBrowseCid}','${type==='study'?o.asa_code:o.id}','${f.name.replace(/'/g,"\\'")}','${type==='study'?'study':'standard'}')">+</button>`
     :'';
-  const clickHandler=type==='study'?`openStudy('${o.asa_code}')`:`toggleObjCard(${i})`;
+  const clickHandler=type==='study'?`openStudy('${o.asa_code}')`:`openObjDetail('${obBrowseCid}','${type}',${i})`;
   return`<div class="ob-card" id="ob-card-${i}" onclick="${clickHandler}">
-    <div class="ob-card-vis">${vis}${addBtn}</div>
-    <div class="ob-card-body"><div class="ob-card-name">${name}</div>${byline}<div class="ob-card-tags">${tags}</div></div>
-    ${type==='study'?'':`<div class="ob-card-expand">${expand}</div>`}
+    <div class="ob-card-vis">${f.vis}${addBtn}</div>
+    <div class="ob-card-body"><div class="ob-card-name">${f.name}</div><div class="ob-card-byline">${f.byline}</div><div class="ob-card-tags">${objTagsHTML(f.tags)}</div></div>
   </div>`;}
 
 function toggleSec(el){const b=el.nextElementSibling,t=el.querySelector('span');const col=b.classList.toggle('col');t.textContent=col?'▸':'▾';if(!col)b.style.maxHeight=b.scrollHeight+'px';}
@@ -1532,7 +1601,7 @@ function plotAtlasMarkers(){
     SPECULATIVE.forEach(o=>{
       if(!o.location)return;
       const m=L.circleMarker([o.location.lat,o.location.lng],{radius:5,fillColor:'#EF9F27',color:'rgba(255,255,255,0.3)',weight:1,opacity:1,fillOpacity:0.75,dashArray:'3,3'});
-      m.typologyId=o.typology_id||null;
+      m.typologyId=(o.position&&o.material)?cellId(o.position,o.material):null;
       m.markerType='object';
       m.bindPopup(`<div style="font-size:7px;padding:1px 6px;border-radius:3px;border:1px solid rgba(239,159,39,0.3);color:#EF9F27;display:inline-block;margin-bottom:5px;letter-spacing:0.05em">Speculative Object</div><div style="font-size:10px;color:var(--sas-t1,#dedad0);margin-bottom:2px;line-height:1.3">${o.name}</div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);margin-bottom:4px">${o.author} &middot; ${o.year}</div><div style="font-size:8px;color:var(--sas-t3,#4e4d4a);font-style:italic;margin-bottom:5px">${o.location.label}</div><div style="font-size:8px;color:var(--sas-t2,#8a8880);line-height:1.4">${o.coastal_context}</div>${m.typologyId?`<div style="font-size:8px;color:#9b95f0;cursor:pointer;margin-top:6px" onclick="clickCell('${m.typologyId}')">&#8594; highlight in matrix</div>`:''}`,{className:'sas-popup'});
       m.on('click',()=>{if(m.typologyId)clickCell(m.typologyId);});
