@@ -714,6 +714,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 <script src="data/studies.js"></script>
 <script src="data/speculative.js"></script>
 <script src="data/standard.js"></script>
+<script src="config.js"></script>
 <script>
 // ── CONSTANTS ───────────────────────────────────────────
 const GRP=['A','B','C','D','E'];
@@ -1506,7 +1507,7 @@ function renderSiteTab(body){
       const el=document.getElementById('site-tab-map');
       if(!el)return;
       siteTabMap=L.map('site-tab-map',{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false});
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:18}).addTo(siteTabMap);
+      L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${window.APP_CONFIG.CARTO_API_KEY}`,{subdomains:'abcd',maxZoom:18}).addTo(siteTabMap);
       const bb=siteContext.boundingBox;
       const bounds=[[bb.south,bb.west],[bb.north,bb.east]];
       L.rectangle(bounds,{color:'#7F77DD',weight:1.5,fillOpacity:0.12}).addTo(siteTabMap);
@@ -1565,7 +1566,7 @@ function initAtlas(){
     worldCopyJump:true,
     maxBounds:[[-85,-240],[85,240]],
     maxBoundsViscosity:0.6});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${window.APP_CONFIG.CARTO_API_KEY}`,{
     attribution:'&copy; <a href="https://openstreetmap.org">OSM</a> &copy; <a href="https://carto.com">CARTO</a>',
     subdomains:'abcd',maxZoom:18,
     errorTileUrl:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
@@ -1826,7 +1827,7 @@ function restoreComponentsFromGate(){
 function initSiteCharMap(){
   if(!window.L)return;
   scMap=L.map('sc-map',{center:[25,10],zoom:2,zoomControl:true});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${window.APP_CONFIG.CARTO_API_KEY}`,{
     attribution:'&copy; <a href="https://openstreetmap.org">OSM</a> &copy; <a href="https://carto.com">CARTO</a>',
     subdomains:'abcd',maxZoom:18
   }).addTo(scMap);
