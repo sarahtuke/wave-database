@@ -305,6 +305,7 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 <script src="data/studies.js"></script>
 <script src="data/speculative.js"></script>
 <script src="data/standard.js"></script>
+<script src="config.js"></script>
 <script>
 // ── CONSTANTS ─────────────────────────────────────────────
 // Material colors match the Wave Matrix's own scheme (index.html MAT_COLORS) — the
@@ -506,7 +507,7 @@ function drawSiteBoundary(){
 // ── MAP ───────────────────────────────────────────────────
 function initMap(){
   sMap=L.map('map',{center:[20,10],zoom:2});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${window.APP_CONFIG.CARTO_API_KEY}`,{
     attribution:'&copy; <a href="https://openstreetmap.org">OSM</a> &copy; <a href="https://carto.com">CARTO</a>',
     subdomains:'abcd',maxZoom:19
   }).addTo(sMap);

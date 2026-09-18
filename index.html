@@ -1632,7 +1632,7 @@ function setAtlasSize(mode){
   body.classList.remove('collapsed');
   body.style.height='';
   if(mode==='full'){body.style.height=(window.innerHeight-68)+'px';}
-  else if(mode==='hidden'){body.classList.add('collapsed');}
+  else if(mode==='hidden'){body.classList.add('collapsed');body.style.height='0px';}
   atlasOpen=(mode!=='hidden');
   ['atl-full','atl-def','atl-hide'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
   const activeId=mode==='full'?'atl-full':mode==='hidden'?'atl-hide':'atl-def';
