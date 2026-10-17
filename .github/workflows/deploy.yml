@@ -28,7 +28,8 @@ jobs:
           cat > config.js <<EOF
           window.APP_CONFIG = {
             CARTO_API_KEY: "${{ secrets.CARTO_API_KEY }}",
-            GOOGLE_PLACES_API_KEY: "${{ secrets.GOOGLE_PLACES_API_KEY }}"
+            GOOGLE_PLACES_API_KEY: "${{ secrets.GOOGLE_PLACES_API_KEY }}",
+            CLAUDE_API_KEY: "${{ secrets.CLAUDE_API_KEY }}"
           };
           EOF
 

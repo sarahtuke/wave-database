@@ -128,9 +128,20 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 .anc-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
 .anc-row:last-child{margin-bottom:0}
 .anc-name{font-size:7px;color:var(--t3);width:50px;flex-shrink:0;text-transform:capitalize;letter-spacing:.04em}
-.anc-bar-bg{flex:1;height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.anc-bar-bg{flex:1;height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;position:relative}
 .anc-bar-fill{height:100%;background:var(--ac);border-radius:2px;transition:width .4s}
 .anc-val{font-size:7px;color:var(--t2);width:22px;text-align:right;flex-shrink:0}
+/* Hard-stop marker — where the Process Stacking baseline sat, kept visible once the
+   live/halo value has grown or shrunk past it so the original inference isn't lost. */
+.anc-baseline-mark{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.75)}
+/* Live halo — glows around a bar to show staged CPMs shifting it from the Process
+   Stacking baseline (green=improving, red=declining); overflow:hidden above only clips
+   .anc-bar-fill, not this element's own box-shadow, so the glow bleeds outward freely. */
+.anc-bar-bg.anc-halo{animation:anc-halo-pulse 2.2s ease-in-out infinite}
+@keyframes anc-halo-pulse{
+  0%,100%{box-shadow:0 0 var(--halo-size,8px) 0px var(--halo-color)}
+  50%{box-shadow:0 0 calc(var(--halo-size,8px) * 1.8) 2px var(--halo-color)}
+}
 
 /* STRATEGY LIST */
 .str-sec-hdr{height:28px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 11px;font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3)}
@@ -496,12 +507,29 @@ function init(){
 }
 
 // ── SITE BOUNDARY (locks placement to the characterized site) ──
-let siteBoundaryBounds=null,siteBoundaryLayer=null,queuedCpmIds=[];
+// siteBoundaryCorners holds the real (possibly rotated, when derived from a diagonal
+// center-line in Site Characterization) boundary shape; siteBoundaryBounds stays the
+// axis-aligned bbox, kept only for the initial fitBounds() call.
+let siteBoundaryBounds=null,siteBoundaryCorners=null,siteBoundaryLayer=null,queuedCpmIds=[];
+function _pointInPolygon(lat,lng,corners){
+  let inside=false;
+  for(let i=0,j=corners.length-1;i<corners.length;j=i++){
+    const xi=corners[i].lng,yi=corners[i].lat,xj=corners[j].lng,yj=corners[j].lat;
+    const intersect=((yi>lat)!==(yj>lat))&&(lng<(xj-xi)*(lat-yi)/(yj-yi)+xi);
+    if(intersect)inside=!inside;
+  }
+  return inside;
+}
 function drawSiteBoundary(){
   if(!siteContext||!siteContext.boundingBox)return;
   const bb=siteContext.boundingBox;
   siteBoundaryBounds=L.latLngBounds([bb.south,bb.west],[bb.north,bb.east]);
-  siteBoundaryLayer=L.rectangle(siteBoundaryBounds,{color:'#EF9F27',weight:1.5,fillOpacity:0.02,dashArray:'5,5',interactive:false}).addTo(sMap);
+  if(siteContext.boxCorners){
+    siteBoundaryCorners=siteContext.boxCorners;
+    siteBoundaryLayer=L.polygon(siteBoundaryCorners.map(c=>[c.lat,c.lng]),{color:'#EF9F27',weight:1.5,fillOpacity:0.02,dashArray:'5,5',interactive:false}).addTo(sMap);
+  }else{
+    siteBoundaryLayer=L.rectangle(siteBoundaryBounds,{color:'#EF9F27',weight:1.5,fillOpacity:0.02,dashArray:'5,5',interactive:false}).addTo(sMap);
+  }
 }
 
 // ── MAP ───────────────────────────────────────────────────
@@ -513,7 +541,10 @@ function initMap(){
   }).addTo(sMap);
   sMap.on('click',function(e){
     if(!selectedCPM) return;
-    if(siteBoundaryBounds&&!siteBoundaryBounds.contains(e.latlng)){
+    const outside=siteBoundaryCorners
+      ?!_pointInPolygon(e.latlng.lat,e.latlng.lng,siteBoundaryCorners)
+      :(siteBoundaryBounds&&!siteBoundaryBounds.contains(e.latlng));
+    if(outside){
       flashOutsideBoundary();
       return;
     }
@@ -966,14 +997,34 @@ function renderAncCoverage(){
     const vals=strategy.map(s=>s.cpm._s.anchors[a]).filter(v=>v!=null);
     avgAnc[a]=vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:null;
   });
+  const baseline=siteContext&&siteContext.anchorBaseline;
   el.innerHTML=ANC.map(a=>{
     const v=avgAnc[a];
     const pct=v!=null?Math.round((v/10)*100):0;
     const vStr=v!=null?v.toFixed(1):'–';
     const barColor=v!=null?(v>=7.5?'var(--hi)':v>=5.5?'var(--md)':'var(--lo)'):'rgba(255,255,255,.06)';
-    return`<div class="anc-row">
+
+    // Live halo — only when there's a real baseline and a real current value, and the
+    // shift is big enough to be worth showing (not visual noise for a negligible delta).
+    let haloClass='',haloStyle='',rowTitle='';
+    if(baseline&&baseline[a]!=null&&v!=null){
+      const delta=v-baseline[a];
+      if(Math.abs(delta)>=0.3){
+        const mag=Math.min(Math.abs(delta),5)/5;
+        const rgb=delta>0?'29,158,117':'192,84,78';
+        haloClass=' anc-halo';
+        haloStyle=` style="--halo-color:rgba(${rgb},${(0.35+mag*0.45).toFixed(2)});--halo-size:${(6+mag*10).toFixed(0)}px"`;
+        rowTitle=` title="${delta>0?'+':''}${delta.toFixed(1)} vs baseline"`;
+      }
+    }
+
+    const baselineMark=(baseline&&baseline[a]!=null&&v!=null)
+      ?`<div class="anc-baseline-mark" style="left:${(baseline[a]/10)*100}%" title="baseline: ${baseline[a].toFixed(1)}"></div>`
+      :'';
+
+    return`<div class="anc-row"${rowTitle}>
       <div class="anc-name">${a}</div>
-      <div class="anc-bar-bg"><div class="anc-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="anc-bar-bg${haloClass}"${haloStyle}><div class="anc-bar-fill" style="width:${pct}%;background:${barColor}"></div>${baselineMark}</div>
       <div class="anc-val">${vStr}</div>
     </div>`;
   }).join('');
