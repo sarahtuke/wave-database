@@ -433,7 +433,24 @@ async function callClaudeForJson(content,maxTokens){
   var textBlock=(data.content||[]).find(function(b){return b.type==='text';});
   if(!textBlock)throw new Error('No text in Claude response');
   var raw=textBlock.text.trim().replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();
-  try{return JSON.parse(raw);}catch(e){throw new Error('Could not parse JSON from Claude response');}
+  try{return JSON.parse(raw);}catch(e){
+    var hint=data.stop_reason==='max_tokens'?' (response was cut off at the max_tokens limit — raise it)':'';
+    throw new Error('Could not parse JSON from Claude response'+hint);
+  }
+}
+
+/** Haiku sometimes wraps the requested array in a single-key object ({"tensions":[...]})
+ *  despite being told to return a bare array — unwraps that one level before the caller's
+ *  own Array.isArray check, so a minor formatting deviation doesn't silently zero out an
+ *  otherwise-successful call. Returns the input unchanged if it's already an array or if
+ *  no array-valued property is found. */
+function _coerceArray(parsed){
+  if(Array.isArray(parsed))return parsed;
+  if(parsed&&typeof parsed==='object'){
+    var key=Object.keys(parsed).find(function(k){return Array.isArray(parsed[k]);});
+    if(key)return parsed[key];
+  }
+  return parsed;
 }
 
 /** Sends an uploaded EIA report (PDF, base64) to Claude and returns a PROCESS_STACK-
@@ -492,13 +509,16 @@ async function inferTensions(stackData){
   stackData.forEach(function(p){byLabel[p.label]=p;});
   var parsed;
   try{
-    parsed=await callClaudeForJson([{type:'text',text:tensionPrompt(stackData)}],2048);
+    parsed=_coerceArray(await callClaudeForJson([{type:'text',text:tensionPrompt(stackData)}],2048));
   }catch(e){
     console.error('inferTensions failed:',e);
     return[];
   }
-  if(!Array.isArray(parsed))return[];
-  return parsed.map(function(t){
+  if(!Array.isArray(parsed)){
+    console.warn('inferTensions: Claude response was not an array (or an object wrapping one):',parsed);
+    return[];
+  }
+  var result=parsed.map(function(t){
     var a=byLabel[t.a],b=byLabel[t.b];
     if(!a||!b)return null;
     return{
@@ -507,6 +527,10 @@ async function inferTensions(stackData){
       severity:['low','medium','high'].indexOf(t.severity)!==-1?t.severity:'medium'
     };
   }).filter(Boolean);
+  if(parsed.length&&!result.length){
+    console.warn('inferTensions: Claude returned '+parsed.length+' tension(s) but none matched a known parameter label exactly — dropped all of them.',parsed);
+  }
+  return result;
 }
 
 // ── Existing-CPM registry — identifying what's already built on site ────────
@@ -562,12 +586,15 @@ async function matchCatalogCpms(stackData,cpmPool){
   cpmPool.forEach(function(c){byId[c.id]=c;});
   var parsed;
   try{
-    parsed=await callClaudeForJson([{type:'text',text:cpmMatchPrompt(stackData,cpmPool)}],2048);
+    parsed=_coerceArray(await callClaudeForJson([{type:'text',text:cpmMatchPrompt(stackData,cpmPool)}],2048));
   }catch(e){
     console.error('matchCatalogCpms failed:',e);
     return[];
   }
-  if(!Array.isArray(parsed))return[];
+  if(!Array.isArray(parsed)){
+    console.warn('matchCatalogCpms: Claude response was not an array (or an object wrapping one):',parsed);
+    return[];
+  }
   return parsed.map(function(m){
     var param=byLabel[m.paramLabel];
     if(!param)return null;
@@ -755,6 +782,10 @@ async function inferBaselineAnchors(onSiteCPMs,identifiedCpms,tensions,tagsLike)
     return{a:t.aLabel,b:t.bLabel,description:t.description,severity:t.severity};
   });
 
+  if(!cpmSummaries.length&&!tensionSummaries.length){
+    console.warn('inferBaselineAnchors: no matched existing CPMs and no tensions to go on — Claude has nothing but the conservative-middle-value instruction to work with, so expect a flat baseline near 5 for every anchor.');
+  }
+
   var parsed;
   try{
     parsed=await callClaudeForJson([{type:'text',text:baselineAnchorPrompt(cpmSummaries,tensionSummaries)}],1024);
@@ -762,7 +793,11 @@ async function inferBaselineAnchors(onSiteCPMs,identifiedCpms,tensions,tagsLike)
     console.error('inferBaselineAnchors failed:',e);
     return null;
   }
-  if(!parsed||typeof parsed!=='object')return null;
+  if(Array.isArray(parsed)&&parsed.length===1)parsed=parsed[0]; // tolerate [ {...} ] instead of {...}
+  if(!parsed||typeof parsed!=='object'){
+    console.warn('inferBaselineAnchors: Claude response was not a usable object:',parsed);
+    return null;
+  }
   var result={};
   var ok=ANC.every(function(a){
     var v=parsed[a];
@@ -770,5 +805,6 @@ async function inferBaselineAnchors(onSiteCPMs,identifiedCpms,tensions,tagsLike)
     result[a]=Math.max(0,Math.min(10,v));
     return true;
   });
+  if(!ok)console.warn('inferBaselineAnchors: Claude response was missing or had a non-numeric value for one or more anchors:',parsed);
   return ok?result:null;
 }

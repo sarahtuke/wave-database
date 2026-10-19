@@ -728,6 +728,74 @@ var STUDIES=[
       'Cross-references B-18-MGFB (Boateng 2018, Mangrove Forest Belt), which is in neither the corpus nor the JS.'
     ]
   }
+},
+{
+  asa_code:'F-14-CRNB',title:'Coral Reef as Natural Breakwater',
+  group_type:'Green',function_type:'Edge Defense',group_code:'B',func_code:'1',
+  subtype:'1B · Green Edge Defense',citation:'Ferrario et al. (2014)',
+  position:'Offshore',material:'Green',
+  location:{type:'Span',start:'Offshore',end:'Shoreline'},
+  location_status:'low-confidence',
+  location_reviewNotes:'Reef crest (where 86% of energy is lost) sits offshore at the seaward edge; the reef flat extends from the crest to the shoreline (Fig. 1, Camel Rock, Guam). Span drawn from crest to shore. Global meta-analysis, so this is a generic fringing-reef profile, not one site. Point at Offshore (crest only) is the alternative if the reef flat is not counted.',
+  provenance:null,land_use_relationality:null,
+  structural_mode:null,strategic_intent:null,
+  scale:null,
+  governance:'Not site-specific. The paper argues for redirecting conservation from remote reefs to reefs near the people who benefit, and disaster risk reduction toward prevention; cites re-insurance (CCRIF) economics of adaptation across eight Caribbean nations. Restoration is mostly done in developing countries and measured over a single funding cycle.',
+  full_citation:'Ferrario, F., Beck, M. W., Storlazzi, C. D., Micheli, F., Shepard, C. C., & Airoldi, L. (2014). The effectiveness of coral reefs for coastal hazard risk reduction and adaptation. Nature Communications, 5, 3794. https://doi.org/10.1038/ncomms4794',
+  region:'Global — tropical reefs of the Atlantic, Pacific and Indian Oceans',doc_type:'Peer-reviewed Journal Article (global meta-analysis)',
+  keywords:['coral reefs','wave attenuation','reef crest','reef flat','meta-analysis','nature-based coastal defence','reef restoration','low-crested breakwaters','risk reduction'],
+  locations:[
+    {lat:13.475,lng:144.712,label:'Asan Bay / Camel Rock fringing reef, Guam (Fig. 1 example transect; approx.)'},
+    {lat:20.850,lng:-86.870,label:'Meso-American Reef, Puerto Morelos, Mexico (Hurricane Wilma 2005; approx.)'},
+    {lat:4.175,lng:73.510,label:'Maldives (coral mining and coral loss → increased wave energy; approx.)'}
+  ],
+  typological_logic:'A living, submerged, shore-parallel barrier. The reef crest — the shallow, narrow seaward edge where waves first break — does most of the work; the reef flat behind it dissipates much of what remains, mostly within the first 150 m. Functionally analogous to a low-crested detached breakwater, but self-building and self-repairing.',
+  operational_logic:'Incident waves → depth-induced breaking on reef crest (86% energy, 64% height removed) → friction over the rough reef flat (65% of remaining energy, 43% height) → whole reef removes 97% of energy and 84% of height. Crest effect grows with incident energy (asymptote ≈91%); whole-reef effect is constant (≈97%) from calm seas to hurricane waves. Coral loss or sea-level rise deepens the crest and lowers roughness → more energy reaches shore.',
+  societal_logic:'Up to 197 million people live below 10 m elevation within 50 km of a reef (100 million within 10 km); Indonesia, India and the Philippines hold about half. These people either receive risk reduction from reefs or bear the cost of artificial defences if reefs degrade. Restoration is significantly cheaper than tropical breakwaters, so the paper argues for steering adaptation funding to reefs near populations.',
+  experiential_logic:'Protection happens out of sight and offshore: a line of breaking surf at the crest, a calm lagoon-like flat behind it. The defence is read as a seascape and a fishery, not as infrastructure — and its loss is felt only as surf reaching further up the beach.',
+  anchors:{
+    structural:{score:null,quant:'Wave energy reduction: reef crest 86% (n = 10; 95% CI 74–92%), reef flat 65% (n = 23; 58–71%), whole reef 97% (n = 13; 94–98%). Wave height reduction: crest 64%, flat 43%, whole reef 84%. 50% of reef-flat attenuation within <150 m of the crest. Low-crested breakwaters Kt 0.3–0.7 (30–70% height reduction) vs reef crest 51–74%.',qual:'Reef crest height (depth) is the critical variable, then bottom roughness. Reefs keep attenuating during extreme events (Meso-American reef attenuated 99% of 13 m waves in Hurricane Wilma, 2005).',has:true},
+    ecological:{score:null,quant:'No ecological metrics in the meta-analysis; most source studies did not report species composition or rugosity.',qual:'Attenuation depends on living structure: loss of branching Acropora flattens Caribbean reef crests and reduces roughness; coral mortality has increased wave energy reaching shore (Maldives, Seychelles). Reefs can recover from storm damage and self-repair; climate resilience improved by removing local stressors (blast fishing, pollution, sedimentation).',has:true},
+    economic:{score:null,quant:'Tropical breakwaters US$456–188,817 per m, median US$19,791/m (n = 16). Structural reef restoration US$20–155,000 per m, median US$1,290/m (n = 13). Restoration significantly cheaper (t(27) = 3.762, P < 0.001). Costs in 2012 US$.',qual:'Restoration costs converted from $/m² to $/m by assuming a 5 m wide × 2 m high reef section per metre of shoreline. No full benefit–cost analysis: maintenance, fisheries and recreation benefits not counted.',has:true},
+    social:{score:null,quant:'197 million people < 10 m elevation and < 50 km from a reef; 100 million within 10 km. Indonesia (41M), India (36M), Philippines (23M) at 50 km; USA in the top 10.',qual:'Benefits are direct (reduced wave and flood exposure) and indirect (avoided replacement costs of artificial defences, livelihoods, food security).',has:true},
+    authorship:{score:null,quant:null,qual:'Not addressed. Record notes that low-crested structures are favoured in Europe for lower visual impact — the reef equivalent leaves the horizon open.',has:false}
+  },
+  key_metrics:['Wave energy reduction (%)','Wave height reduction (%)','E — wave energy density (J/m²)','H₁/₃ — significant wave height (m)','Kt = Ht/Hi','Reef flat width (m)','Reef crest depth (m)','Cost (2012 US$/m)','Population < 10 m elevation within 10/50 km of reef'],
+  key_equations:['E = ⅛ ρ g H²','ln R = ln(L/S) (onshore treatment / offshore control)','% Reduction = 100 − (e^(ln R) × 100)','Reef crest: y = 91.2 / (1 + 52.4/x)','Reef flat: y = 66.8 × [1 − e^(−x/185)]','Whole reef: dissipated = 0.97 × incident (R² = 0.9)','Energy reduction vs reef flat width: y = 86.2 × [1 − e^(−x/210.2)]; height: y = 62.2 × [1 − e^(−x/213.3)]','Restoration linear cost (US$/m) = 10 × unit cost (US$/m²)'],
+  temporalities:[
+    {scale:'Event (Days)',process:'Storm and hurricane wave breaking on the reef crest',model:'Meta-analysis of field transects; Hurricane Wilma observation',finding:'Whole reef removes a constant ~97% of energy up to hurricane conditions; crest dissipation rises toward ~91% as incident energy increases. Meso-American reef attenuated 99% of 13 m waves (2005).'},
+    {scale:'Annual (1 Yr)',process:'Daily swell and wind waves across tidal cycles',model:'Meta-analysis by wave type (field records up to 4 consecutive months)',finding:'Reef crests remove 70% of swell energy; by cutting high-frequency swell, reefs reduce day-to-day coastal erosion, not only storm impacts.'},
+    {scale:'Multi-Year (3–4 Yrs)',process:'Storm damage to coral cover and recovery; restoration project cycles',model:'Literature review (no model)',finding:'Storms reduce coral cover short-term but reefs can recover. Restoration success is usually measured only over one funding cycle; failure points and recovery times are not yet quantified.'},
+    {scale:'Multi-Decadal (~40 Yrs)',process:'Reef degradation from mining, development and coral loss',model:'Case literature (Maldives, Seychelles, Red Sea, Cancún, Bali)',finding:'Coral loss deepens and smooths the reef → more wave energy reaches shore → investment shifts to artificial defences.'},
+    {scale:'Long-Term (10–50 Yrs)',process:'Sea-level rise and climate pressure on reef growth',model:'Coastal-engineering reasoning; conceptual',finding:'Any increase in water depth over the crest (SLR or degradation) lets more energy through. Removing local stressors improves reef resilience; restoration is most cost-effective along the crest.'}
+  ],
+  ifthen:[
+    {scale:'Event',rule:'IF incident wave energy ↑ AND reef crest intact → crest dissipation ↑ toward ~91% AND whole-reef reduction holds at ~97%.'},
+    {scale:'Annual',rule:'IF reef crest present → swell energy ↓ ~70% → chronic daily erosion ↓.'},
+    {scale:'Multi-Year',rule:'IF storm damages coral cover AND local stressors are low → reef recovers and attenuation is restored.'},
+    {scale:'Multi-Decadal',rule:'IF coral is mined or dies → crest deepens and roughness ↓ → wave energy at shore ↑ → artificial defences required.'},
+    {scale:'Long-Term',rule:'IF sea level rises faster than reef accretion → depth over crest ↑ → protection ↓; IF crest is restored → attenuation recovered at ~1/15 the median cost of a breakwater.'}
+  ],
+  sensory:[
+    {sense:'Sight',obs:'A white line of breaking surf far offshore marks the crest; behind it, a shallow, pale turquoise flat and a calm inner water at the shore.'},
+    {sense:'Sound',obs:'A distant, continuous roar at the reef edge; at the shoreline only small, lapping waves.'},
+    {sense:'Touch',obs:'Sharp, rough coral rock on the flat at low tide; gentle water movement in the lee of the crest.'},
+    {sense:'Smell',obs:'Salt spray at the crest; warm, algal tidal-flat air at low water.'},
+    {sense:'Movement',obs:'Swell rises and collapses on the crest; the flat drains and floods with the tide; large waves rarely reach the shore intact.'}
+  ],
+  sensory_statement:'The defence is felt as distance: the violence of the sea is staged at the reef edge, hundreds of metres away, and arrives at the shore as calm water. Its protection is audible as a far-off roar and visible as a line of white.',
+  cases:['27 independent field studies of reef wave attenuation across the Atlantic, Pacific and Indian Oceans (from 255 screened)','Camel Rock fringing reef, Asan Bay, Guam — example crest/flat/whole-reef transects (Fig. 1)','Meso-American Reef — 99% attenuation of 13 m waves, Hurricane Wilma 2005','Maldives and Seychelles — coral mining and mortality increasing wave energy at shore','16 tropical breakwater projects (Hawaii, American Samoa, Guam, Sri Lanka, Maldives, Korea, Malaysia, Thailand) and 13 reef restoration projects (Maldives, Florida, Indonesia; Reef Ball, EcoReef, Biorock) for cost comparison'],
+  note:'Global meta-analysis, not a single built project: reef-zone results come partly from different reefs, and tidal depth could not be analysed. Restoration costs rest on an assumed 5 m × 2 m reef section per metre of shore. No full benefit–cost analysis. Fills the corpus gap for a reef whose coastal-protection role is quantified (cf. B-20-CHA, where reef buffering is assumed).',
+  import_review:{
+    source:'Added from the full paper (Nature Communications 5:3794), 2026-10-19 — not part of the SLR corpus',
+    unverified:['provenance','land_use_relationality','structural_mode','strategic_intent','scale','anchors.*.score','location','societal_logic','experiential_logic','sensory'],
+    suggested:{structural_mode:'fixed',strategic_intent:'protect',scale:'territorial',basis:'Static reef structure that reduces wave exposure across a coastline; the paper frames reefs as a "first line of defence".'},
+    flags:[
+      'position/material set to Offshore/Green from the reef-crest location and natural material; location span is low-confidence (see location_reviewNotes).',
+      'experiential_logic, sensory and sensory_statement are written from the paper’s physical description, not from site observation — the paper has no sensory or experiential data.',
+      'Temporalities at Multi-Year to Long-Term come from the discussion and cited literature, not from the meta-analysis itself.'
+    ]
+  }
 }
 
 ];
