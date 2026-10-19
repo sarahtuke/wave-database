@@ -5,13 +5,14 @@
  * The map/ribbon/stack render functions only ever consume the array this file hands
  * back — they never need to change when what's behind that array does.
  *
- * Two sources feed that array:
- *   - deriveProcessStack(siteContext) — the mock fallback (geo-places PROCESS_STACK
- *     around the site centroid). Used when no EIA report has been uploaded.
- *   - extractProcessStackFromReport(base64Pdf, siteContext) — the real, primary source:
- *     sends an uploaded EIA report straight to Claude for extraction. Google Places
- *     (not yet wired up) is intended as a later top-up on whichever of these ran, not
- *     a replacement for either.
+ * Sources that feed that array:
+ *   - getProcessStack(siteContext) — what the page calls on opening a site: live Google
+ *     Places around the site (LIVE_PLACES_DEMO) or, failing that, the mock
+ *     deriveProcessStack(); plus, always, every OpenStreetMap coastal structure
+ *     (breakwaters, groynes, seawalls…) inside the drawn boundary.
+ *   - extractProcessStackFromReport(base64Pdf, siteContext) — sends an uploaded EIA
+ *     report straight to Claude for extraction. Replaces the Places/mock set; the page
+ *     keeps the OSM structures alongside it.
  *
  * A third function, inferTensions(stackData), is the Inference step of the four-step
  * method (Encoding -> Indexing -> Inference -> Prototyping): not relationship-drawing,
@@ -30,13 +31,13 @@ var TIER_LABELS={1:'The Operative Field',2:'The Connecters',3:'Urban Infrastruct
 var CATEGORIES=['ecological','infrastructural','programmatic'];
 
 /** Site centroid in lat/lng, derived from siteContext.boundingBox when present,
- *  else the same Rotterdam demo point used throughout this codebase (test-places.html). */
+ *  else the default demo point: Singapore, East Coast Park. */
 function siteCentroid(siteContext){
   if(siteContext&&siteContext.boundingBox){
     var bb=siteContext.boundingBox;
     return {lat:(bb.north+bb.south)/2, lng:(bb.east+bb.west)/2};
   }
-  return {lat:51.9225,lng:4.4792};
+  return {lat:1.3000,lng:103.9120};
 }
 
 /** Offsets a center point by dx/dy meters (small-area equirectangular approximation —
@@ -57,15 +58,15 @@ function deriveProcessStack(siteContext){
   });
 }
 
-// ── LIVE PLACES DEMO (temporary) ─────────────────────────────────────────────
-// Flip to false to go back to the mock PROCESS_STACK everywhere. While true, the site
-// box's preview and the Process Stacking takeover are fed by real Google Places
-// results around the drawn site instead of the mock offsets. Not the final
-// categorization formula — category comes from which type-group query found the place,
-// tier from its real distance to the site centroid (same bands as data/processStacking.js).
+// ── Google Places (LIVE_PLACES_DEMO) ─────────────────────────────────────────
+// Flip LIVE_PLACES_DEMO to false to go back to the mock PROCESS_STACK as the base set
+// (OSM structures below are added either way). Not the final categorization formula —
+// category comes from which type-group query found the place, tier from its real
+// distance to the site centroid (same bands as data/processStacking.js).
 var LIVE_PLACES_DEMO=true;
-var PLACES_RADIUS_M=2000; // outer edge of tier 4 'The Metropole'
-var PLACES_PER_CATEGORY=8; // ~24 total, same scale as the mock/EIA stacks the diagrams are sized for
+var PLACES_PER_CATEGORY=20; // Google's per-request max; results come back most-popular-first
+var PLACES_MIN_RADIUS_M=2000; // outer edge of tier 4 'The Metropole'
+var PLACES_MAX_RADIUS_M=50000; // Google's locationRestriction cap
 var PLACES_TYPE_GROUPS={
   ecological:['park','national_park','hiking_area','campground','zoo','aquarium','dog_park'],
   infrastructural:['train_station','subway_station','light_rail_station','bus_station','transit_station','ferry_terminal','airport','parking','gas_station'],
@@ -85,14 +86,39 @@ function _distM(a,b){
 }
 function tierFromDistance(m){return m<150?1:m<400?2:m<900?3:4;}
 
-/** One Nearby Search per category type-group (3 requests, PLACES_PER_CATEGORY each) via the
- *  Places API (New) REST endpoint — no Maps JS loader needed — mapped
- *  into the PROCESS_STACK shape. A group that errors is skipped rather than failing the
- *  whole lookup. Results are cached per site centroid so redrawing/reopening the same
- *  site doesn't re-bill. */
+/** The site boundary as [{lat,lng},...] — the drawn (possibly rotated) corners when
+ *  given, else the axis-aligned bounding box. */
+function siteCorners(siteContext){
+  if(siteContext&&siteContext.corners&&siteContext.corners.length>=3)return siteContext.corners;
+  var bb=siteContext&&siteContext.boundingBox;
+  if(!bb)return null;
+  return[{lat:bb.south,lng:bb.west},{lat:bb.south,lng:bb.east},{lat:bb.north,lng:bb.east},{lat:bb.north,lng:bb.west}];
+}
+function _inPoly(lat,lng,poly){
+  var inside=false;
+  for(var i=0,j=poly.length-1;i<poly.length;j=i++){
+    var a=poly[i],b=poly[j];
+    if(((a.lat>lat)!==(b.lat>lat))&&(lng<(b.lng-a.lng)*(lat-a.lat)/(b.lat-a.lat)+a.lng))inside=!inside;
+  }
+  return inside;
+}
+
+/** Search radius that always covers the whole drawn boundary — so a site box drawn over
+ *  all of East Coast Park still gets every corner inside the Places search circle. */
+function placesRadius(siteContext,center){
+  var corners=siteCorners(siteContext)||[];
+  var far=corners.reduce(function(m,c){return Math.max(m,_distM(center,c));},0);
+  return Math.min(PLACES_MAX_RADIUS_M,Math.max(PLACES_MIN_RADIUS_M,Math.ceil(far)));
+}
+
+/** One Nearby Search per category type-group (3 requests, PLACES_PER_CATEGORY each) via
+ *  the Places API (New) REST endpoint — no Maps JS loader needed — mapped into the
+ *  PROCESS_STACK shape. A group that errors is skipped rather than failing the whole
+ *  lookup. Cached per centroid+radius so redrawing/reopening the same site doesn't re-bill. */
 async function fetchPlacesStack(siteContext){
   var center=siteCentroid(siteContext);
-  var cacheKey=center.lat.toFixed(4)+','+center.lng.toFixed(4);
+  var radius=placesRadius(siteContext,center);
+  var cacheKey=center.lat.toFixed(4)+','+center.lng.toFixed(4)+','+radius;
   if(_placesCache[cacheKey])return _placesCache[cacheKey];
 
   var key=window.APP_CONFIG.GOOGLE_PLACES_API_KEY;
@@ -108,7 +134,8 @@ async function fetchPlacesStack(siteContext){
       body:JSON.stringify({
         includedTypes:PLACES_TYPE_GROUPS[cat],
         maxResultCount:PLACES_PER_CATEGORY,
-        locationRestriction:{circle:{center:{latitude:center.lat,longitude:center.lng},radius:PLACES_RADIUS_M}}
+        rankPreference:'POPULARITY',
+        locationRestriction:{circle:{center:{latitude:center.lat,longitude:center.lng},radius:radius}}
       })
     }).then(function(res){
       return res.json().then(function(d){
@@ -131,7 +158,8 @@ async function fetchPlacesStack(siteContext){
         phase:'Now',
         note:(pl.primaryTypeDisplayName?pl.primaryTypeDisplayName.text+' · ':'')+Math.round(dist)+' m from site'+(pl.formattedAddress?' — '+pl.formattedAddress:''),
         placesTypeStandIn:pl.types||[],
-        latlng:latlng
+        latlng:latlng,
+        source:'places'
       });
     });
   });
@@ -139,19 +167,220 @@ async function fetchPlacesStack(siteContext){
   return out;
 }
 
-/** What the page calls: live Places when the demo flag + key are set, otherwise (or on
- *  failure / zero results) the mock deriveProcessStack(). Resolves to {stack,source}. */
+// ── OpenStreetMap coastal structures (always on — not demo-gated) ────────────
+// Google Places is good at places and poor at structures; breakwaters, groynes and
+// seawalls live in OSM instead. Queried via the public Overpass API (free, keyless,
+// CORS-enabled — fits this static site) for EVERYTHING whose geometry touches the drawn
+// boundary, no popularity cap. Structures are infrastructural parameters like any other
+// (so they feed tensions and the diagrams) AND flagged isCpm, so they're guaranteed a
+// row in the Identified CPMs registry — see mergeDetectedCpms() below.
+// Both send CORS headers; the public servers 504 under load, hence the bundled
+// data/osmSnapshot.js fallback (see fetchOsmFeatures).
+var OVERPASS_ENDPOINTS=['https://overpass-api.de/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
+var OSM_TIMEOUT_MS=25000;
+var OSM_TIMEOUT_WITH_SNAPSHOT_MS=8000; // don't stall the page when a bundled fallback exists
+// First match wins. cpmId is a deterministic catalogue link for unambiguous types only;
+// breakwaters have three plausible catalogue entries (re-002/re-003/re-021), so those
+// are left to matchCatalogCpms()'s judgment call.
+var OSM_FEATURE_TYPES=[
+  {kind:'Breakwater',category:'infrastructural',isCpm:true,cpmId:null,test:function(t){return t.man_made==='breakwater';}},
+  {kind:'Groyne',category:'infrastructural',isCpm:true,cpmId:'re-009',test:function(t){return t.man_made==='groyne';}},
+  {kind:'Seawall',category:'infrastructural',isCpm:true,cpmId:'re-066',test:function(t){
+    return /^(sea_?wall|flood_wall)$/.test(t.man_made||'')||/^(sea_?wall|flood_wall)$/.test(t.barrier||'')||(t.barrier==='wall'&&/^(sea_?wall|flood_wall)$/.test(t.wall||''));
+  }},
+  {kind:'Revetment',category:'infrastructural',isCpm:true,cpmId:'re-001',test:function(t){return t.man_made==='revetment';}},
+  {kind:'Dyke',category:'infrastructural',isCpm:true,cpmId:null,test:function(t){return t.man_made==='dyke';}},
+  {kind:'Pier',category:'infrastructural',isCpm:false,cpmId:null,test:function(t){return /^(pier|jetty)$/.test(t.man_made||'');}},
+  {kind:'Water control',category:'infrastructural',isCpm:false,cpmId:null,test:function(t){return /^(dam|weir|lock_gate|sluice_gate)$/.test(t.waterway||'');}},
+  {kind:'Mangrove',category:'ecological',isCpm:false,cpmId:null,test:function(t){return t.natural==='wetland'&&t.wetland==='mangrove';}},
+  {kind:'Wetland',category:'ecological',isCpm:false,cpmId:null,test:function(t){return t.natural==='wetland';}},
+  {kind:'Beach',category:'ecological',isCpm:false,cpmId:null,test:function(t){return t.natural==='beach';}},
+  {kind:'Reef',category:'ecological',isCpm:false,cpmId:null,test:function(t){return t.natural==='reef';}}
+];
+var _osmCache={};
+
+function overpassQuery(corners){
+  var poly='poly:"'+corners.map(function(c){return c.lat.toFixed(6)+' '+c.lng.toFixed(6);}).join(' ')+'"';
+  return '[out:json][timeout:25];('+
+    'nwr["man_made"~"^(breakwater|groyne|seawall|sea_wall|flood_wall|revetment|dyke|pier|jetty)$"]('+poly+');'+
+    'nwr["barrier"~"^(sea_wall|seawall|flood_wall)$"]('+poly+');'+
+    'nwr["barrier"="wall"]["wall"~"^(sea_wall|seawall|flood_wall)$"]('+poly+');'+
+    'nwr["waterway"~"^(dam|weir|lock_gate|sluice_gate)$"]('+poly+');'+
+    'nwr["natural"~"^(beach|wetland|reef)$"]('+poly+');'+
+    ');out geom;';
+}
+
+/** Races every endpoint at once; first good response wins, the rest are aborted. */
+function _overpass(query,timeoutMs){
+  var ctrls=OVERPASS_ENDPOINTS.map(function(){return new AbortController();});
+  var timer=setTimeout(function(){ctrls.forEach(function(c){c.abort();});},timeoutMs);
+  return Promise.any(OVERPASS_ENDPOINTS.map(function(url,i){
+    return fetch(url,{method:'POST',body:'data='+encodeURIComponent(query),
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ctrls[i].signal})
+      .then(function(res){
+        if(!res.ok)throw new Error('Overpass HTTP '+res.status);
+        return res.json();
+      }).catch(function(e){console.warn('Overpass endpoint failed ('+url+'):',e);throw e;});
+  })).then(function(json){
+    ctrls.forEach(function(c){c.abort();});
+    return json;
+  },function(agg){throw(agg.errors&&agg.errors[0])||agg;}).finally(function(){clearTimeout(timer);});
+}
+
+/** Element geometry as an array of [lat,lng] paths (one per way / relation member). */
+function _osmPaths(el){
+  if(el.type==='node')return[[[el.lat,el.lon]]];
+  if(el.type==='way')return el.geometry?[el.geometry.map(function(g){return[g.lat,g.lon];})]:[];
+  return(el.members||[]).filter(function(m){return m.geometry;}).map(function(m){
+    return m.geometry.map(function(g){return[g.lat,g.lon];});
+  });
+}
+
+function _segmentsCross(p1,p2,q1,q2){
+  function o(a,b,c){return(b.lng-a.lng)*(c.lat-a.lat)-(b.lat-a.lat)*(c.lng-a.lng);}
+  return(o(p1,p2,q1)>0)!==(o(p1,p2,q2)>0)&&(o(q1,q2,p1)>0)!==(o(q1,q2,p2)>0);
+}
+/** Client-side stand-in for Overpass's poly filter, used on snapshot elements: a vertex
+ *  inside the boundary, an edge crossing it, or (for areas like a beach) the boundary
+ *  sitting wholly inside the element's ring. */
+function _pathTouchesPoly(path,corners){
+  var pts=path.map(function(p){return{lat:p[0],lng:p[1]};});
+  if(pts.some(function(p){return _inPoly(p.lat,p.lng,corners);}))return true;
+  for(var i=1;i<pts.length;i++)for(var j=0;j<corners.length;j++){
+    if(_segmentsCross(pts[i-1],pts[i],corners[j],corners[(j+1)%corners.length]))return true;
+  }
+  return pts.length>3&&_inPoly(corners[0].lat,corners[0].lng,pts);
+}
+function _snapshotFor(corners){
+  if(typeof OSM_SNAPSHOTS==='undefined')return null;
+  return OSM_SNAPSHOTS.find(function(sn){
+    var bb=sn.bbox;
+    return corners.every(function(c){return c.lat>=bb.south&&c.lat<=bb.north&&c.lng>=bb.west&&c.lng<=bb.east;});
+  })||null;
+}
+
+/** Every mapped coastal structure / coastal habitat touching the site boundary, in the
+ *  PROCESS_STACK shape (+ source:'osm', isCpm, osmKind, cpmId, geometry). Live Overpass
+ *  first; if every endpoint fails and the site is inside a bundled snapshot
+ *  (data/osmSnapshot.js), that snapshot instead — noted on each entry. Throws only when
+ *  neither is available, so the page can say the lookup failed rather than "0 found". */
+function fetchOsmFeatures(siteContext){
+  var corners=siteCorners(siteContext);
+  if(!corners)return Promise.resolve([]);
+  var query=overpassQuery(corners);
+  // Cache the promise, not the result, so the debounced preview and the takeover
+  // opening share one in-flight lookup instead of racing two. Failures are evicted.
+  if(!_osmCache[query]){
+    _osmCache[query]=_fetchOsmUncached(siteContext,corners,query);
+    _osmCache[query].catch(function(){delete _osmCache[query];});
+  }
+  return _osmCache[query];
+}
+async function _fetchOsmUncached(siteContext,corners,query){
+  var snap=_snapshotFor(corners);
+  var elements,origin='OpenStreetMap';
+  try{
+    elements=(await _overpass(query,snap?OSM_TIMEOUT_WITH_SNAPSHOT_MS:OSM_TIMEOUT_MS)).elements||[];
+  }catch(e){
+    if(!snap)throw e;
+    console.warn('Overpass unavailable — using bundled OSM snapshot "'+snap.name+'" ('+snap.fetched+')');
+    elements=snap.elements.filter(function(el){
+      return _osmPaths(el).some(function(path){return _pathTouchesPoly(path,corners);});
+    });
+    origin='OpenStreetMap snapshot '+snap.fetched;
+  }
+  return _osmElementsToStack(elements,siteContext,corners,origin);
+}
+
+/** latlng is the mean of the element's vertices that fall INSIDE the boundary, so a
+ *  beach polygon spanning all of ECP is pinned where it meets this site, not at its own
+ *  far centre. Unnamed features are numbered west→east per kind ("Breakwater (OSM 3)")
+ *  so labels stay unique — tension and CPM matching both key on label — without
+ *  colliding with official names Google may carry (e.g. ECP's "Breakwater 4"). */
+function _osmElementsToStack(elements,siteContext,corners,origin){
+  var center=siteCentroid(siteContext);
+  var found=[];
+  elements.forEach(function(el){
+    var t=el.tags||{};
+    var ft=OSM_FEATURE_TYPES.find(function(f){return f.test(t);});
+    if(!ft)return;
+    var paths=_osmPaths(el);
+    var pts=[].concat.apply([],paths);
+    if(!pts.length)return;
+    var inside=pts.filter(function(p){return _inPoly(p[0],p[1],corners);});
+    var use=inside.length?inside:pts;
+    var latlng={
+      lat:use.reduce(function(s,p){return s+p[0];},0)/use.length,
+      lng:use.reduce(function(s,p){return s+p[1];},0)/use.length
+    };
+    found.push({el:el,tags:t,ft:ft,paths:paths,latlng:latlng});
+  });
+  found.sort(function(a,b){return a.latlng.lng-b.latlng.lng;});
+
+  var counters={};
+  return found.map(function(f){
+    counters[f.ft.kind]=(counters[f.ft.kind]||0)+1;
+    var dist=_distM(center,f.latlng);
+    var material=f.tags.material?' ('+f.tags.material+')':'';
+    return{
+      id:'osm-'+f.el.type+'-'+f.el.id,
+      label:f.tags.name||(f.ft.kind+' (OSM '+counters[f.ft.kind]+')'),
+      category:f.ft.category,
+      tier:tierFromDistance(dist),
+      phase:'Now',
+      note:f.ft.kind+material+' · '+origin+' · '+Math.round(dist)+' m from site centre',
+      placesTypeStandIn:[],
+      latlng:f.latlng,
+      source:'osm',
+      isCpm:f.ft.isCpm,
+      osmKind:f.ft.kind,
+      cpmId:f.ft.cpmId,
+      geometry:f.paths
+    };
+  });
+}
+
+/** Labels must be unique across the merged stack (tension + CPM matching key on them). */
+function _uniqueLabels(stack){
+  var used={};
+  stack.forEach(function(p){
+    var base=p.label,n=1;
+    while(used[p.label])p.label=base+' ('+(++n)+')';
+    used[p.label]=true;
+  });
+  return stack;
+}
+
+/** What the page calls. Base set: live Places when the demo flag + key are set,
+ *  otherwise (or on failure / zero results) the mock deriveProcessStack(). OSM
+ *  structures inside the boundary are always appended on top. Fails soft per source.
+ *  Resolves to {stack, source:'places'|'mock', osm:[...osm entries], osmError}. */
 async function getProcessStack(siteContext){
+  var osmPromise=fetchOsmFeatures(siteContext).then(function(o){return{list:o,err:null};})
+    .catch(function(e){console.error('OSM structures lookup failed:',e);return{list:[],err:e};});
+  var base=null,source='mock';
   if(livePlacesEnabled()){
     try{
       var live=await fetchPlacesStack(siteContext);
-      if(live.length)return{stack:live,source:'places'};
-      console.warn('Places returned no results here — falling back to mock stack');
+      if(live.length){base=live;source='places';}
+      else console.warn('Places returned no results here — falling back to mock stack');
     }catch(e){
       console.error('Live Places lookup failed — falling back to mock stack:',e);
     }
   }
-  return{stack:deriveProcessStack(siteContext),source:'mock'};
+  if(!base)base=deriveProcessStack(siteContext);
+  var osm=await osmPromise;
+  // A Places POI named like a structure ("Breakwater 4") that sits on an OSM structure of
+  // that kind is the same object twice — keep the OSM one, which carries the geometry.
+  base=base.filter(function(p){
+    if(p.source!=='places')return true;
+    return!osm.list.some(function(o){
+      return o.isCpm&&new RegExp(o.osmKind,'i').test(p.label)&&_distM(o.latlng,p.latlng)<150;
+    });
+  });
+  var stack=_uniqueLabels(base.map(function(p){return Object.assign({},p);})
+    .concat(osm.list.map(function(p){return Object.assign({},p);})));
+  return{stack:stack,source:source,osm:stack.filter(function(p){return p.source==='osm';}),osmError:osm.err};
 }
 
 // ── EIA report extraction (primary source; Places API is the future top-up) ──
@@ -350,6 +579,34 @@ async function matchCatalogCpms(stackData,cpmPool){
       cpmName:cpm?cpm.name:null
     };
   }).filter(Boolean);
+}
+
+/** Folds OSM-detected structures (isCpm) into matchCatalogCpms()'s result so every one
+ *  is listed even when Claude skips it or no key is set. An unambiguous OSM type's fixed
+ *  cpmId wins over the model's pick; otherwise the model's match stands, else the
+ *  structure is listed unmatched. Each row also gets latlng/source from its parameter
+ *  so the registry can travel to the catalogue with real locations. */
+function mergeDetectedCpms(stackData,matches,cpmPool){
+  var byParam={},byId={},paramById={};
+  matches.forEach(function(m){byParam[m.paramId]=m;});
+  cpmPool.forEach(function(c){byId[c.id]=c;});
+  stackData.forEach(function(p){paramById[p.id]=p;});
+  stackData.forEach(function(p){
+    if(!p.isCpm)return;
+    var fixed=p.cpmId&&byId[p.cpmId];
+    var m=byParam[p.id];
+    if(fixed){
+      var row={paramId:p.id,paramLabel:p.label,matched:true,cpmId:fixed.id,cpmName:fixed.name};
+      if(m)Object.assign(m,row);else matches.push(row);
+    }else if(!m){
+      matches.push({paramId:p.id,paramLabel:p.label,matched:false,cpmId:null,cpmName:null});
+    }
+  });
+  matches.forEach(function(m){
+    var p=paramById[m.paramId];
+    if(p){m.latlng=p.latlng;m.source=p.source||null;m.osmKind=p.osmKind||null;}
+  });
+  return matches;
 }
 
 // ── Five Anchors baseline — connecting Inference to the grading matrix ──────

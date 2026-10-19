@@ -668,7 +668,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 
           <div class="sc-field">
             <label class="sc-label">City / Site Name</label>
-            <input id="sc-city" class="sc-input" type="text" placeholder="e.g. Rotterdam" oninput="scOnCityInput()">
+            <input id="sc-city" class="sc-input" type="text" placeholder="e.g. Singapore, East Coast Park" oninput="scOnCityInput()">
             <div id="sc-geocode-status" class="sc-geocode-status"></div>
           </div>
 
@@ -715,6 +715,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
                   <div class="ps-legend-item"><span class="ps-legend-sw" style="background:var(--sas-ps-eco)"></span>Ecological</div>
                   <div class="ps-legend-item"><span class="ps-legend-sw" style="background:var(--sas-ps-infra)"></span>Infrastructural</div>
                   <div class="ps-legend-item"><span class="ps-legend-sw" style="background:var(--sas-ps-prog)"></span>Programmatic</div>
+                  <div class="ps-legend-item"><span class="ps-legend-sw" style="background:transparent;box-shadow:inset 0 0 0 1.5px #fff"></span>Existing CPM (OSM)</div>
                 </div>
                 <div id="ps-cpm-panel">
                   <div id="ps-cpm-panel-head" onclick="toggleCpmPanel()">
@@ -822,6 +823,7 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
       <div class="mx-biv-key" id="mx-biv-key"></div>
       <div class="mx-browse-wrap" style="display:flex;flex-direction:column;gap:5px">
         <button class="mx-browse-btn" onclick="window.open('standard-objects.html','_blank')">browse standard objects &nbsp;&#8594;</button>
+        <button class="mx-browse-btn" onclick="window.open('coastal-world.html','_blank')">step into the coast (3D) &nbsp;&#8594;</button>
       </div>
     </div>
 
@@ -906,9 +908,11 @@ html,body{height:100%;background:var(--sas-bg,#0c0f1c);color:var(--sas-t1,#dedad
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="data/studies.js"></script>
+<script src="data/studies-resolve.js"></script>
 <script src="data/speculative.js"></script>
 <script src="data/standard.js"></script>
 <script src="data/processStacking.js"></script>
+<script src="data/osmSnapshot.js"></script>
 <script src="process-stacking-engine.js"></script>
 <script src="config.js"></script>
 <script>
@@ -1011,7 +1015,14 @@ let atlasMap=null,atlasMarkers=[],atlasFilter='all',atlasOpen=true;
 let briefMode=false,briefAnchors=new Set(),briefCustomAnchors=[];
 
 // ── HELPERS ──────────────────────────────────────────────
-function studiesForCell(cid){return STUDIES.filter(s=>cellId(s.position,s.material)===cid)}
+// A study sits in its position × material cell; one with no single position but a Span /
+// Discrete-multi `location` sits in every cell that location covers (same rule as Standard Objects).
+function studyCells(s){
+  if(!s.material)return[];
+  if(s.position)return[cellId(s.position,s.material)];
+  return s.location?POS.filter(p=>locationCoversPosition(s.location,p)).map(p=>cellId(p,s.material)):[];
+}
+function studiesForCell(cid){return STUDIES.filter(s=>studyCells(s).includes(cid))}
 function speculativeForCell(cid){return SPECULATIVE.filter(o=>cellId(o.position,o.material)===cid)}
 function objectsForCell(cid){return [...speculativeForCell(cid),...standardObjectsForCell(cid)]}
 function anchorScore(studies,anchor){
@@ -1033,7 +1044,7 @@ function cube(){return`<div class="wf-cube"><div class="wf-face wf-front"></div>
 // ── STATS ────────────────────────────────────────────────
 function updateStats(){
   document.getElementById('s-studies').textContent=STUDIES.length;
-  const filled=new Set(STUDIES.filter(s=>s.position&&s.material).map(s=>cellId(s.position,s.material))).size;
+  const filled=new Set(STUDIES.flatMap(studyCells)).size;
   document.getElementById('s-typos').textContent=filled;
   document.getElementById('s-spec').textContent=SPECULATIVE.length;
   document.getElementById('s-real').textContent=STANDARD.length;
@@ -1476,7 +1487,7 @@ function objFields(o,type){
     return{
       vis:`<div style="font-size:9px;color:rgba(127,119,221,0.4);letter-spacing:0.1em;text-transform:uppercase;padding:6px;text-align:center">${o.asa_code}</div>`,
       name:o.title,byline:o.citation||'–',desc:null,location:null,footprint:null,
-      tags:[{cls:'',text:o.position||'–'},{cls:'',text:o.material||'–',color:gc2}]
+      tags:[{cls:'',text:o.position||locationLabel(o.location)},{cls:'',text:o.material||'–',color:gc2},o._placement==='suggested'?{cls:'',text:'suggested placement · unreviewed'}:null].filter(Boolean)
     };
   }
   if(type==='realistic'){
@@ -2038,6 +2049,13 @@ const CAT_COLORS_HEX={ecological:'#2FB8A6',infrastructural:'#8B93A6',programmati
 const PATHWAY_TIME_POINTS=['Now','+10y','+25y','+50y'];
 let stackData=[],psMap=null,ribbonsAnimated=false;
 let cpmPool=[],identifiedCpms=[],onSiteCPMs=[],selectedOnSiteCPM=null,siteTensions=[],siteBaseline=null;
+let cpmMatchDone=false; // false while matchCatalogCpms() is still in flight
+let siteOsmFeatures=[]; // OSM structures for the current site — kept when an EIA report replaces the rest
+function osmSummary(osm,osmError){
+  if(osmError)return'OSM structures lookup failed (map servers busy — try again)';
+  const cpms=osm.filter(p=>p.isCpm).length,other=osm.length-cpms;
+  return`${cpms} mapped coastal structure${cpms===1?'':'s'} (OSM) inside the boundary`+(other?`, ${other} other mapped coastal feature${other===1?'':'s'}`:'');
+}
 
 // Reparents the real matrix panel and atlas into the gate (not copies — the same live,
 // already-wired DOM nodes) so browsing them during characterization drives the same
@@ -2261,23 +2279,22 @@ function scRenderHandles(){
 // Read-only preview of the processes Process Stacking will find in the drawn area —
 // re-derives and re-renders every time the box is redrawn, so the tags visibly "shift"
 // with the selected location rather than being a one-time manual pick.
-// Debounced while LIVE_PLACES_DEMO is on — corner handles fire 'drag' continuously,
-// and each settled position is a billed Places lookup.
+// Debounced — corner handles fire 'drag' continuously, and each settled position is a
+// live OSM query (plus a billed Places lookup while LIVE_PLACES_DEMO is on).
 let scPreviewTimer=null,scPreviewToken=0;
 function renderSiteTagsPreview(){
   const el=document.getElementById('sc-tags-preview');
   if(!el)return;
   clearTimeout(scPreviewTimer);
   if(!scBoxBounds){el.innerHTML='';return;}
-  if(!livePlacesEnabled()){paintSiteTagsPreview(el,deriveProcessStack({boundingBox:scBoxBounds}),'mock');return;}
   const token=++scPreviewToken;
-  el.innerHTML='<div class="sc-tag-note">looking up live place data near this area…</div>';
+  el.innerHTML='<div class="sc-tag-note">looking up place data and mapped coastal structures in this area…</div>';
   scPreviewTimer=setTimeout(async()=>{
-    const {stack,source}=await getProcessStack({boundingBox:scBoxBounds});
-    if(token===scPreviewToken)paintSiteTagsPreview(el,stack,source);
+    const res=await getProcessStack({boundingBox:scBoxBounds,corners:scBoxCorners});
+    if(token===scPreviewToken)paintSiteTagsPreview(el,res);
   },700);
 }
-function paintSiteTagsPreview(el,preview,source){
+function paintSiteTagsPreview(el,{stack:preview,source,osm,osmError}){
   const cats=CATEGORIES.map(cat=>{
     const color=CAT_COLORS_HEX[cat];
     const pills=preview.filter(p=>p.category===cat)
@@ -2285,7 +2302,7 @@ function paintSiteTagsPreview(el,preview,source){
     return`<div class="sc-tag-cat"><div class="sc-tag-cat-title">${cat}</div><div class="sc-tag-row">${pills}</div></div>`;
   }).join('');
   el.innerHTML=`<div class="sc-tag-cats">${cats}</div>
-    <div class="sc-tag-note">${source==='places'?`Live from Google Places — ${preview.length} places within ${PLACES_RADIUS_M/1000} km`:'Auto-detected from place data near this area'} — redraw the box to refresh. Full detail in the next step.</div>`;
+    <div class="sc-tag-note">${source==='places'?`Live from Google Places — ${preview.length-osm.length} places`:'Auto-detected from place data near this area'} + ${osmSummary(osm,osmError)} — redraw the box to refresh. Full detail in the next step.</div>`;
 }
 function scValidate(){
   const city=document.getElementById('sc-city').value.trim();
@@ -2298,15 +2315,16 @@ async function openProcessStackingTakeover(){
   if(!city||!scBoxBounds)return;
   const btn=document.getElementById('sc-submit-btn');
   if(btn)btn.disabled=true;
-  const {stack,source}=await getProcessStack({boundingBox:scBoxBounds});
+  const {stack,source,osm,osmError}=await getProcessStack({boundingBox:scBoxBounds,corners:scBoxCorners});
   if(btn)btn.disabled=false;
+  siteOsmFeatures=osm;
   document.getElementById('oo-gate').classList.add('ps-active');
   document.getElementById('oo-sitechar').style.display='none';
   document.getElementById('ps-stage').style.display='flex';
   stackData=stack;
-  document.getElementById('ps-upload-label').textContent=source==='places'
-    ?`Showing ${stack.length} live Google Places results around the site — uploading an EIA report (PDF) replaces them`
-    :'Primary source: upload an EIA report (PDF) — showing mock place data';
+  document.getElementById('ps-upload-label').textContent=(source==='places'
+    ?`Showing ${stack.length-osm.length} live Google Places results around the site`
+    :'Showing mock place data')+` + ${osmSummary(osm,osmError)} — uploading an EIA report (PDF) replaces the place data, the structures stay`;
   document.getElementById('ps-hero-sub').textContent=`Interactions between ${city} and its processes`;
   rerenderPsViews();
 }
@@ -2330,8 +2348,19 @@ function initPsMap(){
   psMap.fitBounds([[bb.south,bb.west],[bb.north,bb.east]],{padding:[50,50]});
   stackData.forEach(p=>{
     const color=CAT_COLORS_HEX[p.category];
-    L.circleMarker([p.latlng.lat,p.latlng.lng],{radius:6,color,weight:1.5,fillColor:color,fillOpacity:0.55})
-      .bindPopup(`<strong>${p.label}</strong><br>${TIER_LABELS[p.tier]} &middot; ${p.category}<br><span style="color:${color}">${p.note}</span>`)
+    const popup=`<strong>${p.label}</strong><br>${p.isCpm?'existing CPM &middot; ':''}${TIER_LABELS[p.tier]} &middot; ${p.category}<br><span style="color:${color}">${p.note}</span>`;
+    // OSM features carry their real mapped shape — drawn under the pin so a breakwater
+    // reads as a breakwater, not just a dot. Closed rings (beaches, wetlands) as areas.
+    (p.geometry||[]).forEach(path=>{
+      if(path.length<2)return;
+      const closed=path.length>3&&path[0][0]===path[path.length-1][0]&&path[0][1]===path[path.length-1][1];
+      const style=p.isCpm?{color:'#fff',weight:3,opacity:0.9}:{color,weight:1.5,opacity:0.7,fillColor:color,fillOpacity:0.12};
+      (closed?L.polygon(path,style):L.polyline(path,style)).bindPopup(popup).addTo(psMap);
+    });
+    L.circleMarker([p.latlng.lat,p.latlng.lng],p.isCpm
+      ?{radius:7,color:'#fff',weight:2,fillColor:color,fillOpacity:0.9}
+      :{radius:6,color,weight:1.5,fillColor:color,fillOpacity:0.55})
+      .bindPopup(popup)
       .addTo(psMap);
   });
   onSiteCPMs.forEach(addOnSiteCpmMarker);
@@ -2373,8 +2402,10 @@ function rerenderPsViews(){
   });
   const idEl=document.getElementById('ps-cpm-identified');
   if(idEl)idEl.textContent='identifying existing CPMs…';
+  cpmMatchDone=false;
   const matchPromise=matchCatalogCpms(stackData,ensureCpmPool()).then(matches=>{
-    identifiedCpms=matches;
+    identifiedCpms=mergeDetectedCpms(stackData,matches,ensureCpmPool());
+    cpmMatchDone=true;
     renderIdentifiedCpms();
     return matches;
   });
@@ -2410,7 +2441,7 @@ function renderIdentifiedCpms(){
     return;
   }
   el.innerHTML=identifiedCpms.map((m,i)=>
-    `<div class="ps-cpm-item ${m.matched?'matched':'unmatched'}"><span class="ps-cpm-item-name">${m.matched?m.cpmName:m.paramLabel}</span><span class="ps-cpm-item-remove" onclick="removeIdentifiedCpm(${i})" title="not actually here">&times;</span></div>`
+    `<div class="ps-cpm-item ${m.matched?'matched':'unmatched'}"><span class="ps-cpm-item-name">${m.matched?m.cpmName:m.paramLabel}${m.matched&&m.source==='osm'?` <span style="opacity:.55;font-weight:normal">· ${m.paramLabel}</span>`:''}</span><span class="ps-cpm-item-remove" onclick="removeIdentifiedCpm(${i})" title="not actually here">&times;</span></div>`
   ).join('');
 }
 function removeIdentifiedCpm(idx){
@@ -2483,8 +2514,8 @@ async function extractFromUpload(){
     const base64=await fileToBase64(file);
     status.textContent='extracting parameters via Claude — this may take a moment…';
     const extracted=await extractProcessStackFromReport(base64,{boundingBox:scBoxBounds});
-    stackData=extracted;
-    status.textContent=`done — ${extracted.length} parameters extracted from report`;
+    stackData=_uniqueLabels(extracted.concat(siteOsmFeatures.map(p=>Object.assign({},p))));
+    status.textContent=`done — ${extracted.length} parameters extracted from report (+ ${siteOsmFeatures.length} mapped structures kept)`;
     rerenderPsViews();
   }catch(e){
     status.textContent='extraction failed: '+e.message;
@@ -2493,9 +2524,12 @@ async function extractFromUpload(){
     btn.disabled=false;
   }
 }
-function ribbonPath(iconX,iconY,medX,medY,spreadIndex){
-  const c1x=iconX+spreadIndex*34,c1y=iconY+(medY-iconY)*0.33;
-  const c2x=medX+spreadIndex*18,c2y=iconY+(medY-iconY)*0.72;
+// A cubic Bézier never leaves the hull of its four points, so clamping both control
+// points inside [pad, W-pad] keeps every ribbon inside the frame however wide the fan.
+function ribbonPath(iconX,iconY,medX,medY,off1,off2,W,pad){
+  const clampX=x=>Math.max(pad,Math.min(W-pad,x));
+  const c1x=clampX(iconX+off1),c1y=iconY+(medY-iconY)*0.33;
+  const c2x=clampX(medX+off2),c2y=iconY+(medY-iconY)*0.72;
   return`M${iconX},${iconY} C${c1x},${c1y} ${c2x},${c2y} ${medX},${medY}`;
 }
 function renderRelationalDiagram(){
@@ -2557,19 +2591,30 @@ function renderRelationalDiagram(){
   const crownPos={};
   spatialOrder.forEach((p,i)=>{
     const n=spatialOrder.length;
-    const ang=Math.PI+(n>1?i/(n-1):0.5)*Math.PI; // upper semicircle: left -> up -> right
+    // Upper arc, inset ~10° at each end so the outermost labels lean outward instead of
+    // hanging straight down past the bottom of the frame.
+    const inset=0.18;
+    const ang=Math.PI+inset+(n>1?i/(n-1):0.5)*(Math.PI-2*inset);
     crownPos[p.id]={x:medX+Math.cos(ang)*crownRadius,y:medY+Math.sin(ang)*crownRadius,ang};
   });
 
   // One ribbon per parameter (not a fixed 3-per-category bundle) — this is what makes
   // crossings meaningful: each ribbon is addressable by its parameter's id, so
   // markTensionCrossings() can find the exact two ribbons an inferred tension names.
+  //
+  // Fan width: 34px/18px per step suits the ~6-per-category mock set, but live Places +
+  // OSM stacks run 20+ per category, which pushed the outer ribbons ±340px — far past
+  // the 530px frame. Steps now shrink so the outermost ribbon's offset never exceeds
+  // FAN_MAX_*; small stacks keep exactly the original spacing.
+  const FAN_MAX_1=150,FAN_MAX_2=80,FRAME_PAD=12;
   const ribbons=CATEGORIES.map(cat=>{
     const inCat=stackData.filter(p=>p.category===cat);
+    const half=Math.max(1,(inCat.length-1)/2);
+    const step1=Math.min(34,FAN_MAX_1/half),step2=Math.min(18,FAN_MAX_2/half);
     return inCat.map((p,j)=>{
       const spread=j-(inCat.length-1)/2;
       const end=crownPos[p.id];
-      return`<g filter="url(#ps-glow)"><path id="ribbon-${p.id}" d="${ribbonPath(iconX[cat],dotY+10,end.x,end.y,spread)}" fill="none" stroke="${CAT_COLORS_HEX[cat]}" stroke-width="2.2" opacity="0.5" class="ps-ribbon"/></g>`;
+      return`<g filter="url(#ps-glow)"><path id="ribbon-${p.id}" d="${ribbonPath(iconX[cat],dotY+10,end.x,end.y,spread*step1,spread*step2,W,FRAME_PAD)}" fill="none" stroke="${CAT_COLORS_HEX[cat]}" stroke-width="2.2" opacity="0.5" class="ps-ribbon"/></g>`;
     }).join('');
   }).join('');
 
@@ -2584,12 +2629,13 @@ function renderRelationalDiagram(){
     <text x="${medX}" y="${medY+16}" text-anchor="middle" font-family="'Fraunces',serif" font-size="9" letter-spacing="0.02em" fill="#dedad0">${cityName}</text>`;
 
   // Crown points: an actual dot per parameter (not text alone), label radiating outward.
+  const CROWN_LABEL_MAX=22; // long Places names otherwise run past the frame; full name on hover
   const crown=stackData.map(p=>{
     const pos=crownPos[p.id], labelR=crownRadius+14;
     const lx=medX+Math.cos(pos.ang)*labelR, ly=medY+Math.sin(pos.ang)*labelR;
     const rot=pos.ang*180/Math.PI+90, color=CAT_COLORS_HEX[p.category];
     return`<circle cx="${pos.x}" cy="${pos.y}" r="2.6" fill="${color}"/>
-      <text x="${lx}" y="${ly}" font-size="5.5" fill="${color}" text-anchor="middle" transform="rotate(${rot} ${lx} ${ly})">${p.label}</text>`;
+      <text x="${lx}" y="${ly}" font-size="5.5" fill="${color}" text-anchor="middle" transform="rotate(${rot} ${lx} ${ly})"><title>${p.label}</title>${p.label.length>CROWN_LABEL_MAX?p.label.slice(0,CROWN_LABEL_MAX-1)+'…':p.label}</text>`;
   }).join('');
 
   document.getElementById('ps-svg-wrap').innerHTML=
@@ -2714,6 +2760,9 @@ function renderTimeStack(){
 function completeSiteCharacterizationFromStack(){
   const city=document.getElementById('sc-city').value.trim();
   const byCategory=cat=>stackData.filter(p=>p.category===cat).map(p=>p.label);
+  // Leaving before Claude's matching returns would otherwise hand over an empty
+  // registry — the OSM-detected structures don't depend on that call, so carry them now.
+  if(!cpmMatchDone)identifiedCpms=mergeDetectedCpms(stackData,[],ensureCpmPool());
   siteContext={
     city,
     boundingBox:scBoxBounds,
@@ -2726,6 +2775,7 @@ function completeSiteCharacterizationFromStack(){
       ecological:byCategory('ecological')
     },
     onSiteCPMs,
+    identifiedCpms, // auto-detected (OSM structures + Claude matches), with latlng where known
     tensions:siteTensions,
     anchorBaseline:siteBaseline // carried forward for spatial-strategy.html's future comparison view
   };

@@ -158,6 +158,11 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 .si-remove:hover{opacity:1;background:rgba(192,84,78,.1)}
 .si-meta{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:3px}
 .si-tag{font-size:7px;padding:1px 4px;border-radius:2px;border:1px solid var(--bd);color:var(--t3)}
+/* Existing CPMs carried over from Process Stacking — white edge = already built on site */
+.str-item.existing{border-left:2px solid rgba(255,255,255,.8)}
+.str-item.existing.off{opacity:.55}
+.si-tag.ex-tag{border-color:rgba(255,255,255,.35);color:var(--t1)}
+.si-remove.ex-toggle{border-color:rgba(255,255,255,.25);color:var(--t2)}
 .si-score-badge{font-size:7px;padding:1px 5px;border-radius:3px;border:1px solid;font-weight:bold}
 .si-score-badge.hi{border-color:rgba(29,158,117,.35);color:var(--hi);background:rgba(29,158,117,.07)}
 .si-score-badge.md{border-color:rgba(239,159,39,.35);color:var(--md);background:rgba(239,159,39,.07)}
@@ -173,6 +178,33 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 .cloister-pcn{font-size:8px;color:var(--t2)}
 .cloister-ungroup-zone{border-style:dotted;opacity:.55;padding:8px 5px;text-align:center}
 .cloister-ungroup-zone .cloister-hdr{border-bottom:none;margin-bottom:0}
+.cloister-group[data-tc] .cloister-hdr{cursor:pointer}
+.cloister-pin{font-size:7px;color:var(--t3);margin-left:5px;opacity:0;transition:opacity .12s}
+.cloister-group:hover .cloister-pin,.cloister-group.tc-pinned .cloister-pin{opacity:1}
+.cloister-group.tc-pinned .cloister-pin{color:var(--tc-color)}
+
+/* TC ↔ CPM LINKAGE — hovering (or pinning) a TC group in the Strategy list glows its member
+   markers on the map and dims everything else; hovering a marker lights up its TC group. */
+.cloister-group.tc-on{border-style:solid;border-color:var(--tc-color);box-shadow:0 0 10px -3px var(--tc-color)}
+.cloister-group.tc-on .str-item{border-color:color-mix(in srgb,var(--tc-color) 45%,transparent)}
+.leaflet-marker-icon.cpm-glow{animation:cpm-glow-pulse 1.8s ease-in-out infinite;z-index:1000!important}
+@keyframes cpm-glow-pulse{
+  0%,100%{filter:drop-shadow(0 0 3px var(--tc-color)) drop-shadow(0 0 7px var(--tc-color))}
+  50%{filter:drop-shadow(0 0 6px var(--tc-color)) drop-shadow(0 0 14px var(--tc-color))}
+}
+.leaflet-marker-icon.cpm-dim{opacity:.28!important;transition:opacity .15s}
+.leaflet-marker-icon.cpm-future{opacity:.18!important}
+/* Process-restacking */
+#restack-banner{margin:6px 6px 0;padding:7px 9px;border:1px solid rgba(29,158,117,.45);border-radius:var(--r);background:rgba(29,158,117,.07);font-size:8px;color:var(--t2);line-height:1.55}
+#restack-banner b{color:var(--t1)}
+#restack-banner .rb-actions{display:flex;gap:4px;margin-top:5px}
+.cloister-group.restack{border-left-width:2px;border-left-style:dashed}
+.cloister-group.inactive{opacity:.5}
+.si-tag.built-tag{border-color:rgba(29,158,117,.45);color:#5DCAA5}
+.str-item.inherited{opacity:.42;border-style:dashed;background:transparent}
+.str-item.inherited:hover{opacity:.8}
+.si-remove.carry-btn{opacity:1;color:#5DCAA5;border-color:rgba(29,158,117,.4)}
+#ap-metro .ap-station{cursor:pointer}
 .str-item[draggable="true"]{cursor:grab}
 .str-item[draggable="true"]:active{cursor:grabbing}
 
@@ -196,12 +228,32 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 .leaflet-popup-close-button:hover{color:var(--t1)!important}
 
 /* ADAPTIVE PATHWAYS PANEL (inline, side-by-side — not an overlay) */
-#panel-pathways{width:320px;min-width:260px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg);border-left:1px solid var(--bd)}
-#ap-chart-wrap{border:1px solid var(--bd);border-radius:var(--rl);padding:10px;background:var(--bg3);margin-bottom:10px}
+#panel-pathways{width:360px;min-width:280px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg);border-left:1px solid var(--bd)}
+#panel-pathways .pb{flex:1;overflow-y:auto;padding:10px 11px}
+#ap-chart-wrap{border:1px solid var(--bd);border-radius:var(--rl);padding:8px;background:var(--bg3);margin-bottom:10px;height:190px;position:relative}
+.ap-sec-lbl{font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin:0 0 5px;display:flex;align-items:baseline;gap:6px}
+.ap-sec-lbl strong{color:var(--t1);font-size:11px;letter-spacing:0}
+.ap-scen{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+.ap-scen label{font-size:8px;color:var(--t2);display:flex;align-items:center;gap:6px;cursor:pointer}
+.ap-scen input{accent-color:var(--ac);margin:0}
+#ap-scrub{width:100%;accent-color:var(--ac);margin:0 0 3px}
+.ap-scrub-ticks{display:flex;justify-content:space-between;font-size:7px;color:var(--t3);margin-bottom:11px}
+#ap-metro{border:1px solid var(--bd);border-radius:var(--rl);background:var(--bg3);padding:6px 4px;margin-bottom:8px}
+#ap-metro svg{display:block;width:100%}
+#ap-metro .ap-row{cursor:pointer}
+.ap-key{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:7px;color:var(--t3);margin-bottom:10px}
+.ap-key span{display:inline-flex;align-items:center;gap:4px}
+.ap-key i{display:inline-block;width:8px;height:8px;border-radius:50%}
+/* Map badge per TC group while the pathways panel is open — state at the scrubbed horizon */
+.ap-badge{font-family:'Courier New',monospace;font-size:8px;white-space:nowrap;padding:2px 6px;border-radius:3px;background:rgba(12,15,28,.88);border:1px solid var(--tc-color);color:var(--t1);transform:translate(-50%,-100%);display:inline-block;pointer-events:none}
+.ap-badge b{color:var(--tc-color)}
+.ap-badge.failing{border-color:#c0544e;box-shadow:0 0 8px rgba(192,84,78,.6)}
+.ap-badge .st{color:var(--t3)}
+.ap-badge.failing .st{color:#f09595}
 .ap-legend{display:flex;flex-direction:column;gap:5px;margin-top:8px}
 .ap-legend-item{display:flex;align-items:center;gap:5px;font-size:8px;color:var(--t2)}
 .ap-legend-sw{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-.ap-note{font-size:8px;color:var(--t3);font-style:italic;line-height:1.6}
+.ap-note{font-size:8px;color:var(--t3);font-style:italic;line-height:1.6;margin-top:10px}
 .ap-empty{text-align:center;padding:40px 14px;color:var(--t3)}
 </style>
 </head>
@@ -279,7 +331,7 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
       <span class="ph-badge" id="str-badge">empty</span>
     </div>
     <div class="str-anc-wrap">
-      <div class="str-anc-title">Anchor coverage · avg. placed CPMs</div>
+      <div class="str-anc-title">Anchor coverage · existing + placed CPMs, shifted from baseline</div>
       <div id="anc-coverage"></div>
     </div>
     <div class="str-sec-hdr">
@@ -299,13 +351,30 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
   <div id="panel-pathways" style="display:none">
     <div class="ph">
       <span class="ph-title">Adaptive Pathways</span>
-      <span class="ph-badge">stub</span>
+      <span class="ph-badge" title="thresholds, time profiles, floors, ε, k and Wcn are placeholders — see adaptive-pathways-engine.js">placeholder values</span>
       <span class="ph-right"><button class="btn" onclick="closePathwaysPanel()">&times;</button></span>
     </div>
     <div class="pb">
+      <div class="ap-sec-lbl">Scenario</div>
+      <div class="ap-scen">
+        <label title="the driver moves: the threshold each anchor is normalised against rises over time"><input type="checkbox" id="ap-drift" checked onchange="setApScenario()">sea-level rise · threshold drift</label>
+        <label title="the TC itself: step-and-reset profiles lose their maintenance resets"><input type="checkbox" id="ap-defer" onchange="setApScenario()">defer maintenance</label>
+      </div>
+      <div class="ap-sec-lbl">Horizon T <strong id="ap-horizon">Now</strong> EP(T) <strong id="ap-ep">–</strong></div>
+      <input type="range" id="ap-scrub" min="0" max="10" step="1" value="0" oninput="setApTime(+this.value)">
+      <div class="ap-scrub-ticks" id="ap-scrub-ticks"></div>
+      <div class="ap-sec-lbl">TC Pcn(t) · solid observed · dotted expected m(t) · long dash restacked</div>
       <div id="ap-chart-wrap"><canvas id="ap-chart"></canvas></div>
+      <div class="ap-sec-lbl">Pathways · click a tipping point to restack</div>
+      <div id="ap-metro"></div>
+      <div class="ap-key">
+        <span><i style="background:#EF9F27"></i>tipping · TC shortfall</span>
+        <span><i style="background:#c0544e"></i>tipping · driver drift</span>
+        <span><i style="background:transparent;border:2px solid #dedad0;width:5px;height:5px"></i>transfer · restacked</span>
+        <span><i style="border:1px solid #f09595;border-radius:0;width:6px;height:6px"></i>below floor (out of EP)</span>
+      </div>
       <div class="ap-legend" id="ap-legend"></div>
-      <div class="ap-note">STUB — hardcoded/randomized time-point projection, no real temporal computation. Plots each cloister's Pcn, not individual CPM scores.</div>
+      <div class="ap-note">Pcn(t) = &prod; &Acirc;a,cn(t)^Wa within each TC group (non-compensatory); EP(T) = &Sigma; Wcn &times; Pcn at horizon T (compensatory across TC groups). Expected = design time-profile against the t0 threshold; observed adds the chosen scenario. The gap splits into TC shortfall (maintenance) and driver drift (new strategy). All parameter values are placeholders.</div>
     </div>
   </div>
 
@@ -314,8 +383,10 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="data/studies.js"></script>
+<script src="data/studies-resolve.js"></script>
 <script src="data/speculative.js"></script>
 <script src="data/standard.js"></script>
+<script src="adaptive-pathways-engine.js"></script>
 <script src="config.js"></script>
 <script>
 // ── CONSTANTS ─────────────────────────────────────────────
@@ -419,7 +490,7 @@ function weightedGeoMean(scoreByAnchor,w){
 function buildCpmPool(){
   const studyCpms=STUDIES.map(s=>({
     id:s.asa_code,name:s.title,material:s.material,
-    location:{type:'Point',position:s.position},
+    location:s.position?{type:'Point',position:s.position}:(s.location||{type:'Point',position:null}), // position first, as index.html's studyCells()
     newCode:null,scale:s.scale||null,
     desc:s.citation||'',source:s.citation||'',
     kind:'study',_study:s
@@ -489,6 +560,8 @@ function init(){
   document.getElementById('s-scored').textContent=scored;
   initMap();
   drawSiteBoundary();
+  loadExistingCpms();
+  document.getElementById('s-placed').textContent=newPlacedCount();
   updateQueuedBanner();
   renderLibMatrix();
   applyFilters();
@@ -539,17 +612,29 @@ function initMap(){
     attribution:'&copy; <a href="https://openstreetmap.org">OSM</a> &copy; <a href="https://carto.com">CARTO</a>',
     subdomains:'abcd',maxZoom:19
   }).addTo(sMap);
+  const outsideSite=ll=>siteBoundaryCorners
+    ?!_pointInPolygon(ll.lat,ll.lng,siteBoundaryCorners)
+    :(siteBoundaryBounds&&!siteBoundaryBounds.contains(ll));
   sMap.on('click',function(e){
     if(!selectedCPM) return;
-    const outside=siteBoundaryCorners
-      ?!_pointInPolygon(e.latlng.lat,e.latlng.lng,siteBoundaryCorners)
-      :(siteBoundaryBounds&&!siteBoundaryBounds.contains(e.latlng));
-    if(outside){
+    if(outsideSite(e.latlng)){
       flashOutsideBoundary();
       return;
     }
     placeCPM(selectedCPM,e.latlng.lat,e.latlng.lng);
     deselectCPM();
+  });
+  // Drag a CPM from the Strategy list onto the map → a new one of the same kind is placed
+  // there (built at the restack year while restacking), no trip back to the catalogue.
+  const mapEl=document.getElementById('map');
+  mapEl.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='copy';});
+  mapEl.addEventListener('drop',e=>{
+    e.preventDefault();
+    const src=strategy.find(s=>s.id===parseInt(e.dataTransfer.getData('text/plain'),10));
+    if(!src)return;
+    const ll=sMap.mouseEventToLatLng(e);
+    if(outsideSite(ll)){flashOutsideBoundary();return;}
+    placeCPM(src.cpm,ll.lat,ll.lng);
   });
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape') deselectCPM();
@@ -583,40 +668,111 @@ function placeCPM(cpm,lat,lng){
     `<div style="font-size:8px;color:#8a8880;line-height:1.55">${(cpm.desc||'').substring(0,100)}${(cpm.desc||'').length>100?'…':''}</div>`+
     `<div style="font-size:7px;color:#4e4d4a;margin-top:6px;letter-spacing:.03em">${lat.toFixed(4)}, ${lng.toFixed(4)}</div>`
   );
+  bindTcHover(marker);
   const id=nextId++;
-  strategy.push({cpm,lat,lng,marker,id});
+  const rs=restackMode&&restacks.find(r=>r.key===restackMode);
+  strategy.push({cpm,lat,lng,marker,id,fromT:rs?rs.t:0});
+  if(rs)rs.ids.push(id);
   marker.on('dragend',()=>{
     const ll=marker.getLatLng();
     const item=strategy.find(x=>x.marker===marker);
     if(item){item.lat=ll.lat;item.lng=ll.lng;}
     recomputeCloisters();
   });
-  document.getElementById('s-placed').textContent=strategy.length;
+  document.getElementById('s-placed').textContent=newPlacedCount();
   renderLibList();
   renderAncCoverage();
   recomputeCloisters();
 }
 
 function removeFromStrategy(id){
+  const exIdx=existingCPMs.findIndex(e=>e.stratId===id);
+  if(exIdx!==-1){toggleExisting(exIdx);return;}
   const idx=strategy.findIndex(s=>s.id===id);
   if(idx===-1) return;
   sMap.removeLayer(strategy[idx].marker);
   strategy.splice(idx,1);
-  manualSeparate.delete(id);
-  manualUnions=manualUnions.filter(([a,b])=>a!==id&&b!==id);
-  document.getElementById('s-placed').textContent=strategy.length;
+  tcAssign.delete(id);
+  document.getElementById('s-placed').textContent=newPlacedCount();
   renderLibList();
   renderAncCoverage();
   recomputeCloisters();
 }
 
 function clearStrategy(){
-  if(!strategy.length) return;
-  strategy.forEach(s=>sMap.removeLayer(s.marker));
-  strategy=[];
-  manualSeparate=new Set();
-  manualUnions=[];
+  const placed=strategy.filter(s=>!s.existing);
+  if(!placed.length) return;
+  placed.forEach(s=>sMap.removeLayer(s.marker));
+  strategy=strategy.filter(s=>s.existing); // what's already on site isn't the user's to clear
   document.getElementById('s-placed').textContent=0;
+  renderLibList();
+  renderAncCoverage();
+  recomputeCloisters();
+}
+
+// ── EXISTING CPMs (carried over from Process Stacking) ──────
+// What's already built on site: OSM-detected structures, Claude-matched parameters and
+// manual placements from the Process Stacking registry (siteContext.identifiedCpms /
+// onSiteCPMs). Catalogue matches join `strategy` as locked items (existing:true) so they
+// count in cloisters, EP, pathways and Anchor Coverage exactly like anything placed
+// here — they can be excluded from scoring, not dragged or deleted. Ones with no
+// catalogue match have no anchor scores, so they're mapped and listed but not scored.
+let existingCPMs=[];
+function newPlacedCount(){return strategy.filter(s=>!s.existing).length;}
+function makeExistingIcon(color){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
+    <circle cx="9" cy="9" r="7" fill="${color}" fill-opacity="0.9" stroke="#fff" stroke-width="2"/>
+  </svg>`;
+  return L.divIcon({className:'',html:svg,iconSize:[18,18],iconAnchor:[9,9],popupAnchor:[0,-8]});
+}
+function existingPopup(ex){
+  const sc=ex.cpm?ex.cpm._s.composite:null;
+  const status=!ex.cpm?'not in catalogue — not scored':ex.excluded?'excluded from scoring':'counted in scoring';
+  return`<div style="font-size:8px;color:#4e4d4a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">existing on site · from Process Stacking</div>`+
+    `<div style="font-size:11px;color:#dedad0;margin-bottom:4px;line-height:1.3">${ex.cpm?ex.cpm.name:ex.label}</div>`+
+    (ex.cpm?`<div style="font-size:8px;color:#8a8880;margin-bottom:4px">${ex.label}</div>`:'')+
+    `<div style="font-size:8px;color:#8a8880">${status}${sc!=null?` · ${sc.toFixed(1)}/10`:''}</div>`+
+    `<div style="font-size:7px;color:#4e4d4a;margin-top:6px">${ex.lat.toFixed(4)}, ${ex.lng.toFixed(4)}${ex.approx?' · approx. location':''}</div>`;
+}
+function loadExistingCpms(){
+  if(!siteContext)return;
+  const rows=[];
+  (siteContext.identifiedCpms||[]).forEach(m=>{
+    if(!m.latlng)return;
+    rows.push({cpmId:m.matched?m.cpmId:null,label:m.paramLabel,lat:m.latlng.lat,lng:m.latlng.lng,source:m.source||null});
+  });
+  (siteContext.onSiteCPMs||[]).forEach(c=>rows.push({cpmId:c.id,label:c.name,lat:c.lat,lng:c.lng,source:'manual'}));
+  rows.forEach(r=>{
+    const cpm=r.cpmId?allCPMs.find(c=>c.id===r.cpmId)||null:null;
+    // EIA-extracted and mock parameters carry synthetic scatter positions, not surveyed ones.
+    const ex={...r,cpm,approx:!['osm','places','manual'].includes(r.source),marker:null,stratId:null,excluded:!cpm};
+    ex.marker=L.marker([ex.lat,ex.lng],{icon:makeExistingIcon(cpm?(MAT_COLORS[cpm.material]||'#8a8880'):'#4e4d4a'),keyboard:false}).addTo(sMap);
+    if(!cpm)ex.marker.setOpacity(0.5);
+    existingCPMs.push(ex);
+    if(cpm)includeExisting(ex);
+    ex.marker.bindPopup(existingPopup(ex));
+    bindTcHover(ex.marker);
+  });
+}
+function includeExisting(ex){
+  const id=nextId++;
+  ex.stratId=id;ex.excluded=false;
+  ex.marker.setOpacity(1);
+  strategy.push({cpm:ex.cpm,lat:ex.lat,lng:ex.lng,marker:ex.marker,id,existing:true,exLabel:ex.label});
+}
+function toggleExisting(idx){
+  const ex=existingCPMs[idx];
+  if(!ex||!ex.cpm)return;
+  if(ex.excluded){
+    includeExisting(ex);
+  }else{
+    const i=strategy.findIndex(s=>s.id===ex.stratId);
+    if(i!==-1)strategy.splice(i,1);
+    tcAssign.delete(ex.stratId);
+    ex.stratId=null;ex.excluded=true;
+    ex.marker.setOpacity(0.35);
+  }
+  ex.marker.setPopupContent(existingPopup(ex));
   renderLibList();
   renderAncCoverage();
   recomputeCloisters();
@@ -736,14 +892,16 @@ function renderLibList(){
     const cls=scoreClass(sc);
     const scStr=sc!==null?sc.toFixed(1):'–';
     const isSelected=selectedCPM&&selectedCPM.id===c.id;
-    const placedCount=strategy.filter(s=>s.cpm.id===c.id).length;
+    const placedCount=strategy.filter(s=>!s.existing&&s.cpm.id===c.id).length;
+    const onSiteCount=strategy.filter(s=>s.existing&&s.cpm.id===c.id).length;
     const bars=ANC.map((a,i)=>{
       const av=c._s.anchors[a];
       const pct=av!=null?Math.round((av/10)*100):0;
       const fill=av!=null?`background:${ancColors[i]};opacity:${0.5+av/20}`:'background:rgba(255,255,255,0.05)';
       return`<div class="ci-bar-wrap"><div class="ci-bar-bg"><div class="ci-bar-fill" style="height:${pct}%;${fill}"></div></div></div>`;
     }).join('');
-    const placedTag=placedCount?`<span class="ci-tag placed-tag">&#10003; ×${placedCount}</span>`:'';
+    const placedTag=(placedCount?`<span class="ci-tag placed-tag">&#10003; ×${placedCount}</span>`:'')+
+      (onSiteCount?`<span class="ci-tag" style="border-color:rgba(255,255,255,.35);color:var(--t1)">on site ×${onSiteCount}</span>`:'');
     const queuedTag=(queuedCpmIds.includes(c.id)&&!placedCount)?`<span class="ci-tag" style="border-color:rgba(239,159,39,.4);color:var(--ac2)">queued from site</span>`:'';
     const studyTag=c.kind==='study'
       ?`<span class="ci-tag study-tag">studied object</span>`
@@ -783,31 +941,159 @@ function selectCPM(id,el){
 }
 
 // ── CLOISTER GROUPING ───────────────────────────────────────
-// STUB — random proximity-based clustering. Future version replaces this with a real
-// similarity metric combining (1) spatial proximity and (2) anchor-profile similarity
-// between CPMs, with a derived confidence value (e.g. from anchor-profile variance
-// within the cluster) surfaced to the user. Not implemented here.
-const PROXIMITY_PX=140;
+// TC groups are a stored assignment (stratId → group key), not recomputed from the map:
+// once generated they only change when the user changes them — moving a marker or zooming
+// never regroups. The DEFAULT RULE (suggestTcGroups) proposes groups of at most TC_DEFAULT_MAX
+// of the closest CPMs, by complete linkage in metres, within a distance cap; "regenerate"
+// re-applies it and discards manual edits. Dragging a CPM onto a group moves only that CPM,
+// and manual groups can grow past the default max. A CPM added after generating follows
+// the default rule: it joins the nearest group with room inside the cap, else starts its own.
+// Membership mechanism is still open in the framework — the default rule is the seam where a
+// proximity + anchor-profile similarity score (with a confidence value) would replace distance.
+//
+// NAMING — "Technical Cloister" (TC), shortened in the UI to "TC group" / "group". A brief
+// "cell" rename was reverted (18 Oct 2026): "cell" already means a Wave Matrix cell here.
+const TC_DEFAULT_MAX=3;
 const CLOISTER_PALETTE=['#7F77DD','#1D9E75','#EF9F27','#378ADD','#c0544e','#9F77DD','#639922'];
 let cloisters=[];
-let manualUnions=[];      // [[idA,idB], ...] user-forced pairings, overrides the random pass
-let manualSeparate=new Set(); // stratIds the user dragged out — excluded from the random pass
+let tcAssign=new Map();   // stratId → group key ('g1', 'g2', …) once generated
+let tcNextKey=1;
 let cloisterLayers=[];
-let hasGeneratedCloisters=false; // gates the random pass — until the user presses "generate", every CPM is its own solo cloister
-let cloisterSeed=0; // bumped by "regenerate" to force a fresh stochastic pass on the same layout
+let hasGeneratedCloisters=false; // until "generate" (or a first drag), every CPM is its own solo TC
+
+// Distance cap for the default rule — PLACEHOLDER: 20% of the site diagonal, clamped to
+// 100–1000 m; 300 m when no site was characterized. Metres, so zoom never changes grouping.
+function tcDistanceCapM(){
+  const bb=siteContext&&siteContext.boundingBox;
+  if(!bb)return 300;
+  const diag=L.latLng(bb.south,bb.west).distanceTo(L.latLng(bb.north,bb.east));
+  return Math.max(100,Math.min(1000,diag*0.2));
+}
+function tcDist(a,b){return L.latLng(a.lat,a.lng).distanceTo(L.latLng(b.lat,b.lng));}
+// Complete linkage: a group is only as tight as its two farthest members.
+function tcLinkage(ga,gb){let d=0;ga.forEach(a=>gb.forEach(b=>{d=Math.max(d,tcDist(a,b));}));return d;}
+// DEFAULT RULE — greedily merge the closest pair of groups whose combined size stays within
+// TC_DEFAULT_MAX and whose linkage is inside the cap. Deterministic for a given layout.
+function suggestTcGroups(items){
+  const cap=tcDistanceCapM();
+  let groups=items.map(s=>[s]);
+  for(;;){
+    let best=null;
+    for(let i=0;i<groups.length;i++)for(let j=i+1;j<groups.length;j++){
+      if(groups[i].length+groups[j].length>TC_DEFAULT_MAX)continue;
+      const d=tcLinkage(groups[i],groups[j]);
+      if(d<=cap&&(!best||d<best.d))best={i,j,d};
+    }
+    if(!best)break;
+    groups[best.i]=groups[best.i].concat(groups[best.j]);
+    groups.splice(best.j,1);
+  }
+  return groups;
+}
+function newTcKey(){return'g'+(tcNextKey++);}
+function applyDefaultRule(){
+  tcAssign=new Map();tcNextKey=1;
+  suggestTcGroups(strategy.filter(s=>!s.fromT)).forEach(g=>{const k=newTcKey();g.forEach(s=>tcAssign.set(s.id,k));});
+}
+// A CPM with no group yet (placed after generating, or an existing CPM re-included).
+function assignByDefaultRule(s){
+  const cap=tcDistanceCapM(),members={};
+  strategy.forEach(o=>{const k=tcAssign.get(o.id);if(k&&o.id!==s.id)(members[k]=members[k]||[]).push(o);});
+  let best=null;
+  Object.entries(members).forEach(([k,ms])=>{
+    if(ms.length>=TC_DEFAULT_MAX)return;
+    const d=tcLinkage([s],ms);
+    if(d<=cap&&(!best||d<best.d))best={k,d};
+  });
+  tcAssign.set(s.id,best?best.k:newTcKey());
+}
 
 function generateCloisters(){
+  if(!confirmClearRestacks())return;
   hasGeneratedCloisters=true;
+  applyDefaultRule();
   recomputeCloisters();
 }
 function regenerateCloisters(){
-  cloisterSeed++;
-  manualUnions=[];manualSeparate=new Set();
+  if(!confirmClearRestacks())return;
+  applyDefaultRule();
   recomputeCloisters();
 }
 function resetCloisters(){
+  if(!confirmClearRestacks())return;
   hasGeneratedCloisters=false;
-  manualUnions=[];manualSeparate=new Set();
+  tcAssign=new Map();tcNextKey=1;
+  recomputeCloisters();
+}
+
+// ── PROCESS-RESTACKING ───────────────────────────────────────
+// A TC's failure tipping point is where process-restacking begins: a new TC takes over from
+// that year (fully customisable — build CPMs on the map at that year, drag others in, remove
+// any). The parent stops contributing to EP from the restack year; the child from it.
+// The parent's CPMs are listed in the new TC but FADED and not counted, unless the user
+// reconsiders them: "maintain" (maintenance resumes that year) or "rebuild" (built again that
+// year, ageing from zero). One pathway per station for now.
+let restacks=[];          // [{key, parent, t, ids:[counted stratIds], inherited:[parent's ids], carry:{id:'maintain'|'rebuild'}, colorIdx}]
+let restackNext=1;
+let restackMode=null;     // key of the restack being edited — new placements join it
+function restackOf(parentKey){return restacks.find(r=>r.parent===parentKey);}
+function removeStratItems(ids){
+  ids.forEach(id=>{
+    const i=strategy.findIndex(s=>s.id===id);
+    if(i!==-1){sMap.removeLayer(strategy[i].marker);strategy.splice(i,1);}
+  });
+}
+// Drop restacks (and their descendants); CPMs built only for them go too.
+function dropRestacks(keys){
+  let drop=new Set(keys),grew=true;
+  while(grew){grew=false;restacks.forEach(r=>{if(!drop.has(r.key)&&drop.has(r.parent)){drop.add(r.key);grew=true;}});}
+  const kept=restacks.filter(r=>!drop.has(r.key));
+  const stillUsed=new Set(kept.flatMap(r=>r.ids));
+  removeStratItems(strategy.filter(s=>s.fromT&&!stillUsed.has(s.id)).map(s=>s.id));
+  restacks=kept;
+  if(restackMode&&drop.has(restackMode))restackMode=null;
+}
+function confirmClearRestacks(){
+  if(!restacks.length)return true;
+  if(!confirm(`This clears ${restacks.length} restacked TC group${restacks.length===1?'':'s'} and the CPMs placed for them. Continue?`))return false;
+  dropRestacks(restacks.map(r=>r.key));
+  return true;
+}
+function startRestack(parentKey){
+  const parent=cloisters.find(c=>c.id===parentKey);
+  if(!parent||!parent.ap.tipping||restackOf(parentKey))return;
+  const t=parent.ap.tipping.t;
+  const r={key:'r'+(restackNext++),parent:parentKey,t,ids:[],inherited:parent.ids.slice(),carry:{},colorIdx:2+restackNext};
+  restacks.push(r);
+  restackMode=r.key;
+  apTimeIdx=AP_MILESTONES.indexOf(t);
+  const scrub=document.getElementById('ap-scrub');if(scrub)scrub.value=apTimeIdx;
+  recomputeCloisters();
+}
+function finishRestack(){restackMode=null;renderStratList();}
+function editRestack(key){restackMode=key;const r=restacks.find(x=>x.key===key);if(r)setApTime(AP_MILESTONES.indexOf(r.t));}
+function undoRestack(key){dropRestacks([key]);recomputeCloisters();}
+// The members a restacked TC actually counts: what was built / dragged in, plus any parent
+// CPMs the user reconsidered — as copies carrying the maintain / rebuild decision.
+function restackMembers(r){
+  const out=[];
+  strategy.forEach(s=>{
+    if(r.ids.includes(s.id))out.push(s);
+    else if(r.carry[s.id]==='maintain')out.push(Object.assign({},s,{_maintainFrom:r.t}));
+    else if(r.carry[s.id]==='rebuild')out.push(Object.assign({},s,{_rebuiltAt:r.t}));
+  });
+  return out;
+}
+function carryInRestack(key,id,mode){
+  const r=restacks.find(x=>x.key===key);if(!r)return;
+  r.carry[id]=mode;recomputeCloisters();
+}
+function removeFromRestack(key,id){
+  const r=restacks.find(x=>x.key===key);if(!r)return;
+  if(r.carry[id]){delete r.carry[id];recomputeCloisters();return;} // back to faded / not counted
+  r.ids=r.ids.filter(x=>x!==id);
+  const s=strategy.find(x=>x.id===id);
+  if(s&&s.fromT&&!restacks.some(x=>x.ids.includes(id)))removeStratItems([id]);
   recomputeCloisters();
 }
 function renderCloisterActions(){
@@ -815,74 +1101,105 @@ function renderCloisterActions(){
   if(!el)return;
   if(!strategy.length){el.innerHTML='';return;}
   if(!hasGeneratedCloisters){
-    el.innerHTML=`<button class="si-remove" style="border-color:rgba(127,119,221,.35);color:var(--ac);opacity:1" ${strategy.length<2?'disabled':''} onclick="generateCloisters()">generate cloisters</button>`;
+    el.innerHTML=`<button class="si-remove" style="border-color:rgba(127,119,221,.35);color:var(--ac);opacity:1" ${strategy.length<2?'disabled':''} onclick="generateCloisters()">generate TC groups</button>`;
   }else{
     el.innerHTML=`<button class="si-remove" style="border-color:rgba(127,119,221,.35);color:var(--ac);opacity:1" onclick="regenerateCloisters()">regenerate</button>`+
       `<button class="si-remove" onclick="resetCloisters()">reset</button>`;
   }
 }
 
-function _seedHash(str){let h=0;for(let i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))>>>0;}return h;}
-function seededRand(key){return(_seedHash(key)%1000)/1000;}
 
-function computeCloisterPcn(members){
-  const ancAvg={};
-  ANC.forEach(a=>{
-    const vals=members.map(m=>m.cpm._s.anchors[a]).filter(v=>v!=null);
-    ancAvg[a]=vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:null;
+// An existing (carried-over) CPM with no catalogue study scores of its own stands in at
+// the site baseline — same convention as renderAncCoverage — so its cloister still
+// counts toward EP instead of silently dropping out.
+function memberAnchor(m,a){
+  const v=m.cpm._s.anchors[a];
+  if(v!=null)return v;
+  const bl=m.existing&&siteContext&&siteContext.anchorBaseline;
+  return bl&&bl[a]!=null?bl[a]:null;
+}
+// TC evaluation — Pcn(t) and EP(T) come from adaptive-pathways-engine.js (formulas on record,
+// placeholder thresholds / time profiles / floors). Each TC carries its full milestone series
+// in c.ap; c.pcn is the observed Pcn now. The scrubber's horizon (apTimeIdx) drives what the
+// Strategy list, EP stat and map badges show.
+let apScenario={drift:true,deferMaintenance:false};
+let apTimeIdx=0;
+function evaluateTC(members,win){
+  return apEvaluateTC(members.map(m=>({
+    raw:Object.fromEntries(ANC.map(a=>[a,memberAnchor(m,a)])),
+    profile:Object.assign(apProfileFor(m.cpm,!!m.existing&&m._rebuiltAt==null),{
+      installT:m._rebuiltAt!=null?m._rebuiltAt:(m.fromT||0),
+      maintainFrom:m._maintainFrom!=null?m._maintainFrom:null
+    })
+  })),weights,apScenario,win);
+}
+function makeCloister(key,ids,colorIdx,win,members){
+  win=win||{startT:0,endT:null};
+  members=members||strategy.filter(s=>ids.includes(s.id));
+  ids=members.map(m=>m.id);
+  const ap=evaluateTC(members,win);
+  return{id:key,ids,color:CLOISTER_PALETTE[colorIdx%CLOISTER_PALETTE.length],ap,pcn:ap.series[0].pcnObs,startT:win.startT,endT:win.endT};
+}
+function reevaluateCloisters(){
+  cloisters.forEach(c=>{
+    const r=c.parent&&restacks.find(x=>x.key===c.id);
+    c.ap=evaluateTC(r?restackMembers(r):strategy.filter(s=>c.ids.includes(s.id)),{startT:c.startT,endT:c.endT});
+    if(r)c.ap.countEmpty=true;
+    c.pcn=c.ap.series[0].pcnObs;
   });
-  return weightedGeoMean(ancAvg,weights);
 }
-
-function computeEP(){
-  const pcns=cloisters.map(c=>c.pcn).filter(v=>v!=null);
-  if(!pcns.length)return null;
-  const logSum=pcns.reduce((s,v)=>s+Math.log(Math.max(v,0.01)),0);
-  return Math.exp(logSum/pcns.length);
-}
+function tcAt(c,idx){return c.ap.series[idx==null?apTimeIdx:idx];}
+function computeEP(idx){return apEP(cloisters.map(c=>c.ap),idx==null?apTimeIdx:idx);}
+function unitClass(v){return v==null?'na':v>=0.75?'hi':v>=0.55?'md':'lo';}
 
 function recomputeCloisters(){
   if(!sMap||!strategy.length){
-    cloisters=[];
+    cloisters=[];restacks=[];restackMode=null;
     renderCloisterOverlay();renderStratList();renderStrStats();renderCloisterActions();
     if(!strategy.length&&pathwaysOpen)closePathwaysPanel();
     else if(pathwaysOpen)renderPathwaysChart();
     return;
   }
+  const nowItems=strategy.filter(s=>!s.fromT);
+  let base;
   if(!hasGeneratedCloisters){
-    // Not generated yet — every CPM sits in its own solo cloister until the user presses "generate".
-    cloisters=strategy.map((s,i)=>({id:'cl'+i,ids:[s.id],color:CLOISTER_PALETTE[i%CLOISTER_PALETTE.length],pcn:computeCloisterPcn([s])}));
-    renderCloisterOverlay();
-    renderStratList();
-    renderStrStats();
-    renderCloisterActions();
-    if(pathwaysOpen)renderPathwaysChart();
-    return;
+    // Not generated yet — every CPM sits in its own solo TC until "generate" (or a first drag).
+    base=nowItems.map((s,i)=>({key:'solo'+s.id,ids:[s.id],colorIdx:i}));
+  }else{
+    // Stored assignment: drop ids no longer placed, give newcomers a group by the default rule.
+    const live=new Set(nowItems.map(s=>s.id));
+    [...tcAssign.keys()].forEach(id=>{if(!live.has(id))tcAssign.delete(id);});
+    nowItems.forEach(s=>{if(!tcAssign.has(s.id))assignByDefaultRule(s);});
+    const groups=new Map();
+    nowItems.forEach(s=>{const k=tcAssign.get(s.id);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(s.id);});
+    base=[...groups.entries()].map(([k,ids])=>({key:k,ids,colorIdx:parseInt(k.slice(1),10)-1}));
   }
-  const parent={};
-  strategy.forEach(s=>parent[s.id]=s.id);
-  function find(x){while(parent[x]!==x)x=parent[x];return x;}
-  function union(a,b){const ra=find(a),rb=find(b);if(ra!==rb)parent[ra]=rb;}
-  for(let i=0;i<strategy.length;i++){
-    for(let j=i+1;j<strategy.length;j++){
-      const a=strategy[i],b=strategy[j];
-      if(manualSeparate.has(a.id)||manualSeparate.has(b.id))continue;
-      const pa=sMap.latLngToContainerPoint([a.lat,a.lng]);
-      const pb=sMap.latLngToContainerPoint([b.lat,b.lng]);
-      if(pa.distanceTo(pb)<PROXIMITY_PX){
-        const key=[a.id,b.id].sort((x,y)=>x-y).join(':');
-        if(seededRand('cloister:'+cloisterSeed+':'+key)<0.65)union(a.id,b.id);
-      }
-    }
-  }
-  manualUnions.forEach(([a,b])=>{
-    if(strategy.find(s=>s.id===a)&&strategy.find(s=>s.id===b))union(a,b);
+  // Restacks whose parent TC no longer exists go (with anything built only for them).
+  const liveIds=new Set(strategy.map(s=>s.id));
+  restacks.forEach(r=>{
+    r.ids=r.ids.filter(id=>liveIds.has(id));
+    r.inherited=r.inherited.filter(id=>liveIds.has(id));
+    Object.keys(r.carry).forEach(id=>{if(!liveIds.has(+id))delete r.carry[id];});
   });
-  const groups={};
-  strategy.forEach(s=>{const r=find(s.id);(groups[r]=groups[r]||[]).push(s.id);});
-  cloisters=Object.values(groups).map((ids,i)=>{
-    const members=strategy.filter(s=>ids.includes(s.id));
-    return{id:'cl'+i,ids,color:CLOISTER_PALETTE[i%CLOISTER_PALETTE.length],pcn:computeCloisterPcn(members)};
+  const valid=new Set(base.map(b=>b.key));
+  const orphans=[];
+  restacks.forEach(r=>{if(valid.has(r.parent))valid.add(r.key);else orphans.push(r.key);});
+  if(orphans.length)dropRestacks(orphans);
+  // Pathway order: each TC followed by its restacked descendants. Labels: TC n, TC n′, TC n″…
+  cloisters=[];
+  const add=(spec,startT,label,short)=>{
+    const child=restackOf(spec.key);
+    const c=makeCloister(spec.key,spec.ids,spec.colorIdx,{startT,endT:child?child.t:null},spec.members);
+    c.label=label;c.short=short;c.parent=spec.parent||null;
+    if(spec.restack){c.inherited=spec.restack.inherited;c.carry=spec.restack.carry;c.ap.countEmpty=true;}
+    cloisters.push(c);
+    if(child)add({key:child.key,ids:child.ids,colorIdx:spec.colorIdx,parent:spec.key,members:restackMembers(child),restack:child},child.t,label+'′',short+'′');
+  };
+  base.forEach((b,i)=>{
+    const name=strategy.find(s=>s.id===b.ids[0]).cpm.name;
+    const label=hasGeneratedCloisters?`TC group ${i+1}`:name;
+    const short=hasGeneratedCloisters?`TC ${i+1}`:(name.length>9?name.slice(0,8)+'…':name);
+    add(b,0,label,short);
   });
   renderCloisterOverlay();
   renderStratList();
@@ -895,8 +1212,10 @@ function renderCloisterOverlay(){
   cloisterLayers.forEach(l=>sMap.removeLayer(l));
   cloisterLayers=[];
   const PAD_PX=26; // padded in screen space, not meters, so the box stays visible at any zoom
+  const activeIds=new Set(cloisters.filter(c=>tcAt(c).active).flatMap(c=>c.ids));
+  strategy.forEach(s=>{const el=s.marker&&s.marker.getElement();if(el)el.classList.toggle('cpm-future',(s.fromT||0)>AP_MILESTONES[apTimeIdx]||(cloisters.length>0&&!activeIds.has(s.id)));});
   cloisters.forEach(c=>{
-    if(c.ids.length<2)return;
+    if(c.ids.length<2||!tcAt(c).active)return;
     const members=strategy.filter(s=>c.ids.includes(s.id));
     const latlngs=members.map(m=>[m.lat,m.lng]);
     const bounds=L.latLngBounds(latlngs);
@@ -908,48 +1227,111 @@ function renderCloisterOverlay(){
       sMap.containerPointToLatLng([minX,maxY]),
       sMap.containerPointToLatLng([maxX,minY])
     );
-    const box=L.rectangle(boxBounds,{color:c.color,weight:2,fillColor:c.color,fillOpacity:0.1,dashArray:'6,4',interactive:false});
+    const box=L.rectangle(boxBounds,{color:c.color,weight:2,fillColor:c.color,fillOpacity:0.1,dashArray:c.parent?'12,5,2,5':'6,4',interactive:false});
+    box._tcId=c.id;box._tcKind='box';
     box.addTo(sMap);
     cloisterLayers.push(box);
     // Light dashed connectors from the cloister centroid to each member — the visible "this is one group" cue.
     latlngs.forEach(ll=>{
       const line=L.polyline([[center.lat,center.lng],ll],{color:c.color,weight:1,opacity:0.55,dashArray:'2,5',interactive:false});
+      line._tcId=c.id;line._tcKind='line';
       line.addTo(sMap);
       cloisterLayers.push(line);
     });
   });
 }
 
+// ── TC ↔ CPM LINKAGE ───────────────────────────────────────
+// Markers are coloured by material, not by TC, so membership isn't readable from the map
+// alone. Hovering a TC group in the Strategy list (or a marker on the map) glows that TC's
+// members and dims the rest; clicking a TC header pins the highlight until clicked again.
+let hoverTcId=null,pinnedTcId=null;
+function tcIdForMarker(marker){
+  const s=strategy.find(x=>x.marker===marker);
+  const c=s&&cloisters.find(x=>x.ids.includes(s.id));
+  return c?c.id:null;
+}
+function bindTcHover(marker){
+  marker.on('mouseover',()=>hoverTc(tcIdForMarker(marker)));
+  marker.on('mouseout',()=>hoverTc(null));
+}
+function hoverTc(id){hoverTcId=id;applyTcHighlight();}
+function togglePinTc(id){pinnedTcId=pinnedTcId===id?null:id;applyTcHighlight();}
+function applyTcHighlight(){
+  if(pinnedTcId&&!cloisters.some(c=>c.id===pinnedTcId))pinnedTcId=null;
+  const id=hoverTcId||pinnedTcId;
+  const tc=id?cloisters.find(c=>c.id===id):null;
+  strategy.forEach(s=>{
+    const el=s.marker&&s.marker.getElement();
+    if(!el)return;
+    const on=!!tc&&tc.ids.includes(s.id);
+    el.classList.toggle('cpm-glow',on);
+    el.classList.toggle('cpm-dim',!!tc&&!on);
+    if(on)el.style.setProperty('--tc-color',tc.color);
+  });
+  cloisterLayers.forEach(l=>{
+    const on=!tc||l._tcId===tc.id;
+    if(l._tcKind==='box')l.setStyle(tc&&on?{weight:3,opacity:1,fillOpacity:0.2}:{weight:2,opacity:on?1:0.3,fillOpacity:on?0.1:0.03});
+    else l.setStyle(tc&&on?{weight:1.5,opacity:1}:{weight:1,opacity:on?0.55:0.15});
+  });
+  document.querySelectorAll('.cloister-group[data-tc]').forEach(g=>{
+    const c=cloisters.find(x=>x.id===g.dataset.tc);
+    if(c)g.style.setProperty('--tc-color',c.color);
+    g.classList.toggle('tc-on',!!tc&&g.dataset.tc===tc.id);
+    const pinned=g.dataset.tc===pinnedTcId;
+    g.classList.toggle('tc-pinned',pinned);
+    const pin=g.querySelector('.cloister-pin');
+    if(pin)pin.innerHTML=pinned?'&#9679; pinned':'&#9675; pin';
+  });
+}
+
 function onStratDragStart(e,id){e.dataTransfer.setData('text/plain',String(id));}
-function onStratDrop(e,targetRepId){
+// Drop on a TC group → that one CPM moves there; drop on the "new group" zone → it starts
+// a fresh group. Dragging before "generate" switches to manual grouping from all-solo.
+function onStratDrop(e,target){
   e.preventDefault();
   const draggedId=parseInt(e.dataTransfer.getData('text/plain'),10);
   if(!draggedId)return;
-  manualUnions=manualUnions.filter(([a,b])=>a!==draggedId&&b!==draggedId);
-  if(targetRepId==='out'){
-    manualSeparate.add(draggedId);
-  }else{
-    manualSeparate.delete(draggedId);
-    const rep=parseInt(targetRepId,10);
-    if(rep!==draggedId)manualUnions.push([draggedId,rep]);
+  const r=restacks.find(x=>x.key===target);
+  if(r){
+    if(r.inherited.includes(draggedId)){if(!r.carry[draggedId])r.carry[draggedId]='maintain';}
+    else if(!r.ids.includes(draggedId))r.ids.push(draggedId);
+    recomputeCloisters();return;
   }
+  const item=strategy.find(s=>s.id===draggedId);
+  if(!item||item.fromT)return; // built in a restack — it only belongs to restacked TCs
+  if(!hasGeneratedCloisters){
+    hasGeneratedCloisters=true;
+    tcAssign=new Map();tcNextKey=1;
+    strategy.filter(s=>!s.fromT).forEach(s=>tcAssign.set(s.id,newTcKey()));
+    restacks.forEach(x=>{if(x.parent.startsWith('solo'))x.parent=tcAssign.get(parseInt(x.parent.slice(4),10));});
+    if(target.startsWith('solo'))target=tcAssign.get(parseInt(target.slice(4),10));
+  }
+  tcAssign.set(draggedId,target==='new'?newTcKey():target);
   recomputeCloisters();
 }
 
-function renderStratItem(s,i){
+function renderStratItem(s,i,restackKey,carryTag){
   const c=s.cpm;
   const sc=c._s.composite;
   const cls=scoreClass(sc);
   const scStr=sc!==null?sc.toFixed(1):'–';
   const groupColor=MAT_COLORS[c.material]||'#888';
-  return`<div class="str-item" draggable="true" ondragstart="onStratDragStart(event,${s.id})">
+  return`<div class="str-item${s.existing?' existing':''}" draggable="true" ondragstart="onStratDragStart(event,${s.id})">
       <div class="si-top">
         <div class="si-num">${i+1}</div>
         <div class="si-name">${c.name}</div>
-        <button class="si-remove" onclick="removeFromStrategy(${s.id})">&times;</button>
+        ${restackKey
+          ?`<button class="si-remove" onclick="removeFromRestack('${restackKey}',${s.id})" title="remove from this restacked TC group">&times;</button>`
+          :s.existing
+          ?`<button class="si-remove ex-toggle" onclick="removeFromStrategy(${s.id})" title="leave out of scoring — e.g. no longer there">exclude</button>`
+          :`<button class="si-remove" onclick="removeFromStrategy(${s.id})">&times;</button>`}
       </div>
       <div class="si-meta">
-        <span class="si-score-badge ${cls}">${scStr}/10</span>
+        <span class="si-score-badge ${cls}"${s.existing&&sc===null?' title="no catalogue study scores — counted at the site baseline"':''}>${s.existing&&sc===null?'at baseline':scStr+'/10'}</span>
+        ${s.existing?`<span class="si-tag ex-tag">existing · ${s.exLabel}</span>`:''}
+        ${s.fromT?`<span class="si-tag built-tag">built ${apMilestoneLabel(s.fromT)}</span>`:''}
+        ${carryTag?`<span class="si-tag built-tag">${carryTag}</span>`:''}
         <span class="si-tag" style="border-color:${groupColor}40;color:${groupColor}">${c.material}</span>
         <span class="si-tag">${locationLabel(c.location)}</span>
         <span class="si-tag">${c.scale||'–'}</span>
@@ -958,14 +1340,33 @@ function renderStratItem(s,i){
     </div>`;
 }
 
+function renderExistingOffSection(){
+  const off=existingCPMs.map((ex,i)=>({ex,i})).filter(o=>o.ex.excluded);
+  if(!off.length)return'';
+  return`<div class="cloister-group">
+      <div class="cloister-hdr"><span class="cloister-name" style="color:var(--t3)">existing on site · not scored</span></div>
+      ${off.map(({ex,i})=>`<div class="str-item existing off">
+        <div class="si-top">
+          <div class="si-name">${ex.cpm?ex.cpm.name:ex.label}</div>
+          ${ex.cpm?`<button class="si-remove ex-toggle" onclick="toggleExisting(${i})">include</button>`:''}
+        </div>
+        <div class="si-meta">
+          <span class="si-tag">${ex.cpm?'excluded':'not in catalogue'}</span>
+          ${ex.cpm?`<span class="si-tag ex-tag">${ex.label}</span>`:''}
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
 function renderStratList(){
   const list=document.getElementById('str-list');
   const badge=document.getElementById('str-badge');
-  badge.textContent=strategy.length
-    ?(hasGeneratedCloisters?`${strategy.length} placed &middot; ${cloisters.length} cloister${cloisters.length===1?'':'s'}`:`${strategy.length} placed &middot; not clustered yet`)
+  const placedN=newPlacedCount(),existingN=strategy.length-placedN;
+  const countStr=`${placedN} placed${existingN?` + ${existingN} existing`:''}`;
+  badge.innerHTML=strategy.length
+    ?(hasGeneratedCloisters?`${countStr} &middot; ${cloisters.length-restacks.length} TC group${cloisters.length-restacks.length===1?'':'s'}${restacks.length?` + ${restacks.length} restacked`:''}`:`${countStr} &middot; not clustered yet`)
     :'empty';
   if(!strategy.length){
-    list.innerHTML=`<div class="str-empty">
+    list.innerHTML=renderExistingOffSection()+`<div class="str-empty">
       <div class="str-empty-icon">&#8982;</div>
       <div class="str-empty-msg">No CPMs placed yet</div>
       <div class="str-empty-hint">Select a CPM from the library,<br>then click the map to position it.</div>
@@ -973,31 +1374,78 @@ function renderStratList(){
     return;
   }
   let n=0;
-  const groupsHTML=cloisters.map((c,ci)=>{
+  const groupsHTML=cloisters.map(c=>{
     const members=strategy.filter(s=>c.ids.includes(s.id));
-    const pcnStr=c.pcn!=null?c.pcn.toFixed(1):'–';
-    const label=!hasGeneratedCloisters?members[0].cpm.name:(c.ids.length>1?`Cloister ${ci+1}`:`Cloister ${ci+1} (solo)`);
-    const itemsHTML=members.map(s=>renderStratItem(s,n++)).join('');
-    return`<div class="cloister-group" ondragover="event.preventDefault()" ondrop="onStratDrop(event,'${c.ids[0]}')">
-      <div class="cloister-hdr" style="border-color:${c.color}55"><span class="cloister-name" style="color:${c.color}">${label}</span><span class="cloister-pcn">Pcn ${pcnStr}</span></div>
+    const st=tcAt(c),isRestack=!!c.parent;
+    const pcnStr=!st.exists?`from ${apMilestoneLabel(c.startT)}`
+      :!st.active?`restacked ${apMilestoneLabel(c.endT)}`
+      :(st.pcnObs!=null?st.pcnObs.toFixed(2):'–')+(apTimeIdx?` @${apMilestoneLabel(st.t)}`:'')+(st.pcnObs!=null&&st.belowFloor?' · below floor':'');
+    const label=isRestack?`${c.label} · restack ${apMilestoneLabel(c.startT)}`:(hasGeneratedCloisters&&c.ids.length===1?`${c.label} (solo)`:c.label);
+    let itemsHTML=members.map(s=>{
+      const mode=isRestack&&c.carry&&c.carry[s.id];
+      return renderStratItem(s,n++,isRestack?c.id:null,mode?`${mode==='rebuild'?'rebuilt':'maintained'} ${apMilestoneLabel(c.startT)}`:null);
+    }).join('');
+    if(isRestack){
+      const faded=(c.inherited||[]).filter(id=>!c.ids.includes(id)).map(id=>strategy.find(s=>s.id===id)).filter(Boolean);
+      if(!members.length)itemsHTML=`<div class="str-empty-hint" style="padding:6px">nothing counted yet — build CPMs on the map at ${apMilestoneLabel(c.startT)}, drag CPMs here, or reconsider a parent CPM below</div>`;
+      itemsHTML+=faded.map(s=>`<div class="str-item inherited" draggable="true" ondragstart="onStratDragStart(event,${s.id})" title="maintain or rebuild it in place, or drag it onto the map to build a new one at ${apMilestoneLabel(c.startT)}">
+        <div class="si-top"><div class="si-name">${s.cpm.name}</div>
+          <span style="display:flex;gap:3px"><button class="si-remove carry-btn" onclick="carryInRestack('${c.id}',${s.id},'maintain')" title="keep it, with maintenance resuming at ${apMilestoneLabel(c.startT)}">maintain</button><button class="si-remove carry-btn" onclick="carryInRestack('${c.id}',${s.id},'rebuild')" title="rebuild it at ${apMilestoneLabel(c.startT)} — ages from zero">rebuild</button></span></div>
+        <div class="si-meta"><span class="si-tag">from ${cloisters.find(k=>k.id===c.parent).short} · not counted</span><span class="si-tag">${s.cpm.material}</span></div>
+      </div>`).join('');
+    }else if(!itemsHTML){
+      itemsHTML=`<div class="str-empty-hint" style="padding:6px">empty</div>`;
+    }
+    const tools=isRestack?`<span style="display:flex;gap:4px;margin-left:6px" onclick="event.stopPropagation()">${restackMode===c.id?'':`<button class="si-remove" style="opacity:1;color:var(--t2);border-color:var(--bd2)" onclick="editRestack('${c.id}')">edit</button>`}<button class="si-remove" onclick="undoRestack('${c.id}')">undo</button></span>`:'';
+    return`<div class="cloister-group${isRestack?' restack':''}${st.active?'':' inactive'}" data-tc="${c.id}" style="${isRestack?`border-left-color:${c.color}`:''}" ondragover="event.preventDefault()" ondrop="onStratDrop(event,'${c.id}')" onmouseenter="hoverTc('${c.id}')" onmouseleave="hoverTc(null)">
+      <div class="cloister-hdr" style="border-color:${c.color}55" onclick="togglePinTc('${c.id}')" title="click to pin this TC group's highlight on the map"><span class="cloister-name" style="color:${c.color}">${label}<span class="cloister-pin">${c.id===pinnedTcId?'&#9679; pinned':'&#9675; pin'}</span></span><span style="display:flex;align-items:center"><span class="cloister-pcn">Pcn ${pcnStr}</span>${tools}</span></div>
       ${itemsHTML}
     </div>`;
   }).join('');
-  const ungroupZone=hasGeneratedCloisters?`<div class="cloister-group cloister-ungroup-zone" ondragover="event.preventDefault()" ondrop="onStratDrop(event,'out')">
-      <div class="cloister-hdr"><span class="cloister-name" style="color:var(--t3)">drag here to detach from a cloister</span></div>
+  const ungroupZone=strategy.length>1?`<div class="cloister-group cloister-ungroup-zone" ondragover="event.preventDefault()" ondrop="onStratDrop(event,'new')">
+      <div class="cloister-hdr"><span class="cloister-name" style="color:var(--t3)">+ drag a CPM here to start a new TC group</span></div>
     </div>`:'';
-  list.innerHTML=groupsHTML+ungroupZone;
+  const rs=restackMode&&restacks.find(r=>r.key===restackMode);
+  const rc=rs&&cloisters.find(c=>c.id===rs.key),pc=rs&&cloisters.find(c=>c.id===rs.parent);
+  const banner=rs&&rc&&pc?`<div id="restack-banner">Restacking <b>${pc.short}</b> → <b style="color:${rc.color}">${rc.short}</b> at <b>${apMilestoneLabel(rs.t)}</b>. ${pc.short}'s CPMs are faded and not counted unless you <b>maintain</b> or <b>rebuild</b> them. Build new CPMs at ${apMilestoneLabel(rs.t)} by picking one in the library and clicking the map, or by <b>dragging any CPM from this list onto the map</b>; drag a CPM onto ${rc.short} to include it as it is; &times; removes it.
+      <div class="rb-actions"><button class="btn ac" onclick="finishRestack()">done</button><button class="btn danger" onclick="undoRestack('${rs.key}')">undo restack</button></div></div>`:'';
+  list.innerHTML=banner+groupsHTML+ungroupZone+renderExistingOffSection();
+  applyTcHighlight();
 }
 
 // ── ANCHOR COVERAGE ────────────────────────────────────────
+function anchorMeans(items){
+  const out={};
+  ANC.forEach(a=>{
+    const vals=items.map(s=>s.cpm._s.anchors[a]).filter(v=>v!=null);
+    out[a]=vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:null;
+  });
+  return out;
+}
 function renderAncCoverage(){
   const el=document.getElementById('anc-coverage');
+  const baseline=siteContext&&siteContext.anchorBaseline;
+  // New score = the site's baseline, moved by what's placed. Each existing CPM carried
+  // over from Process Stacking counts once AT the baseline value (the baseline was
+  // inferred from those very CPMs, so it already holds their contribution — and the
+  // hard-structure catalogue entries mostly have no study scores of their own); each
+  // placed CPM counts once at its own catalogue score. So with nothing placed the bar
+  // sits exactly on the baseline, and the more already exists on site, the less any one
+  // new CPM shifts it. No baseline / no existing CPMs → plain mean of what's counted.
+  const nowItems=strategy.filter(s=>!s.fromT);
+  const existingN=nowItems.filter(s=>s.existing).length;
+  const placedOnly=nowItems.filter(s=>!s.existing);
+  const all=anchorMeans(nowItems);
   const avgAnc={};
   ANC.forEach(a=>{
-    const vals=strategy.map(s=>s.cpm._s.anchors[a]).filter(v=>v!=null);
-    avgAnc[a]=vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:null;
+    if(baseline&&baseline[a]!=null&&existingN){
+      const vals=placedOnly.map(s=>s.cpm._s.anchors[a]).filter(v=>v!=null);
+      avgAnc[a]=(baseline[a]*existingN+vals.reduce((x,y)=>x+y,0))/(existingN+vals.length);
+    }else{
+      avgAnc[a]=all[a];
+    }
   });
-  const baseline=siteContext&&siteContext.anchorBaseline;
+
   el.innerHTML=ANC.map(a=>{
     const v=avgAnc[a];
     const pct=v!=null?Math.round((v/10)*100):0;
@@ -1034,14 +1482,15 @@ function renderAncCoverage(){
 function renderStrStats(){
   const el=document.getElementById('str-stats');
   const placed=strategy.length;
-  // EP = geometric mean across cloister Pcn values, not an arithmetic mean of raw CPM composites.
+  // EP(T) = Σ Wcn × Pcn — weighted arithmetic sum across TCs at the scrubbed horizon T
+  // (compensatory across TCs by design; non-compensatory logic lives inside Pcn).
   const ep=computeEP();
   const scales=new Set(strategy.map(s=>s.cpm.scale));
   const materials=new Set(strategy.map(s=>s.cpm.material));
-  const epCol=ep!==null?(ep>=7.5?'var(--hi)':ep>=5.5?'var(--md)':'var(--lo)'):'var(--t3)';
+  const epCol={hi:'var(--hi)',md:'var(--md)',lo:'var(--lo)',na:'var(--t3)'}[unitClass(ep)];
   el.innerHTML=`
-    <div class="str-stat"><div class="str-stat-lbl">placed</div><div class="str-stat-val">${placed}</div></div>
-    <div class="str-stat"><div class="str-stat-lbl">EP score</div><div class="str-stat-val" style="color:${epCol}">${ep!==null?ep.toFixed(1):'–'}</div></div>
+    <div class="str-stat"><div class="str-stat-lbl">placed</div><div class="str-stat-val">${newPlacedCount()}${placed>newPlacedCount()?`<span style="font-size:9px;color:var(--t3)"> +${placed-newPlacedCount()} existing</span>`:''}</div></div>
+    <div class="str-stat"><div class="str-stat-lbl">EP · ${apMilestoneLabel(AP_MILESTONES[apTimeIdx])}</div><div class="str-stat-val" style="color:${epCol}">${ep!==null?ep.toFixed(2):'–'}</div></div>
     <div class="str-stat"><div class="str-stat-lbl">scales</div><div class="str-stat-val">${scales.size}<span style="font-size:9px;color:var(--t3)">/3</span></div></div>
     <div class="str-stat"><div class="str-stat-lbl">materials</div><div class="str-stat-val">${materials.size}<span style="font-size:9px;color:var(--t3)">/3</span></div></div>`;
 }
@@ -1065,22 +1514,32 @@ function exportStrategy(){
     siteContext?`Site: ${siteContext.city} (${siteContext.scaleLabel||'–'} scale, ${Math.round(siteContext.areaM2||0).toLocaleString()} m²)`:'Site: (none — opened directly)',
     `Weight profile: ${weightProfileKey}`,
     '─'.repeat(56),'',
-    `CPMs placed: ${strategy.length}`,
-    `Cloisters formed: ${cloisters.length}`,
-    `Strategy score (EP, geometric mean of cloister Pcn): ${ep!==null?ep.toFixed(2):'–'}`,
+    `CPMs placed: ${newPlacedCount()} new + ${strategy.length-newPlacedCount()} existing on site (carried from Process Stacking)`,
+    `Technical cloisters (TC groups) formed: ${cloisters.length}`,
+    `Strategy score EP(T=${apMilestoneLabel(AP_MILESTONES[apTimeIdx])}) = Σ Wcn × Pcn: ${ep!==null?ep.toFixed(3):'–'}  (Wcn = 1/n, placeholder)`,
+    `Scenario: ${apScenario.drift?'sea-level rise threshold drift ON':'no threshold drift'}; ${apScenario.deferMaintenance?'maintenance DEFERRED':'maintenance as designed'}`,
     `Scales covered: ${[...new Set(strategy.map(s=>s.cpm.scale))].join(', ')||'–'}`,
     `Materials covered: ${[...new Set(strategy.map(s=>s.cpm.material))].join(', ')||'–'}`,
-    '','CLOISTERS:','─'.repeat(56)
+    '','TECHNICAL CLOISTERS (TC GROUPS):','─'.repeat(56)
   ];
-  cloisters.forEach((c,ci)=>{
-    lines.push(`Cloister ${ci+1} — Pcn ${c.pcn!==null?c.pcn.toFixed(2):'–'}  (${c.ids.length} member${c.ids.length===1?'':'s'})`);
-    strategy.filter(s=>c.ids.includes(s.id)).forEach(s=>lines.push(`   · ${s.cpm.name}`));
+  cloisters.forEach(c=>{
+    const st=tcAt(c);
+    const win=c.parent?`  [restacked from ${cloisters.find(k=>k.id===c.parent).label} at ${apMilestoneLabel(c.startT)}]`:'';
+    const pcnTxt=!st.exists?`from ${apMilestoneLabel(c.startT)}`:!st.active?`restacked at ${apMilestoneLabel(c.endT)}`:(st.pcnObs!=null?st.pcnObs.toFixed(3):'–');
+    lines.push(`${c.label} — Pcn ${pcnTxt}${st.active&&st.pcnObs!=null&&st.belowFloor?' (below floor — excluded from EP)':''}  (${c.ids.length} member${c.ids.length===1?'':'s'})${win}`);
+    strategy.filter(s=>c.ids.includes(s.id)).forEach(s=>lines.push(`   · ${s.cpm.name}  [${AP_PROFILE_LABELS[apProfileFor(s.cpm,!!s.existing).cls]}]`));
+    if(c.ap.hasData){
+      lines.push(`   Pcn observed / expected: ${[0,2,5,10].map(i=>{const x=c.ap.series[i];return x.exists&&x.pcnObs!=null?`${apMilestoneLabel(x.t)} ${x.pcnObs.toFixed(2)}/${x.pcnExp.toFixed(2)}`:null;}).filter(Boolean).join('  ')}`);
+      const tp=c.ap.tipping,child=restackOf(c.id);
+      lines.push(`   Tipping point: ${tp?`${apMilestoneLabel(tp.t)} — ${tp.cause==='tc'?'TC shortfall':'driver drift'}${child?` → restacked as ${cloisters.find(k=>k.id===child.key).label}`:' (not restacked)'}`:'none within 50y'}`);
+    }
   });
+  lines.push('','Adaptive pathways values are PLACEHOLDERS (thresholds, time profiles, floors, ε, k, Wcn) — see adaptive-pathways-engine.js.');
   lines.push('','PLACED CPMs:','─'.repeat(56));
   strategy.forEach((s,i)=>{
     const c=s.cpm;
     const sc=c._s.composite;
-    lines.push(`${i+1}. ${c.name}`);
+    lines.push(`${i+1}. ${c.name}${s.existing?`  [existing on site — ${s.exLabel}]`:''}`);
     lines.push(`   ID: ${c.id}  |  Code: ${c.newCode||locationLabel(c.location)}  |  Scale: ${c.scale||'–'}`);
     lines.push(`   Material: ${c.material}  |  Kind: ${c.kind==='study'?'studied object':'standard object'}`);
     lines.push(`   Composite Score: ${sc!==null?sc.toFixed(2):'no study data'}`);
@@ -1091,7 +1550,13 @@ function exportStrategy(){
     lines.push(`   Position: ${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}`);
     lines.push('');
   });
-  lines.push('ANCHOR AVERAGES (raw, arithmetic mean across all placed CPMs):');
+  const unscored=existingCPMs.filter(ex=>ex.excluded);
+  if(unscored.length){
+    lines.push('EXISTING ON SITE, NOT SCORED:');
+    unscored.forEach(ex=>lines.push(`   · ${ex.cpm?ex.cpm.name+' — excluded':ex.label+' — not in catalogue'}  (${ex.lat.toFixed(5)}, ${ex.lng.toFixed(5)})`));
+    lines.push('');
+  }
+  lines.push('ANCHOR AVERAGES (raw, arithmetic mean across existing + placed CPMs):');
   ANC.forEach(a=>lines.push(`  ${a.padEnd(12)}: ${avgAnc[a]!==null?avgAnc[a].toFixed(2):'–'}`));
   const blob=new Blob([lines.join('\n')],{type:'text/plain'});
   const url=URL.createObjectURL(blob);
@@ -1131,20 +1596,13 @@ function makeResizer(divId,panelId,leftSide){
   });
 }
 
-// ── ADAPTIVE PATHWAYS (inline side panel — reads the live builder map/cloisters, no duplicate map) ──
-// STUB — hardcoded/randomized time-point projection, no real temporal computation.
-// Exists to test whether this stage belongs at the end of the sequence.
-let apChart=null,pathwaysOpen=false;
-const PATHWAY_TIME_POINTS=['Now','+10y','+25y','+50y'];
-function buildPathwaySeries(cloister){
-  let v=cloister.pcn!=null?cloister.pcn:5;
-  return PATHWAY_TIME_POINTS.map((t,i)=>{
-    if(i===0)return+v.toFixed(2);
-    const drift=(seededRand(cloister.id+':'+t)-0.5)*2.4;
-    v=Math.max(0,Math.min(10,v+drift));
-    return+v.toFixed(2);
-  });
-}
+// ── ADAPTIVE PATHWAYS (inline side panel — reads the live builder map/TC groups, no duplicate map) ──
+// One spatial strategy and its TC groups' Pcn over time (QE Fig. 12) — not a comparison across
+// strategies. All values come from adaptive-pathways-engine.js; every parameter there is a placeholder.
+let apChart=null,pathwaysOpen=false,apMapLayers=[];
+const AP_CAUSE_COLOR={tc:'#EF9F27',driver:'#c0544e'};
+const AP_CAUSE_LABEL={tc:'TC shortfall',driver:'driver drift'};
+function apCauseAt(s){return s.tcLoss>=s.driverLoss?'tc':'driver';}
 function togglePathwaysPanel(){pathwaysOpen?closePathwaysPanel():openPathwaysPanel();}
 function openPathwaysPanel(){
   if(!strategy.length)return;
@@ -1152,8 +1610,11 @@ function openPathwaysPanel(){
   document.getElementById('panel-pathways').style.display='flex';
   document.getElementById('vdiv-p').style.display='';
   document.getElementById('pathways-toggle-btn').textContent='hide adaptive planning';
+  const scrub=document.getElementById('ap-scrub');
+  scrub.max=AP_MILESTONES.length-1;scrub.value=apTimeIdx;
+  document.getElementById('ap-scrub-ticks').innerHTML=AP_MILESTONES.filter(t=>t%10===0).map(t=>`<span>${apMilestoneLabel(t)}</span>`).join('');
   renderPathwaysChart();
-  if(sMap)setTimeout(()=>sMap.invalidateSize(),260);
+  if(sMap)setTimeout(()=>{sMap.invalidateSize();renderApMetro();},260);
 }
 function closePathwaysPanel(){
   pathwaysOpen=false;
@@ -1161,37 +1622,163 @@ function closePathwaysPanel(){
   document.getElementById('vdiv-p').style.display='none';
   document.getElementById('pathways-toggle-btn').textContent='run adaptive planning map';
   if(apChart){apChart.destroy();apChart=null;}
+  clearApMapLayers();
+  restackMode=null;
+  // The horizon is only visible from this panel — closing it returns the builder to "Now".
+  apTimeIdx=0;renderCloisterOverlay();renderStratList();renderStrStats();
   if(sMap)setTimeout(()=>sMap.invalidateSize(),260);
 }
-function cloisterLabel(c,ci){
-  return hasGeneratedCloisters?`Cloister ${ci+1}`:strategy.find(s=>s.id===c.ids[0]).cpm.name;
+function cloisterLabel(c){return c.label;}
+function cloisterShortLabel(c){return c.short;}
+function setApScenario(){
+  apScenario={drift:document.getElementById('ap-drift').checked,deferMaintenance:document.getElementById('ap-defer').checked};
+  reevaluateCloisters();
+  renderStratList();renderStrStats();renderPathwaysChart();
 }
+function setApTime(i){
+  apTimeIdx=i;
+  document.getElementById('ap-scrub').value=i;
+  renderCloisterOverlay();renderStratList();renderStrStats();
+  renderApHorizon();
+  if(apChart)apChart.update('none');
+  renderApMetro();renderApMapBadges();
+}
+function renderApHorizon(){
+  const ep=computeEP();
+  document.getElementById('ap-horizon').textContent=apMilestoneLabel(AP_MILESTONES[apTimeIdx]);
+  const epEl=document.getElementById('ap-ep');
+  epEl.textContent=ep!=null?ep.toFixed(2):'–';
+  epEl.style.color={hi:'var(--hi)',md:'var(--md)',lo:'var(--lo)',na:'var(--t3)'}[unitClass(ep)];
+}
+
+// Vertical marker at the scrubbed horizon T.
+const apHorizonPlugin={id:'apHorizon',afterDatasetsDraw(chart){
+  const x=chart.scales.x.getPixelForValue(apTimeIdx),{top,bottom}=chart.chartArea,g=chart.ctx;
+  g.save();g.strokeStyle='rgba(127,119,221,.85)';g.setLineDash([3,3]);g.lineWidth=1;
+  g.beginPath();g.moveTo(x,top);g.lineTo(x,bottom);g.stroke();g.restore();
+}};
 function renderPathwaysChart(){
-  document.getElementById('ap-legend').innerHTML=cloisters.map((c,ci)=>
-    `<div class="ap-legend-item"><span class="ap-legend-sw" style="background:${c.color}"></span>${cloisterLabel(c,ci)} &middot; Pcn ${c.pcn!=null?c.pcn.toFixed(1):'–'}</div>`
-  ).join('');
+  if(!pathwaysOpen)return;
+  document.getElementById('ap-legend').innerHTML=cloisters.map((c,ci)=>{
+    const prof=[...new Set(strategy.filter(s=>c.ids.includes(s.id)).map(s=>AP_PROFILE_LABELS[apProfileFor(s.cpm,!!s.existing).cls]))].join(', ');
+    return`<div class="ap-legend-item" onmouseenter="hoverTc('${c.id}')" onmouseleave="hoverTc(null)"><span class="ap-legend-sw" style="${c.parent?`background:transparent;border:1.5px dashed ${c.color}`:`background:${c.color}`}"></span>${cloisterLabel(c,ci)} &middot; ${c.ap.hasData?prof:'no anchor data'}</div>`;
+  }).join('');
+  renderApHorizon();
   if(apChart){apChart.destroy();apChart=null;}
   const ctx=document.getElementById('ap-chart');
-  if(!ctx)return;
-  apChart=new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:PATHWAY_TIME_POINTS,
-      datasets:cloisters.map((c,ci)=>({
-        label:cloisterLabel(c,ci),
-        data:buildPathwaySeries(c),
-        borderColor:c.color,backgroundColor:c.color+'33',tension:0.3,pointRadius:3,pointBackgroundColor:c.color
-      }))
-    },
-    options:{
-      responsive:true,
-      scales:{
-        y:{min:0,max:10,ticks:{color:'#8a8880',font:{family:'Courier New',size:8}},grid:{color:'rgba(255,255,255,0.05)'}},
-        x:{ticks:{color:'#8a8880',font:{family:'Courier New',size:8}},grid:{display:false}}
-      },
-      plugins:{legend:{display:false}},
-      animation:{duration:300}
+  if(ctx){
+    const datasets=[];
+    cloisters.forEach((c,ci)=>{
+      if(!c.ap.hasData)return;
+      const ser=c.ap.series,tp=c.ap.tipping;
+      const shown=s=>s.exists&&(s.active||s.t===c.endT);
+      datasets.push({
+        label:cloisterShortLabel(c,ci)+' observed',data:ser.map(s=>shown(s)?s.pcnObs:null),
+        borderColor:c.color,backgroundColor:c.color,borderWidth:2,tension:0.25,borderDash:c.parent?[8,4]:[],
+        pointRadius:ser.map((s,i)=>tp&&i===tp.idx?5:s.belowFloor?3:1.5),
+        pointStyle:ser.map(s=>s.belowFloor?'rect':'circle'),
+        pointBackgroundColor:ser.map((s,i)=>tp&&i===tp.idx?AP_CAUSE_COLOR[tp.cause]:s.belowFloor?'transparent':c.color),
+        pointBorderColor:ser.map((s,i)=>s.belowFloor?'#f09595':tp&&i===tp.idx?AP_CAUSE_COLOR[tp.cause]:c.color)
+      });
+      datasets.push({
+        label:cloisterShortLabel(c,ci)+' expected m(t)',data:ser.map(s=>shown(s)?s.pcnExp:null),
+        borderColor:c.color+'88',borderWidth:1,borderDash:[1.5,3],tension:0.25,pointRadius:0
+      });
+    });
+    datasets.push({label:'EP(T)',data:AP_MILESTONES.map((_,i)=>computeEP(i)),borderColor:'#dedad0',borderWidth:1.5,tension:0.25,pointRadius:0});
+    apChart=new Chart(ctx,{
+      type:'line',
+      data:{labels:AP_MILESTONES.map(apMilestoneLabel),datasets},
+      plugins:[apHorizonPlugin],
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        scales:{
+          y:{min:0,max:1,ticks:{color:'#8a8880',font:{family:'Courier New',size:8},stepSize:0.25,callback:v=>v.toFixed(2)},grid:{color:'rgba(255,255,255,0.05)'}},
+          x:{ticks:{color:'#8a8880',font:{family:'Courier New',size:8},autoSkip:true,maxRotation:0},grid:{display:false}}
+        },
+        plugins:{
+          legend:{display:false},
+          tooltip:{titleFont:{family:'Courier New',size:9},bodyFont:{family:'Courier New',size:8},
+            callbacks:{label:t=>`${t.dataset.label}: ${t.parsed.y!=null?t.parsed.y.toFixed(2):'–'}`}}
+        },
+        animation:{duration:300}
+      }
+    });
+  }
+  renderApMetro();
+  renderApMapBadges();
+}
+
+// Metro-map pathways view (Haasnoot-style). One line per TC across the milestone schedule;
+// saturated stretches are drawn lighter (an acceptable state). A TC's failure tipping point is
+// a station: click it to restack. Once restacked, the parent line ends at a transfer station
+// and the expanded TC continues on its own line from that year — process-restacking, read as
+// opportunity rather than failure. Unrestacked tipping points show a dashed "no action" tail.
+function renderApMetro(){
+  const el=document.getElementById('ap-metro');
+  if(!el||!pathwaysOpen)return;
+  const W=Math.max(240,el.clientWidth-8),labelW=50,padR=10,rowH=26,top=14,axisH=16;
+  const T=AP_MILESTONES[AP_MILESTONES.length-1];
+  const x=t=>labelW+(t/T)*(W-labelW-padR);
+  const rowY={};cloisters.forEach((c,ci)=>{rowY[c.id]=top+ci*rowH+rowH/2;});
+  const H=top+cloisters.length*rowH+axisH;
+  let under='',svg='';
+  cloisters.forEach(c=>{
+    const y=rowY[c.id],ser=c.ap.series,tp=c.ap.tipping,child=restackOf(c.id);
+    let g=`<rect x="0" y="${y-rowH/2}" width="${W}" height="${rowH}" fill="transparent"/>`;
+    g+=`<text x="4" y="${y+3}" font-size="8" fill="${c.color}">${c.short}</text>`;
+    if(!c.ap.hasData){
+      g+=`<text x="${x(c.startT)}" y="${y+3}" font-size="7" fill="#4e4d4a">no anchor data</text>`;
+    }else{
+      const startIdx=ser.findIndex(s=>s.exists);
+      const endIdx=child?AP_MILESTONES.indexOf(child.t):tp?tp.idx:ser.length-1;
+      for(let i=startIdx;i<endIdx;i++){
+        const sat=ser[i+1].state==='saturated';
+        g+=`<line x1="${x(ser[i].t)}" y1="${y}" x2="${x(ser[i+1].t)}" y2="${y}" stroke="${c.color}" stroke-width="3.5" stroke-linecap="${c.parent?'butt':'round'}"${c.parent?' stroke-dasharray="7,3"':''} opacity="${sat?0.45:1}"/>`;
+      }
+      g+=`<circle cx="${x(c.startT)}" cy="${y}" r="3" fill="${c.color}"/>`;
+      ser.forEach(s=>{if(s.exists&&(s.active||s.t===c.endT)&&s.belowFloor)g+=`<rect x="${x(s.t)-2}" y="${y+6}" width="4" height="4" fill="none" stroke="#f09595" stroke-width="1"/>`;});
+      if(child){
+        // Transfer: parent ends, the expanded TC starts on its own row at the restack year.
+        const cy=rowY[child.key],tx=x(child.t),cc=cloisters.find(k=>k.id===child.key);
+        under+=`<line x1="${tx}" y1="${y}" x2="${tx}" y2="${cy}" stroke="${cc?cc.color:'#dedad0'}" stroke-width="2.5" stroke-dasharray="4,3"/>`;
+        g+=`<circle cx="${tx}" cy="${y}" r="5" fill="#090b17" stroke="#dedad0" stroke-width="2"/>`;
+        g+=`<text x="${tx+(tx>W*0.62?-8:8)}" y="${y-7}" font-size="7" fill="#8a8880" text-anchor="${tx>W*0.62?'end':'start'}">${apMilestoneLabel(child.t)} · restacked → ${cc?cc.short:''}</text>`;
+      }else if(tp){
+        const tx=x(tp.t),col=AP_CAUSE_COLOR[tp.cause],right=tx>W*0.62;
+        g+=`<line x1="${tx}" y1="${y}" x2="${x(T)}" y2="${y}" stroke="#4e4d4a" stroke-width="1.5" stroke-dasharray="3,3"/>`;
+        g+=`<g class="ap-station" onclick="event.stopPropagation();startRestack('${c.id}')"><title>tipping point · ${AP_CAUSE_LABEL[tp.cause]} — click to restack this TC group at ${apMilestoneLabel(tp.t)}</title>`+
+          `<circle cx="${tx}" cy="${y}" r="9" fill="transparent"/><circle cx="${tx}" cy="${y}" r="5.5" fill="${col}" stroke="#090b17" stroke-width="1.5"/></g>`;
+        g+=`<text x="${right?tx-9:tx+9}" y="${y-7}" font-size="7" fill="${col}" text-anchor="${right?'end':'start'}">${apMilestoneLabel(tp.t)} · restack &#9656;</text>`;
+      }
     }
+    svg+=`<g class="ap-row" onmouseenter="hoverTc('${c.id}')" onmouseleave="hoverTc(null)">${g}</g>`;
+  });
+  const hx=x(AP_MILESTONES[apTimeIdx]),axY=top+cloisters.length*rowH;
+  svg+=`<line x1="${hx}" y1="0" x2="${hx}" y2="${axY}" stroke="rgba(127,119,221,.85)" stroke-dasharray="3,3" pointer-events="none"/>`;
+  svg+=`<line x1="${labelW}" y1="${axY+2}" x2="${x(T)}" y2="${axY+2}" stroke="rgba(255,255,255,.1)"/>`;
+  AP_MILESTONES.filter(t=>t%10===0).forEach(t=>{
+    svg+=`<text x="${x(t)}" y="${axY+12}" font-size="7" fill="#8a8880" text-anchor="middle">${apMilestoneLabel(t)}</text>`;
+  });
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" height="${H}" font-family="Courier New, monospace">${under}${svg}</svg>`;
+}
+
+// Map badge per TC group at its centroid — Pcn and state at the scrubbed horizon.
+function clearApMapLayers(){apMapLayers.forEach(l=>sMap&&sMap.removeLayer(l));apMapLayers=[];}
+function renderApMapBadges(){
+  clearApMapLayers();
+  if(!pathwaysOpen||!sMap)return;
+  cloisters.forEach((c,ci)=>{
+    const members=strategy.filter(s=>c.ids.includes(s.id));
+    if(!members.length||!c.ap.hasData)return;
+    const lat=members.reduce((s,m)=>s+m.lat,0)/members.length,lng=members.reduce((s,m)=>s+m.lng,0)/members.length;
+    const st=tcAt(c);
+    if(!st.active||st.pcnObs==null)return;
+    const stTxt=st.state==='failing'?`&#9888; tipping · ${AP_CAUSE_LABEL[apCauseAt(st)]}`:st.state==='saturated'?'saturated':'working';
+    const html=`<div class="ap-badge ${st.state}" style="--tc-color:${c.color}"><b>${cloisterShortLabel(c,ci)}</b> ${st.pcnObs.toFixed(2)} <span class="st">${stTxt}${st.belowFloor?' · out of EP':''}</span></div>`;
+    const m=L.marker([lat,lng],{icon:L.divIcon({className:'',html,iconSize:[0,0],iconAnchor:[0,34]}),interactive:false,keyboard:false,zIndexOffset:500}).addTo(sMap);
+    apMapLayers.push(m);
   });
 }
 

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Coastal Transect</title>
+<style>
+/* Same --sas-* tokens as index.html so the world reads as part of the catalogue. */
+:root{
+  --sas-bg:#0c0f1c;--sas-bg2:#10152a;--sas-bg3:#171c2e;
+  --sas-bd:rgba(255,255,255,0.07);--sas-bd2:rgba(255,255,255,0.13);
+  --sas-t1:#dedad0;--sas-t2:#8a8880;--sas-t3:#4e4d4a;
+  --sas-ac:#7F77DD;--sas-ac2:#EF9F27;
+  --sas-r:5px;--sas-rl:9px;
+  --mat-grey:#8a8880;--mat-hybrid:#7F77DD;--mat-green:#1D9E75;
+  --glass:rgba(12,15,28,0.78);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--sas-bg);color:var(--sas-t1);font-family:'Courier New',monospace;font-size:12px;overflow:hidden;-webkit-font-smoothing:antialiased}
+canvas.stage{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+canvas.stage.dragging{cursor:grabbing}
+canvas.stage.hovering{cursor:pointer}
+button{font-family:inherit}
+.glass{background:var(--glass);border:1px solid var(--sas-bd2);border-radius:var(--sas-rl);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.label{font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:var(--sas-t2)}
+
+/* Underwater tint — toggled when the camera drops below sea level */
+#tint{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,rgba(30,110,120,0.10),rgba(4,30,40,0.45));opacity:0;transition:opacity .4s}
+body.under #tint{opacity:1}
+
+/* ── INTRO ── */
+#intro{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 30% 70%,rgba(239,159,39,0.10),transparent 60%),var(--sas-bg);transition:opacity .6s}
+#intro.gone{opacity:0;pointer-events:none}
+.intro-box{max-width:460px;width:100%}
+.intro-box h1{font-size:22px;font-weight:normal;letter-spacing:-0.01em;margin:10px 0 10px}
+.intro-box p{font-size:10px;line-height:1.7;color:var(--sas-t2);margin-bottom:18px}
+.intro-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;border-top:1px solid var(--sas-bd2);padding-top:12px}
+.intro-stats dt{font-size:7.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3)}
+.intro-stats dd{font-size:15px;margin-top:3px}
+.intro-keys{font-size:9px;color:var(--sas-t2);line-height:1.9;margin-bottom:20px}
+.intro-keys kbd,.hint kbd{display:inline-block;min-width:16px;padding:0 4px;border:1px solid var(--sas-bd2);border-radius:3px;font-family:inherit;font-size:8px;text-align:center;color:var(--sas-t1)}
+.pill{font-size:10px;padding:9px 18px;border-radius:999px;border:1px solid var(--sas-bd2);background:transparent;color:var(--sas-t1);cursor:pointer;letter-spacing:0.06em;transition:all .15s}
+.pill:hover{border-color:var(--sas-ac2);color:var(--sas-ac2)}
+.pill.solid{background:var(--sas-t1);color:var(--sas-bg);border-color:var(--sas-t1)}
+.pill.solid:hover{background:var(--sas-ac2);border-color:var(--sas-ac2);color:var(--sas-bg)}
+.intro-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ── MASTHEAD ── */
+#masthead{position:fixed;top:16px;left:16px;z-index:10;padding:10px 14px;max-width:calc(100% - 32px)}
+#masthead h2{font-size:13px;font-weight:normal;margin-top:3px}
+#masthead a{display:inline-block;margin-top:6px;font-size:8.5px;color:var(--sas-ac2);text-decoration:none;letter-spacing:0.05em}
+#masthead a:hover{text-decoration:underline}
+
+/* ── LEGEND ── */
+#legend{position:fixed;top:16px;right:16px;z-index:10;width:230px;padding:10px 12px;font-size:9px}
+#legend-head{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+#legend-chev{font-size:8px;color:var(--sas-t3);transition:transform .15s}
+#legend.collapsed #legend-chev{transform:rotate(180deg)}
+#legend.collapsed #legend-body{display:none}
+#legend-body{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+.lg-sec-title{font-size:7.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-t3);margin-bottom:5px}
+.lg-row{display:flex;align-items:center;gap:8px;line-height:1.9;color:var(--sas-t2)}
+.lg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.lg-ds{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:var(--sas-t1);font-size:9px;cursor:pointer;padding:2px 0;text-align:left}
+.lg-ds .lg-glyph{width:14px;text-align:center;color:var(--sas-t2)}
+.lg-ds .lg-count{margin-left:auto;color:var(--sas-t3)}
+.lg-ds.off{color:var(--sas-t3);text-decoration:line-through}
+.lg-note{font-size:8px;color:var(--sas-t3);line-height:1.6}
+#slr{width:100%;accent-color:var(--sas-ac2)}
+.slr-row{display:flex;justify-content:space-between;color:var(--sas-t2);margin-bottom:4px}
+#slr-val{color:var(--sas-ac2)}
+
+/* ── TRANSECT RAIL — the matrix x-axis, literally ── */
+#rail{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:10;width:min(620px,calc(100% - 32px));padding:9px 12px 10px}
+#rail-read{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:10px}
+#rail-zone{font-size:12px}
+#rail-elev{font-size:12px;color:var(--sas-ac2);font-variant-numeric:tabular-nums}
+#rail-track{position:relative;display:flex;height:22px;border-radius:3px;overflow:visible}
+.rail-seg{border:none;background:rgba(255,255,255,0.04);border-right:1px solid var(--sas-bd2);color:var(--sas-t3);font-size:7.5px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all .15s;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rail-seg:last-child{border-right:none}
+.rail-seg:hover{background:rgba(239,159,39,0.08);color:var(--sas-t1)}
+.rail-seg.on{color:var(--sas-t1);background:rgba(127,119,221,0.14)}
+#rail-mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--sas-ac2);box-shadow:0 0 8px var(--sas-ac2);pointer-events:none;transform:translateX(-1px)}
+#rail-caption{display:flex;justify-content:space-between;margin-top:5px;font-size:7px;color:var(--sas-t3);letter-spacing:0.08em;text-transform:uppercase}
+
+/* ── HINT ── */
+.hint{position:fixed;left:16px;bottom:16px;z-index:9;padding:8px 11px;font-size:8.5px;line-height:1.9;color:var(--sas-t2);transition:opacity .6s;max-width:220px}
+.hint.faded{opacity:0;pointer-events:none}
+
+/* ── LABELS (projected each frame) ── */
+#labels{position:fixed;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+.olabel{position:absolute;left:0;top:0;transform:translate(-50%,-100%);font-size:8.5px;white-space:nowrap;padding:2px 6px;border-radius:3px;background:rgba(12,15,28,0.6);border-left:2px solid var(--c,#888);color:var(--sas-t1);opacity:0;transition:opacity .25s}
+.olabel.on{opacity:1}
+.zlabel{position:absolute;left:0;top:0;transform:translate(-50%,-50%);font-size:11px;letter-spacing:0.35em;text-transform:uppercase;color:rgba(222,218,208,0.55);white-space:nowrap;text-shadow:0 0 12px rgba(12,15,28,0.9)}
+
+/* ── TOOLTIP ── */
+#tip{position:fixed;z-index:20;pointer-events:none;padding:6px 9px;font-size:9px;max-width:260px;opacity:0;transition:opacity .12s}
+#tip.on{opacity:1}
+#tip .tip-meta{font-size:7.5px;color:var(--sas-t2);letter-spacing:0.08em;text-transform:uppercase;margin-top:3px}
+
+/* ── CARD ── */
+#card{position:fixed;top:16px;right:16px;bottom:16px;z-index:30;width:360px;max-width:calc(100% - 32px);display:flex;flex-direction:column;transform:translateX(calc(100% + 24px));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+#card.open{transform:none}
+#card-head{padding:12px 14px 10px;border-bottom:1px solid var(--sas-bd);display:flex;gap:10px;align-items:flex-start}
+#card-head-text{flex:1;min-width:0}
+#card-title{font-size:13px;font-weight:normal;line-height:1.35;margin-top:4px}
+#card-close{background:none;border:1px solid var(--sas-bd2);border-radius:var(--sas-r);color:var(--sas-t2);cursor:pointer;width:24px;height:24px;flex-shrink:0;font-size:12px}
+#card-close:hover{color:var(--sas-t1);border-color:var(--sas-t2)}
+#card-body{padding:12px 14px 16px;overflow-y:auto;flex:1;font-size:9.5px;line-height:1.7;color:var(--sas-t2)}
+.cg{display:grid;grid-template-columns:86px 1fr;gap:3px 10px;margin-bottom:14px}
+.cg .k{font-size:7.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sas-t3);padding-top:2px}
+.cg .v{color:var(--sas-t1)}
+.sw{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:0}
+.cs{margin-bottom:13px}
+.cs-t{font-size:7.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sas-ac2);margin-bottom:4px}
+.flag{font-size:8.5px;color:var(--sas-ac2);border:1px solid rgba(239,159,39,0.3);background:rgba(239,159,39,0.06);border-radius:var(--sas-r);padding:6px 8px;margin-bottom:12px;line-height:1.6}
+.cite{font-size:8.5px;color:var(--sas-t3)}
+
+/* ── TOUCH PAD ── */
+#pad{position:fixed;right:16px;bottom:120px;z-index:11;display:none;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:6px}
+#pad button{border:1px solid var(--sas-bd2);border-radius:var(--sas-r);background:var(--glass);color:var(--sas-t1);font-size:13px;touch-action:none;user-select:none;-webkit-user-select:none}
+#pad button:active{background:rgba(239,159,39,0.2)}
+@media (pointer:coarse){#pad{display:grid}.hint{display:none}}
+
+@media (max-width:720px){
+  #legend{top:auto;bottom:118px;right:16px;width:200px}
+  #card{top:auto;left:16px;right:16px;width:auto;height:58%;transform:translateY(calc(100% + 24px))}
+  #card.open{transform:none}
+  #pad{bottom:auto;top:96px}
+  .rail-seg{font-size:6.5px;letter-spacing:0.04em}
+}
+@media (prefers-reduced-motion:reduce){
+  #card,#intro,.olabel,#tint{transition:none}
+}
+</style>
+</head>
+<body>
+<canvas class="stage" id="stage" aria-hidden="true"></canvas>
+<div id="tint"></div>
+<div id="labels"></div>
+
+<div id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+  <div class="intro-box">
+    <div class="label">Wave Catalogue · Position axis</div>
+    <h1 id="intro-title">Step onto the coast.</h1>
+    <p>The Position axis of the Wave Matrix — Offshore, Edge, Shoreline, Inland — laid out as a walkable coastal transect. Every placed CPM stands where it sits on that axis. Colour is its Material (Grey, Hybrid, Green); form tells you which collection it comes from.</p>
+    <dl class="intro-stats">
+      <div><dt>Standard</dt><dd id="st-std">–</dd></div>
+      <div><dt>Studied</dt><dd id="st-stu">–</dd></div>
+      <div><dt>Speculative</dt><dd id="st-spe">–</dd></div>
+    </dl>
+    <div class="intro-keys">
+      <kbd>drag</kbd> look around &nbsp; <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move &nbsp; <kbd>E</kbd>/<kbd>Q</kbd> up/down<br>
+      <kbd>shift</kbd> faster &nbsp; <kbd>scroll</kbd> glide &nbsp; <kbd>click</kbd> a CPM to inspect &nbsp; <kbd>1</kbd>–<kbd>4</kbd> jump to zone
+    </div>
+    <div class="intro-actions">
+      <button class="pill solid" id="enter-btn">Enter the coast</button>
+      <a class="pill" href="index.html" style="text-decoration:none">Back to catalogue</a>
+    </div>
+  </div>
+</div>
+
+<div id="masthead" class="glass">
+  <div class="label">Wave Catalogue</div>
+  <h2>Coastal Transect</h2>
+  <a href="index.html">&larr; back to matrix</a>
+</div>
+
+<div id="legend" class="glass">
+  <div id="legend-head"><span class="label">Legend</span><span id="legend-chev">&#9652;</span></div>
+  <div id="legend-body">
+    <div>
+      <div class="lg-sec-title">Material — colour</div>
+      <div class="lg-row"><span class="lg-dot" style="background:var(--mat-grey)"></span>Grey</div>
+      <div class="lg-row"><span class="lg-dot" style="background:var(--mat-hybrid)"></span>Hybrid</div>
+      <div class="lg-row"><span class="lg-dot" style="background:var(--mat-green)"></span>Green</div>
+    </div>
+    <div>
+      <div class="lg-sec-title">Collection — form (click to hide)</div>
+      <button class="lg-ds" data-ds="standard"><span class="lg-glyph">&#9644;</span>Standard objects<span class="lg-count" id="lc-standard"></span></button>
+      <button class="lg-ds" data-ds="studied"><span class="lg-glyph">&#9670;</span>Studied objects<span class="lg-count" id="lc-studied"></span></button>
+      <button class="lg-ds" data-ds="speculative"><span class="lg-glyph">&#11041;</span>Speculative objects<span class="lg-count" id="lc-speculative"></span></button>
+      <div class="lg-note" style="margin-top:4px">Long ribbons are CPMs that <em>span</em> several zones.</div>
+    </div>
+    <div>
+      <div class="slr-row"><span class="lg-sec-title" style="margin:0">Sea level</span><span id="slr-val">+0.0 m</span></div>
+      <input type="range" id="slr" min="0" max="3" step="0.1" value="0" aria-label="Sea level rise in metres">
+    </div>
+    <div class="lg-note" id="lg-unplaced"></div>
+  </div>
+</div>
+
+<div id="rail" class="glass">
+  <div id="rail-read"><span><span class="label">Zone&nbsp;</span> <span id="rail-zone">–</span></span><span><span class="label">Elev&nbsp;</span> <span id="rail-elev">–</span></span></div>
+  <div id="rail-track"><div id="rail-mark"></div></div>
+  <div id="rail-caption"><span>&larr; sea</span><span>Position axis</span><span>land &rarr;</span></div>
+</div>
+
+<div class="hint glass" id="hint">
+  <kbd>drag</kbd> look &nbsp;<kbd>WASD</kbd> move<br><kbd>E</kbd>/<kbd>Q</kbd> up/down &nbsp;<kbd>shift</kbd> fast<br><kbd>1</kbd>–<kbd>4</kbd> zones &nbsp;<kbd>?</kbd> this hint
+</div>
+
+<div id="pad" aria-hidden="true">
+  <button data-k="up">&#8593;</button><button data-k="fwd">&#9650;</button><button data-k="down">&#8595;</button>
+  <button data-k="left">&#9664;</button><button data-k="back">&#9660;</button><button data-k="right">&#9654;</button>
+</div>
+
+<div id="tip" class="glass"></div>
+
+<aside id="card" class="glass" aria-live="polite">
+  <div id="card-head">
+    <div id="card-head-text"><div class="label" id="card-kicker"></div><h3 id="card-title"></h3></div>
+    <button id="card-close" aria-label="Close">&times;</button>
+  </div>
+  <div id="card-body"></div>
+</aside>
+
+<script src="data/studies.js"></script>
+<script src="data/studies-resolve.js"></script>
+<script src="data/speculative.js"></script>
+<script src="data/standard.js"></script>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+// ── TRANSECT GEOMETRY ─────────────────────────────────────────
+// World +x runs sea → land along the matrix Position axis; z runs alongshore.
+// Zone bands are in metres of world space, not real cross-shore distances.
+const POS=['Offshore','Edge','Shoreline','Inland'];
+const BANDS={Offshore:[-240,-90],Edge:[-90,-10],Shoreline:[-10,70],Inland:[70,200]};
+const WORLD={x0:-320,x1:260,z0:-210,z1:210};
+const MAT_HEX={Grey:0x8a8880,Hybrid:0x7F77DD,Green:0x1D9E75};
+const MAT_CSS={Grey:'#8a8880',Hybrid:'#7F77DD',Green:'#1D9E75'};
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Cross-shore profile: seabed → nearshore → waterline (~x=-55) → dune crest → back-barrier → hinterland.
+const PROFILE=[[-320,-20],[-240,-17],[-150,-10],[-90,-4.5],[-55,-0.3],[-35,1.6],[-20,6],[-10,3.2],[20,2.2],[70,2.6],[140,5.5],[260,9]];
+function smooth(t){return t*t*(3-2*t)}
+function profile(x){
+  if(x<=PROFILE[0][0])return PROFILE[0][1];
+  for(let i=1;i<PROFILE.length;i++){
+    const [xa,ya]=PROFILE[i-1],[xb,yb]=PROFILE[i];
+    if(x<=xb)return ya+(yb-ya)*smooth((x-xa)/(xb-xa));
+  }
+  return PROFILE[PROFILE.length-1][1];
+}
+function noise(x,z){
+  return Math.sin(x*0.045+z*0.03)*0.9+Math.sin(z*0.08-x*0.02)*0.6+Math.sin((x+z)*0.13)*0.3;
+}
+function heightAt(x,z){
+  // Quieter on the beach face so the waterline reads cleanly; dune crest undulates alongshore.
+  const beach=(x>-70&&x<-25)?0.25:1;
+  const dune=(x>-30&&x<-5)?Math.sin(z*0.05)*1.4:0;
+  return profile(x)+noise(x,z)*beach+dune;
+}
+function zoneAt(x){
+  for(const p of POS){const [a,b]=BANDS[p];if(x<b)return p;}
+  return 'Inland';
+}
+
+// ── DATA → PLACEMENTS ─────────────────────────────────────────
+function hash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)/4294967295;}
+function locOf(rec,fallbackPos){
+  const L=rec.location;
+  if(L&&typeof L==='object'&&L.type){
+    if(L.type==='Point'&&L.position)return {type:'Point',positions:[L.position]};
+    if(L.type==='Span'&&L.start&&L.end){
+      const a=POS.indexOf(L.start),b=POS.indexOf(L.end);
+      return {type:'Span',positions:[POS[Math.min(a,b)],POS[Math.max(a,b)]]};
+    }
+    if(L.type==='Discrete-multi'&&L.positions)return {type:'Discrete-multi',positions:L.positions.slice()};
+  }
+  if(fallbackPos)return {type:'Point',positions:[fallbackPos]};
+  return null;
+}
+const records=[],unplaced=[];
+(window.STANDARD||[]).forEach(o=>{
+  const loc=locOf(o,null);
+  if(!loc||!o.material){unplaced.push(o.name);return;}
+  records.push({ds:'standard',key:o.id,name:o.name,material:o.material,loc,rec:o});
+});
+(window.STUDIES||[]).forEach(o=>{
+  const loc=locOf(o,o.position);
+  if(!loc||!o.material){unplaced.push(o.title);return;}
+  records.push({ds:'studied',key:o.asa_code,name:o.title,material:o.material,loc,rec:o});
+});
+(window.SPECULATIVE||[]).forEach(o=>{
+  // Speculative `location` is a lat/lng site, not a cross-shore shape — use `position`.
+  const loc=o.position?{type:'Point',positions:[o.position]}:null;
+  if(!loc||!o.material){unplaced.push(o.name);return;}
+  records.push({ds:'speculative',key:o.id,name:o.name,material:o.material,loc,rec:o});
+});
+
+// Each record claims a cross-shore interval; intervals are packed into alongshore lanes
+// so nothing overlaps (lanes alternate either side of z=0, nearest first).
+const LANE=9;
+records.forEach(r=>{
+  const ps=r.loc.positions;
+  if(r.loc.type==='Point'){
+    const [a,b]=BANDS[ps[0]],w=b-a;
+    r.x=a+w*0.15+w*0.7*hash(r.key);
+    r.x0=r.x-6;r.x1=r.x+6;
+  }else{
+    const xs=ps.map(p=>{const [a,b]=BANDS[p];return (a+b)/2;});
+    // Spans run from just inside the first zone to just inside the last.
+    r.xs=r.loc.type==='Span'?[BANDS[ps[0]][0]+ (BANDS[ps[0]][1]-BANDS[ps[0]][0])*0.3, BANDS[ps[ps.length-1]][1]-(BANDS[ps[ps.length-1]][1]-BANDS[ps[ps.length-1]][0])*0.3]:xs;
+    r.x0=Math.min(...r.xs)-6;r.x1=Math.max(...r.xs)+6;
+    r.x=(r.x0+r.x1)/2;
+  }
+});
+const lanes=[];
+records.slice().sort((a,b)=>(b.x1-b.x0)-(a.x1-a.x0)||a.x-b.x).forEach(r=>{
+  let li=0;
+  for(;;li++){
+    if(!lanes[li])lanes[li]=[];
+    if(lanes[li].every(([a,b])=>r.x1<a||r.x0>b))break;
+  }
+  lanes[li].push([r.x0,r.x1]);
+  const k=Math.ceil(li/2)*(li%2?1:-1);
+  r.z=k*LANE+(hash(r.key+'z')-0.5)*2.5;
+});
+
+// ── RENDERER / SCENE ──────────────────────────────────────────
+const canvas=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.05;
+
+const scene=new THREE.Scene();
+const FOG_AIR=new THREE.Color(0x2a2742),FOG_SEA=new THREE.Color(0x07323a);
+scene.fog=new THREE.FogExp2(FOG_AIR.clone(),0.0032);
+scene.background=FOG_AIR.clone();
+
+const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,0.3,2400);
+camera.rotation.order='YXZ';
+
+// Low sun over the sea (−x): you look offshore into the dusk, landward into the blue hour.
+const SUN_DIR=new THREE.Vector3(-1,0.32,0.25).normalize();
+scene.add(new THREE.HemisphereLight(0x8c90c8,0x2a2418,0.75));
+const sun=new THREE.DirectionalLight(0xffc690,1.9);
+sun.position.copy(SUN_DIR).multiplyScalar(300);
+scene.add(sun);
+
+// Sky dome
+{
+  const g=new THREE.SphereGeometry(1600,32,16);
+  const m=new THREE.ShaderMaterial({
+    side:THREE.BackSide,depthWrite:false,fog:false,
+    uniforms:{sunDir:{value:SUN_DIR}},
+    vertexShader:`varying vec3 vDir;void main(){vDir=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+    fragmentShader:`varying vec3 vDir;uniform vec3 sunDir;
+      void main(){
+        float h=clamp(vDir.y,-0.2,1.0);
+        vec3 top=vec3(0.035,0.045,0.10),mid=vec3(0.16,0.15,0.27),hor=vec3(0.55,0.33,0.30);
+        vec3 c=mix(hor,mid,smoothstep(0.0,0.18,h));c=mix(c,top,smoothstep(0.18,0.75,h));
+        float s=max(dot(vDir,sunDir),0.0);
+        c+=vec3(0.94,0.62,0.15)*pow(s,10.0)*0.55+vec3(1.0,0.8,0.5)*pow(s,400.0)*1.4;
+        if(vDir.y<0.0)c=mix(c,vec3(0.16,0.15,0.27),smoothstep(0.0,-0.2,vDir.y));
+        gl_FragColor=vec4(c,1.0);
+      }`
+  });
+  scene.add(new THREE.Mesh(g,m));
+}
+
+// ── TERRAIN (flat-shaded, colour per facet) ───────────────────
+{
+  const W=WORLD.x1-WORLD.x0,D=WORLD.z1-WORLD.z0;
+  const g=new THREE.PlaneGeometry(W,D,150,110).toNonIndexed();
+  g.rotateX(-Math.PI/2);
+  g.translate((WORLD.x0+WORLD.x1)/2,0,(WORLD.z0+WORLD.z1)/2);
+  const p=g.attributes.position;
+  for(let i=0;i<p.count;i++)p.setY(i,heightAt(p.getX(i),p.getZ(i)));
+  const col=new Float32Array(p.count*3),c=new THREE.Color();
+  const seabed=new THREE.Color(0x1d3a44),wetsand=new THREE.Color(0x6e6450),sand=new THREE.Color(0xb39f78),
+        dune=new THREE.Color(0x5f6e4a),marsh=new THREE.Color(0x3f5a45),land=new THREE.Color(0x3d4636);
+  for(let i=0;i<p.count;i+=3){
+    const x=(p.getX(i)+p.getX(i+1)+p.getX(i+2))/3,y=(p.getY(i)+p.getY(i+1)+p.getY(i+2))/3;
+    if(y<-1.2)c.copy(seabed).lerp(wetsand,THREE.MathUtils.clamp((y+6)/5,0,1));
+    else if(x<-28)c.copy(wetsand).lerp(sand,THREE.MathUtils.clamp((y+1)/2.5,0,1));
+    else if(x<-6)c.copy(sand).lerp(dune,THREE.MathUtils.clamp((y-2)/3,0,1));
+    else if(x<70)c.copy(marsh);
+    else c.copy(marsh).lerp(land,THREE.MathUtils.clamp((x-70)/60,0,1));
+    const j=0.92+hash(String(i))*0.16;
+    for(let k=0;k<3;k++){col[(i+k)*3]=c.r*j;col[(i+k)*3+1]=c.g*j;col[(i+k)*3+2]=c.b*j;}
+  }
+  g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  g.computeVertexNormals();
+  scene.add(new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true})));
+}
+
+// ── WATER (faceted, animated) ─────────────────────────────────
+const waterU={uTime:{value:0},uSun:{value:SUN_DIR},uLevel:{value:0}};
+let water;
+{
+  const g=new THREE.PlaneGeometry(WORLD.x1-WORLD.x0+600,WORLD.z1-WORLD.z0+600,160,120);
+  g.rotateX(-Math.PI/2);
+  g.translate((WORLD.x0+WORLD.x1)/2-150,0,0);
+  const m=new THREE.ShaderMaterial({
+    transparent:true,depthWrite:false,fog:true,
+    uniforms:THREE.UniformsUtils.merge([THREE.UniformsLib.fog,{uTime:{value:0},uSun:{value:SUN_DIR},uLevel:{value:0}}]),
+    vertexShader:`
+      #include <fog_pars_vertex>
+      uniform float uTime;uniform float uLevel;varying vec3 vW;
+      void main(){
+        vec3 p=position;
+        float w=sin(p.x*0.06+uTime*0.9)*0.45+sin(p.z*0.09+p.x*0.03+uTime*1.3)*0.3+sin((p.x-p.z)*0.15+uTime*1.9)*0.12;
+        p.y+=w+uLevel;
+        vec4 wp=modelMatrix*vec4(p,1.0);vW=wp.xyz;
+        vec4 mvPosition=viewMatrix*wp;gl_Position=projectionMatrix*mvPosition;
+        #include <fog_vertex>
+      }`,
+    fragmentShader:`
+      #include <fog_pars_fragment>
+      uniform vec3 uSun;varying vec3 vW;
+      void main(){
+        vec3 n=normalize(cross(dFdx(vW),dFdy(vW)));if(n.y<0.0)n=-n;
+        vec3 v=normalize(cameraPosition-vW);
+        float fres=pow(1.0-max(dot(n,v),0.0),3.0);
+        vec3 deep=vec3(0.03,0.12,0.17),shallow=vec3(0.10,0.30,0.34),sky=vec3(0.42,0.30,0.36);
+        vec3 c=mix(deep,shallow,0.5+0.5*n.x)+sky*fres;
+        float spec=pow(max(dot(reflect(-uSun,n),v),0.0),60.0);
+        c+=vec3(1.0,0.72,0.4)*spec*1.2;
+        float a=mix(0.62,0.92,fres);
+        if(cameraPosition.y<vW.y){c=vec3(0.10,0.32,0.36);a=0.55;}
+        gl_FragColor=vec4(c,a);
+        #include <fog_fragment>
+      }`
+  });
+  m.uniforms.uTime=waterU.uTime;m.uniforms.uLevel=waterU.uLevel;
+  water=new THREE.Mesh(g,m);
+  water.renderOrder=2;
+  scene.add(water);
+}
+
+// ── CONTEXT: dune grass tufts, inland blocks, zone gates ──────
+{
+  const tuft=new THREE.ConeGeometry(0.5,1.6,4);
+  const tm=new THREE.MeshLambertMaterial({color:0x6f7d4c,flatShading:true});
+  const n=420,inst=new THREE.InstancedMesh(tuft,tm,n),M=new THREE.Matrix4(),q=new THREE.Quaternion(),s=new THREE.Vector3();
+  for(let i=0;i<n;i++){
+    const x=-32+hash('tx'+i)*95,z=WORLD.z0+hash('tz'+i)*(WORLD.z1-WORLD.z0);
+    const sc=0.6+hash('ts'+i)*1.1;s.set(sc,sc,sc);
+    M.compose(new THREE.Vector3(x,heightAt(x,z)+0.6*sc,z),q,s);inst.setMatrixAt(i,M);
+  }
+  scene.add(inst);
+  // Hinterland blocks beyond the CPM band, so Inland reads as settled ground.
+  const box=new THREE.BoxGeometry(1,1,1),bm=new THREE.MeshLambertMaterial({color:0x2a3040,flatShading:true});
+  const nb=160,bi=new THREE.InstancedMesh(box,bm,nb);
+  for(let i=0;i<nb;i++){
+    const x=175+hash('bx'+i)*80,z=WORLD.z0+hash('bz'+i)*(WORLD.z1-WORLD.z0);
+    const w=4+hash('bw'+i)*7,h=3+hash('bh'+i)*14,d=4+hash('bd'+i)*7;
+    M.compose(new THREE.Vector3(x,heightAt(x,z)+h/2-0.5,z),q,new THREE.Vector3(w,h,d));bi.setMatrixAt(i,M);
+  }
+  scene.add(bi);
+  // Zone boundaries: a glowing ground line plus a row of light posts alongshore.
+  const postG=new THREE.CylinderGeometry(0.12,0.12,7,4),postM=new THREE.MeshBasicMaterial({color:0xEF9F27,transparent:true,opacity:0.4});
+  [-90,-10,70].forEach(x=>{
+    const n=Math.floor((WORLD.z1-WORLD.z0)/16),pi=new THREE.InstancedMesh(postG,postM,n);
+    for(let i=0;i<n;i++){const z=WORLD.z0+8+i*16;M.compose(new THREE.Vector3(x,Math.max(heightAt(x,z),0)+3.5,z),q,new THREE.Vector3(1,1,1));pi.setMatrixAt(i,M);}
+    scene.add(pi);
+    const ln=new THREE.Mesh(new THREE.PlaneGeometry(WORLD.z1-WORLD.z0,0.25),new THREE.MeshBasicMaterial({color:0xEF9F27,transparent:true,opacity:0.35,side:THREE.DoubleSide}));
+    ln.rotation.y=Math.PI/2;ln.position.set(x,profile(x)+0.4,0);scene.add(ln);
+  });
+}
+
+// Drifting particles — spray over the water, dust over land
+let motes;
+{
+  const n=1400,pos=new Float32Array(n*3);
+  for(let i=0;i<n;i++){
+    pos[i*3]=WORLD.x0+hash('mx'+i)*(WORLD.x1-WORLD.x0);
+    pos[i*3+2]=WORLD.z0+hash('mz'+i)*(WORLD.z1-WORLD.z0);
+    pos[i*3+1]=Math.max(heightAt(pos[i*3],pos[i*3+2]),0)+1+hash('my'+i)*28;
+  }
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  motes=new THREE.Points(g,new THREE.PointsMaterial({color:0xf2d6a8,size:0.35,transparent:true,opacity:0.55,depthWrite:false}));
+  scene.add(motes);
+}
+
+// ── CPM OBJECTS ───────────────────────────────────────────────
+// Form = collection, colour = Material. Standard = grounded monolith,
+// Studied = floating faceted specimen with a ring, Speculative = wire cage around a glowing core.
+const groups={standard:new THREE.Group(),studied:new THREE.Group(),speculative:new THREE.Group()};
+Object.values(groups).forEach(g=>scene.add(g));
+const pickables=[],items=[];
+const GEO={
+  mono:new THREE.CylinderGeometry(1.5,1.9,4.2,6),
+  spec:new THREE.OctahedronGeometry(1.8,0),
+  ring:new THREE.TorusGeometry(2.7,0.07,6,40),
+  cage:new THREE.IcosahedronGeometry(2.2,0),
+  core:new THREE.IcosahedronGeometry(0.8,0),
+  post:new THREE.CylinderGeometry(0.25,0.25,1,5),
+};
+function matFor(material,ds){
+  const c=new THREE.Color(MAT_HEX[material]||0x888888);
+  return new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:ds==='speculative'?0.25:0.12,roughness:0.65,metalness:0.1,flatShading:true});
+}
+function glyph(r,mat){
+  const g=new THREE.Group();
+  if(r.ds==='standard'){
+    const m=new THREE.Mesh(GEO.mono,mat);m.position.y=2.1;g.add(m);g.userData.float=0;
+  }else if(r.ds==='studied'){
+    const m=new THREE.Mesh(GEO.spec,mat);g.add(m);
+    const ring=new THREE.Mesh(GEO.ring,new THREE.MeshBasicMaterial({color:MAT_HEX[r.material],transparent:true,opacity:0.7}));
+    ring.rotation.x=Math.PI/2;g.add(ring);g.userData.spin=m;g.userData.ring=ring;g.userData.float=3.2;
+  }else{
+    const cage=new THREE.Mesh(GEO.cage,new THREE.MeshBasicMaterial({color:MAT_HEX[r.material],wireframe:true,transparent:true,opacity:0.9}));
+    const core=new THREE.Mesh(GEO.core,new THREE.MeshBasicMaterial({color:0xfff1d6}));
+    g.add(cage,core);g.userData.spin=cage;g.userData.float=3.4;
+    // invisible solid shell so the wire cage is easy to hover/click
+    const hit=new THREE.Mesh(GEO.cage,new THREE.MeshBasicMaterial({visible:false}));g.add(hit);
+  }
+  return g;
+}
+records.forEach(r=>{
+  const mat=matFor(r.material,r.ds),root=new THREE.Group();
+  const anchors=[];
+  if(r.loc.type==='Point'){
+    const g=glyph(r,mat);const y=heightAt(r.x,r.z);
+    g.position.set(r.x,y+(g.userData.float||0),r.z);
+    root.add(g);anchors.push(g);
+  }else if(r.loc.type==='Span'){
+    // Ribbon draped over the terrain from the first zone to the last.
+    const [xa,xb]=r.xs,pts=[];
+    for(let x=xa;x<=xb;x+=3)pts.push(new THREE.Vector3(x,heightAt(x,r.z)+0.9,r.z));
+    pts.push(new THREE.Vector3(xb,heightAt(xb,r.z)+0.9,r.z));
+    const tube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),Math.max(8,pts.length*2),0.75,6,false),mat);
+    root.add(tube);
+    [xa,xb].forEach(x=>{const p=new THREE.Mesh(GEO.post,mat);const y=heightAt(x,r.z);p.scale.y=3;p.position.set(x,y+1.5,r.z);root.add(p);});
+    const g=glyph(r,mat);const mx=(xa+xb)/2,y=heightAt(mx,r.z);
+    g.position.set(mx,y+(g.userData.float||0)+(r.ds==='standard'?0.4:1.5),r.z);
+    if(r.ds==='standard')g.scale.setScalar(0.7);
+    root.add(g);anchors.push(g);
+  }else{
+    // Discrete-multi: a glyph in each zone, tied by a dashed line.
+    const pts=[];
+    r.xs.forEach(x=>{const g=glyph(r,mat);const y=heightAt(x,r.z);g.position.set(x,y+(g.userData.float||0),r.z);root.add(g);anchors.push(g);pts.push(new THREE.Vector3(x,y+3,r.z));});
+    const lg=new THREE.BufferGeometry().setFromPoints(pts);
+    const line=new THREE.Line(lg,new THREE.LineDashedMaterial({color:MAT_HEX[r.material],dashSize:1.5,gapSize:1}));line.computeLineDistances();root.add(line);
+  }
+  root.traverse(o=>{if(o.isMesh){o.userData.item=r;pickables.push(o);}});
+  r.root=root;r.mat=mat;r.anchors=anchors;
+  r.labelPos=anchors[0].position.clone().add(new THREE.Vector3(0,r.ds==='standard'?5.2:3.4,0));
+  r.baseY=anchors.map(a=>a.position.y);
+  r.phase=hash(r.key+'p')*Math.PI*2;
+  groups[r.ds].add(root);items.push(r);
+});
+
+// ── LABELS ────────────────────────────────────────────────────
+const labelsEl=document.getElementById('labels');
+items.forEach(r=>{
+  const d=document.createElement('div');d.className='olabel';d.textContent=r.name;d.style.setProperty('--c',MAT_CSS[r.material]);
+  labelsEl.appendChild(d);r.labelEl=d;
+});
+const zoneLabels=POS.map(p=>{
+  const d=document.createElement('div');d.className='zlabel';d.textContent=p;labelsEl.appendChild(d);
+  const [a,b]=BANDS[p];return {el:d,pos:new THREE.Vector3((a+b)/2,Math.max(profile((a+b)/2),0)+26,0)};
+});
+
+// ── CAMERA CONTROLLER (free roam) ─────────────────────────────
+const cam={pos:new THREE.Vector3(-215,16,0),yaw:-Math.PI/2,pitch:-0.12,vel:new THREE.Vector3()};
+const keys=new Set();
+let tween=null;
+function applyCam(){camera.position.copy(cam.pos);camera.rotation.set(cam.pitch,cam.yaw,0);}
+function lookAngles(from,to){const d=to.clone().sub(from);return {yaw:Math.atan2(-d.x,-d.z),pitch:Math.atan2(d.y,Math.hypot(d.x,d.z))};}
+function angDiff(a,b){let d=b-a;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;return d;}
+function flyTo(pos,yaw,pitch,dur=1.6){
+  if(reduceMotion){cam.pos.copy(pos);cam.yaw=yaw;cam.pitch=pitch;cam.vel.set(0,0,0);return;}
+  tween={t:0,dur,p0:cam.pos.clone(),p1:pos.clone(),y0:cam.yaw,dy:angDiff(cam.yaw,yaw),pi0:cam.pitch,pi1:pitch};
+  cam.vel.set(0,0,0);
+}
+function flyToZone(p){
+  const [a,b]=BANDS[p],cx=(a+b)/2;
+  const pos=new THREE.Vector3(a-35,Math.max(heightAt(a-35,cam.pos.z),0)+16,THREE.MathUtils.clamp(cam.pos.z,-60,60));
+  const ang=lookAngles(pos,new THREE.Vector3(cx,Math.max(profile(cx),0),pos.z));
+  flyTo(pos,ang.yaw,ang.pitch);
+}
+function flyToItem(r){
+  const t=r.anchors[0].position.clone();
+  const dir=cam.pos.clone().sub(t);dir.y=0;if(dir.lengthSq()<1)dir.set(-1,0,0);
+  dir.normalize().multiplyScalar(16);
+  const pos=t.clone().add(dir);pos.y=Math.max(t.y+5,heightAt(pos.x,pos.z)+2);
+  const ang=lookAngles(pos,t);flyTo(pos,ang.yaw,ang.pitch,1.2);
+}
+
+// Pointer: drag to look, click (no drag) to pick.
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,id:e.pointerId,moved:false};canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointermove',e=>{
+  if(drag&&drag.id===e.pointerId){
+    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;
+    if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>4){drag.moved=true;canvas.classList.add('dragging');tween=null;}
+    if(drag.moved){
+      const s=e.pointerType==='touch'?0.006:0.0034;
+      cam.yaw-=dx*s;cam.pitch=THREE.MathUtils.clamp(cam.pitch-dy*s,-1.45,1.45);
+    }
+    hideTip();
+  }else hover(e);
+});
+canvas.addEventListener('pointerup',e=>{
+  if(drag&&!drag.moved){const r=pick(e.clientX,e.clientY);if(r){openCard(r);flyToItem(r);}}
+  drag=null;canvas.classList.remove('dragging');
+});
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();tween=null;
+  const f=new THREE.Vector3();camera.getWorldDirection(f);
+  cam.vel.addScaledVector(f,-e.deltaY*0.06);
+},{passive:false});
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  const k=e.key.toLowerCase();
+  if(['1','2','3','4'].includes(k)){flyToZone(POS[+k-1]);return;}
+  if(k==='escape'){closeCard();return;}
+  if(k==='?'||k==='h'){hintEl.classList.toggle('faded');return;}
+  keys.add(k);if(e.shiftKey)keys.add('shift');
+  if(['w','a','s','d','q','e','arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)){tween=null;e.preventDefault();}
+});
+addEventListener('keyup',e=>{keys.delete(e.key.toLowerCase());if(!e.shiftKey)keys.delete('shift');});
+addEventListener('blur',()=>keys.clear());
+// Touch pad maps onto the same key set.
+const PAD={fwd:'w',back:'s',left:'a',right:'d',up:'e',down:'q'};
+document.querySelectorAll('#pad button').forEach(b=>{
+  const k=PAD[b.dataset.k];
+  b.addEventListener('pointerdown',e=>{e.preventDefault();keys.add(k);tween=null;});
+  ['pointerup','pointerleave','pointercancel'].forEach(t=>b.addEventListener(t,()=>keys.delete(k)));
+});
+
+// ── PICKING / TOOLTIP ─────────────────────────────────────────
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+const tipEl=document.getElementById('tip');
+let hovered=null;
+const DS_LABEL={standard:'Standard object',studied:'Studied object',speculative:'Speculative object'};
+function pick(cx,cy){
+  ndc.set(cx/innerWidth*2-1,-(cy/innerHeight)*2+1);
+  ray.setFromCamera(ndc,camera);
+  const hit=ray.intersectObjects(pickables.filter(o=>groups[o.userData.item.ds].visible),false)[0];
+  return hit?hit.object.userData.item:null;
+}
+function setHover(r){
+  if(hovered===r)return;
+  if(hovered)hovered.mat.emissiveIntensity=hovered.ds==='speculative'?0.25:0.12;
+  hovered=r;
+  if(r)r.mat.emissiveIntensity=0.7;
+  canvas.classList.toggle('hovering',!!r);
+}
+function hover(e){
+  if(e.pointerType==='touch')return;
+  const r=pick(e.clientX,e.clientY);setHover(r);
+  if(!r){hideTip();return;}
+  tipEl.innerHTML=`${esc(r.name)}<div class="tip-meta">${DS_LABEL[r.ds]} · ${esc(r.material)} · ${esc(locText(r.loc))}</div>`;
+  const x=Math.min(e.clientX+14,innerWidth-tipEl.offsetWidth-8),y=Math.min(e.clientY+14,innerHeight-tipEl.offsetHeight-8);
+  tipEl.style.left=x+'px';tipEl.style.top=y+'px';tipEl.classList.add('on');
+}
+function hideTip(){tipEl.classList.remove('on');}
+
+// ── INFO CARD ─────────────────────────────────────────────────
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function locText(l){return l.type==='Point'?l.positions[0]:l.type==='Span'?`${l.positions[0]} → ${l.positions[1]}`:l.positions.join(' + ');}
+const cardEl=document.getElementById('card');
+function row(k,v){return v==null||v===''?'':`<div class="k">${esc(k)}</div><div class="v">${v}</div>`;}
+function sec(t,v){return v?`<div class="cs"><div class="cs-t">${esc(t)}</div>${esc(v)}</div>`:'';}
+function openCard(r){
+  const o=r.rec,matV=`<span class="sw" style="background:${MAT_CSS[r.material]}"></span>${esc(r.material)}`;
+  let kicker=DS_LABEL[r.ds],body='';
+  if(r.ds==='studied'){
+    kicker+=' · '+esc(o.asa_code);
+    if(o._placement==='suggested')body+=`<div class="flag">Placement is an unreviewed draft from the SLR import${o._placementBasis?': '+esc(o._placementBasis):''}</div>`;
+    else if(o.location_status==='low-confidence')body+=`<div class="flag">Location shape is low-confidence — pending review.</div>`;
+    body+=`<div class="cg">${row('Position',esc(locText(r.loc)))}${row('Material',matV)}${row('Type',esc(o.subtype||o.group_type))}${row('Scale',esc(o.scale))}${row('Intent',esc(o.strategic_intent))}${row('Region',esc(o.region))}</div>`;
+    body+=sec('Typological logic',o.typological_logic)+sec('Operational logic',o.operational_logic)+sec('Experiential logic',o.experiential_logic)+sec('Sensory statement',o.sensory_statement);
+    if(o.full_citation||o.citation)body+=`<div class="cite">${esc(o.full_citation||o.citation)}</div>`;
+  }else if(r.ds==='standard'){
+    kicker+=' · '+esc(o.newCode||o.id);
+    body+=`<div class="cg">${row('Position',esc(locText(r.loc)))}${row('Shape',esc(r.loc.type))}${row('Material',matV)}${row('Scale',esc(o.scale))}${o.disturbance?row('Disturbance',esc([o.disturbance.primary,o.disturbance.secondary].filter(Boolean).join(' / '))):''}</div>`;
+    body+=sec('Description',o.desc);
+    if(o.tags&&o.tags.length)body+=sec('Tags',o.tags.join(', '));
+    if(o.source&&!/PENDING/.test(o.source))body+=`<div class="cite">${esc(o.source)}</div>`;
+    else body+=`<div class="cite">Source pending.</div>`;
+  }else{
+    kicker+=' · '+esc(o.id);
+    body+=`<div class="cg">${row('Position',esc(locText(r.loc)))}${row('Material',matV)}${row('Author',esc(o.author))}${row('Year',esc(o.year))}${row('Scale',esc(o.scale))}</div>`;
+    body+=sec('Description',o.description)+sec('Coastal context',o.coastal_context);
+  }
+  document.getElementById('card-kicker').innerHTML=kicker;
+  document.getElementById('card-title').textContent=r.name;
+  document.getElementById('card-body').innerHTML=body;
+  document.getElementById('card-body').scrollTop=0;
+  cardEl.classList.add('open');
+}
+function closeCard(){cardEl.classList.remove('open');}
+document.getElementById('card-close').onclick=closeCard;
+
+// ── HUD: rail, legend, sea level ──────────────────────────────
+const track=document.getElementById('rail-track'),mark=document.getElementById('rail-mark');
+const RX0=BANDS.Offshore[0],RX1=BANDS.Inland[1];
+const segEls=POS.map((p,i)=>{
+  const [a,b]=BANDS[p],s=document.createElement('button');
+  s.className='rail-seg';s.textContent=p;s.style.flex=String(b-a);s.title=`Fly to ${p} (${i+1})`;
+  s.onclick=()=>flyToZone(p);track.insertBefore(s,mark);return s;
+});
+const counts={standard:0,studied:0,speculative:0};items.forEach(r=>counts[r.ds]++);
+Object.keys(counts).forEach(k=>document.getElementById('lc-'+k).textContent=counts[k]);
+document.getElementById('st-std').textContent=counts.standard;
+document.getElementById('st-stu').textContent=counts.studied;
+document.getElementById('st-spe').textContent=counts.speculative;
+if(unplaced.length)document.getElementById('lg-unplaced').textContent=`${unplaced.length} record${unplaced.length>1?'s':''} not shown — no Position/Material yet: ${unplaced.join('; ')}.`;
+document.querySelectorAll('.lg-ds').forEach(b=>b.onclick=()=>{
+  const g=groups[b.dataset.ds];g.visible=!g.visible;b.classList.toggle('off',!g.visible);
+});
+const legendEl=document.getElementById('legend');
+document.getElementById('legend-head').onclick=()=>legendEl.classList.toggle('collapsed');
+if(innerWidth<720)legendEl.classList.add('collapsed');
+const slr=document.getElementById('slr');
+slr.oninput=()=>{waterU.uLevel.value=+slr.value;document.getElementById('slr-val').textContent=`+${(+slr.value).toFixed(1)} m`;};
+const hintEl=document.getElementById('hint');
+
+// ── INTRO ─────────────────────────────────────────────────────
+const intro=document.getElementById('intro');
+let entered=false;
+document.getElementById('enter-btn').onclick=()=>{
+  entered=true;intro.classList.add('gone');
+  setTimeout(()=>intro.remove(),700);
+  // Drift in from offshore toward the coast.
+  const p=new THREE.Vector3(-150,11,0),a=lookAngles(p,new THREE.Vector3(-20,3,0));
+  flyTo(p,a.yaw,a.pitch,3);
+  setTimeout(()=>hintEl.classList.add('faded'),12000);
+};
+// coastal-world.html#enter skips the intro (handy for linking straight in).
+if(location.hash==='#enter')document.getElementById('enter-btn').click();
+
+// ── LOOP ──────────────────────────────────────────────────────
+const clock=new THREE.Clock(),tmp=new THREE.Vector3(),fwd=new THREE.Vector3(),right=new THREE.Vector3();
+let lastZone=null,wasUnder=null;
+function ease(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+function frame(){
+  const dt=Math.min(clock.getDelta(),0.05),t=clock.elapsedTime;
+  // movement
+  if(tween){
+    tween.t+=dt/tween.dur;const k=ease(Math.min(tween.t,1));
+    cam.pos.lerpVectors(tween.p0,tween.p1,k);cam.yaw=tween.y0+tween.dy*k;cam.pitch=tween.pi0+(tween.pi1-tween.pi0)*k;
+    if(tween.t>=1)tween=null;
+  }else{
+    fwd.set(-Math.sin(cam.yaw)*Math.cos(cam.pitch),Math.sin(cam.pitch),-Math.cos(cam.yaw)*Math.cos(cam.pitch));
+    right.set(Math.cos(cam.yaw),0,-Math.sin(cam.yaw));
+    const acc=new THREE.Vector3(),speed=keys.has('shift')?90:32;
+    if(keys.has('w')||keys.has('arrowup'))acc.add(fwd);
+    if(keys.has('s')||keys.has('arrowdown'))acc.sub(fwd);
+    if(keys.has('d')||keys.has('arrowright'))acc.add(right);
+    if(keys.has('a')||keys.has('arrowleft'))acc.sub(right);
+    if(keys.has('e')||keys.has(' '))acc.y+=1;
+    if(keys.has('q'))acc.y-=1;
+    if(acc.lengthSq())acc.normalize().multiplyScalar(speed);
+    cam.vel.lerp(acc,1-Math.exp(-dt*(acc.lengthSq()?6:3)));
+    cam.pos.addScaledVector(cam.vel,dt);
+  }
+  cam.pos.x=THREE.MathUtils.clamp(cam.pos.x,WORLD.x0+10,WORLD.x1-10);
+  cam.pos.z=THREE.MathUtils.clamp(cam.pos.z,WORLD.z0+10,WORLD.z1-10);
+  cam.pos.y=THREE.MathUtils.clamp(cam.pos.y,heightAt(cam.pos.x,cam.pos.z)+1.6,140);
+  applyCam();
+
+  // world animation
+  if(!reduceMotion){
+    waterU.uTime.value=t;
+    items.forEach(r=>r.anchors.forEach((a,i)=>{
+      if(a.userData.float){a.position.y=r.baseY[i]+Math.sin(t*1.1+r.phase)*0.35;}
+      if(a.userData.spin)a.userData.spin.rotation.y=t*0.5+r.phase;
+      if(a.userData.ring)a.userData.ring.rotation.z=t*0.3;
+    }));
+    motes.position.x=Math.sin(t*0.05)*4;motes.position.y=Math.sin(t*0.13)*0.6;
+  }
+
+  // underwater
+  const level=waterU.uLevel.value;
+  const under=cam.pos.y<level-0.2;
+  if(under!==wasUnder){
+    wasUnder=under;document.body.classList.toggle('under',under);
+    scene.fog.color.copy(under?FOG_SEA:FOG_AIR);scene.background.copy(under?FOG_SEA:FOG_AIR);
+    scene.fog.density=under?0.022:0.0032;
+  }
+
+  // HUD
+  const zone=zoneAt(cam.pos.x);
+  if(zone!==lastZone){lastZone=zone;document.getElementById('rail-zone').textContent=zone;segEls.forEach((s,i)=>s.classList.toggle('on',POS[i]===zone));}
+  const e=cam.pos.y-level;document.getElementById('rail-elev').textContent=`${e>=0?'+':'−'}${Math.abs(e).toFixed(1)} m ${under?'below':'above'} sea`;
+  mark.style.left=(THREE.MathUtils.clamp((cam.pos.x-RX0)/(RX1-RX0),0,1)*100)+'%';
+
+  // labels: nearest visible items only, so the scene stays legible
+  const near=[];
+  items.forEach(r=>{
+    const vis=groups[r.ds].visible;
+    tmp.copy(r.labelPos);if(r.anchors[0].userData.float)tmp.y=r.anchors[0].position.y+3.4;
+    const d=tmp.distanceTo(cam.pos);
+    r._d=vis?d:Infinity;r._p=tmp.clone();
+  });
+  items.slice().sort((a,b)=>a._d-b._d).forEach((r,i)=>{
+    let on=i<14&&r._d<75;
+    if(on){
+      const p=r._p.project(camera);
+      if(p.z>1||Math.abs(p.x)>1.05||Math.abs(p.y)>1.05)on=false;
+      else{r.labelEl.style.transform=`translate(${(p.x*0.5+0.5)*innerWidth}px,${(-p.y*0.5+0.5)*innerHeight}px) translate(-50%,-100%)`;}
+    }
+    r.labelEl.classList.toggle('on',on);
+  });
+  zoneLabels.forEach(z=>{
+    // Follow the camera alongshore and show only zones at mid range, so names don't stack
+    // when looking straight down the transect.
+    z.pos.z=cam.pos.z;
+    const d=Math.abs(z.pos.x-cam.pos.x);
+    const p=z.pos.clone().project(camera);
+    const off=d<25||d>170||p.z>1||Math.abs(p.x)>1.2||Math.abs(p.y)>1.2;
+    z.el.style.display=off?'none':'block';
+    if(!off)z.el.style.transform=`translate(${(p.x*0.5+0.5)*innerWidth}px,${(-p.y*0.5+0.5)*innerHeight}px) translate(-50%,-50%)`;
+  });
+
+  renderer.render(scene,camera);
+  requestAnimationFrame(frame);
+}
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+applyCam();
+frame();
+</script>
+</body>
+</html>
