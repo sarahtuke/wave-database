@@ -199,6 +199,12 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 #restack-banner b{color:var(--t1)}
 #restack-banner .rb-actions{display:flex;gap:4px;margin-top:5px}
 .cloister-group.restack{border-left-width:2px;border-left-style:dashed}
+.release-brief{margin:4px 6px 2px;padding:5px 7px;border-left:2px solid rgba(239,159,39,.5);font-size:7.5px;line-height:1.55;color:var(--t2);background:rgba(239,159,39,.05)}
+.release-brief b{color:var(--t1);font-weight:normal}
+.str-item.transformed{opacity:.85;border-style:dashed}
+.legacy-tag{border-color:rgba(29,158,117,.45)!important;color:#5fc9a3!important}
+.carry-btn.transform-btn{color:#5fc9a3;border-color:rgba(29,158,117,.4)}
+.fit-tag{border-color:rgba(239,159,39,.45)!important;color:var(--ac2)!important}
 .cloister-group.inactive{opacity:.5}
 .si-tag.built-tag{border-color:rgba(29,158,117,.45);color:#5DCAA5}
 .str-item.inherited{opacity:.42;border-style:dashed;background:transparent}
@@ -371,10 +377,11 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
         <span><i style="background:#EF9F27"></i>tipping · TC shortfall</span>
         <span><i style="background:#c0544e"></i>tipping · driver drift</span>
         <span><i style="background:transparent;border:2px solid #dedad0;width:5px;height:5px"></i>transfer · restacked</span>
+        <span style="color:#5fc9a3">&#8635; legacy · parent CPMs transformed</span>
         <span><i style="border:1px solid #f09595;border-radius:0;width:6px;height:6px"></i>below floor (out of EP)</span>
       </div>
       <div class="ap-legend" id="ap-legend"></div>
-      <div class="ap-note">Pcn(t) = &prod; &Acirc;a,cn(t)^Wa within each TC group (non-compensatory); EP(T) = &Sigma; Wcn &times; Pcn at horizon T (compensatory across TC groups). Expected = design time-profile against the t0 threshold; observed adds the chosen scenario. The gap splits into TC shortfall (maintenance) and driver drift (new strategy). All parameter values are placeholders.</div>
+      <div class="ap-note">Pcn(t) = &prod; &Acirc;a,cn(t)^Wa within each TC group (non-compensatory); EP(T) = &Sigma; Wcn &times; Pcn at horizon T (compensatory across TC groups). Expected = design time-profile against the t0 threshold; observed adds the chosen scenario. The gap splits into TC shortfall (maintenance) and driver drift (new strategy). A tipping point is a release: its brief (cause + the anchors that carried the shortfall) ranks successor CPMs, and parent CPMs can be transformed into the restacked TC as legacy, L(t) = 1 &minus; &prod;(1 &minus; &rho;&middot;K&middot;e<sup>&minus;(t&minus;t<sub>r</sub>)/&tau;</sup>), &Acirc; = own + L(1 &minus; own). All parameter values are placeholders.</div>
     </div>
   </div>
 
@@ -382,11 +389,12 @@ html,body{background:var(--bg);color:var(--t1);font-family:'Courier New',monospa
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="data/studies.js"></script>
+<!-- ?v= busts the browser cache: bump it whenever studies.js or the engine changes, or a stale copy can load against a newer page. -->
+<script src="data/studies.js?v=2026-10-19"></script>
 <script src="data/studies-resolve.js"></script>
 <script src="data/speculative.js"></script>
 <script src="data/standard.js"></script>
-<script src="adaptive-pathways-engine.js"></script>
+<script src="adaptive-pathways-engine.js?v=2026-10-19"></script>
 <script src="config.js"></script>
 <script>
 // ── CONSTANTS ─────────────────────────────────────────────
@@ -796,6 +804,37 @@ function flashOutsideBoundary(){
 }
 
 // ── FILTERS ───────────────────────────────────────────────
+// ── SUCCESSOR RANKING (while restacking) ──────────────────
+// The parent's release brief shapes what comes next: each CPM is scored on how well it
+// answers the anchors that carried the shortfall, plus a cause term — driver drift favours
+// CPMs that grow (ramp-up profiles can keep pace with a moving threshold), TC shortfall
+// favours renewal in the parent's own matrix cells. Weights are PLACEHOLDERS.
+const SUCCESSOR_W={answer:0.6,cause:0.4};
+const SUCCESSOR_GROWTH={'ramp-up':1,'composite':0.5,'plateau':0.2,'step-and-reset':0,'decline':0};
+let libRankKey='';
+function successorContext(){
+  const r=restackMode&&restacks.find(x=>x.key===restackMode);
+  const brief=r&&restackBrief(r);
+  if(!brief||!brief.driving.length)return null;
+  const pc=cloisters.find(c=>c.id===r.parent);
+  const parentCells=new Set(strategy.filter(s=>pc.ids.includes(s.id)).flatMap(s=>cellsForCpm(s.cpm)));
+  return{brief,parentCells};
+}
+function successorFit(cpm,ctx){
+  const d=ctx.brief.driving,dSum=d.reduce((x,y)=>x+y.share,0)||1;
+  const answer=d.reduce((sum,x)=>{const v=cpm._s.anchors[x.a];return sum+(x.share/dSum)*(v!=null?v/10:0);},0);
+  let cause,why;
+  if(ctx.brief.cause==='driver'){
+    const cls=apProfileFor(cpm,false).cls;
+    cause=SUCCESSOR_GROWTH[cls]!=null?SUCCESSOR_GROWTH[cls]:0.2;
+    why=cause>=0.5?'grows with the driver':'static';
+  }else{
+    const cells=cellsForCpm(cpm);
+    cause=cells.length?cells.filter(c=>ctx.parentCells.has(c)).length/cells.length:0;
+    why=cause>0?'same niche':'new niche';
+  }
+  return{fit:SUCCESSOR_W.answer*answer+SUCCESSOR_W.cause*cause,answer,why};
+}
 function applyFilters(){
   const minScore=parseFloat(document.getElementById('score-range').value);
   document.getElementById('score-val').textContent=minScore.toFixed(1);
@@ -809,6 +848,9 @@ function applyFilters(){
     if(c._s.composite!==null&&c._s.composite<minScore) return false;
     return true;
   });
+  const sc=successorContext();
+  allCPMs.forEach(c=>{c._fit=sc?successorFit(c,sc):null;});
+  if(sc)filteredCPMs.sort((a,b)=>b._fit.fit-a._fit.fit);
   renderLibList();
 }
 
@@ -887,6 +929,7 @@ function renderLibList(){
     return;
   }
   const ancColors=['#7F77DD','#1D9E75','#378ADD','#EF9F27','#9F77DD'];
+  const sctx=successorContext();
   list.innerHTML=filteredCPMs.map(c=>{
     const sc=c._s.composite;
     const cls=scoreClass(sc);
@@ -906,6 +949,7 @@ function renderLibList(){
     const studyTag=c.kind==='study'
       ?`<span class="ci-tag study-tag">studied object</span>`
       :(c._s.n?`<span class="ci-tag" style="border-color:rgba(127,119,221,.2);color:rgba(127,119,221,.65)">${c._s.n} supporting ${c._s.n===1?'study':'studies'}</span>`:`<span class="ci-tag nd">no data</span>`);
+    const fitTag=c._fit&&sctx?`<span class="ci-tag fit-tag" title="fit to the release: answers ${sctx.brief.driving.map(d=>d.a).join(' + ')} (${Math.round(c._fit.answer*100)}%) · ${c._fit.why}">fit ${c._fit.fit.toFixed(2)} · ${c._fit.why}</span>`:'';
     const matColor=MAT_COLORS[c.material]||'#888';
     const placedStyle=placedCount?` style="border-color:${matColor};background:${matColor}1a;box-shadow:0 0 0 1px ${matColor}55"`:'';
     return`<div class="cpm-item${isSelected?' selected':''}${sc===null?' no-data':''}${placedCount?' placed':''}" data-id="${c.id}" onclick="selectCPM('${c.id}',this)"${placedStyle}>
@@ -918,6 +962,7 @@ function renderLibList(){
         <span class="ci-tag" style="border-color:${matColor}40;color:${matColor}">${c.material}</span>
         <span class="ci-tag">${locationLabel(c.location)}</span>
         <span class="ci-tag">${c.scale||'–'}</span>
+        ${fitTag}
         ${studyTag}
         ${placedTag}
         ${queuedTag}
@@ -1033,7 +1078,7 @@ function resetCloisters(){
 // The parent's CPMs are listed in the new TC but FADED and not counted, unless the user
 // reconsiders them: "maintain" (maintenance resumes that year) or "rebuild" (built again that
 // year, ageing from zero). One pathway per station for now.
-let restacks=[];          // [{key, parent, t, ids:[counted stratIds], inherited:[parent's ids], carry:{id:'maintain'|'rebuild'}, colorIdx}]
+let restacks=[];          // [{key, parent, t, ids:[counted stratIds], inherited:[parent's ids], carry:{id:'maintain'|'rebuild'|'transform'}, colorIdx}]
 let restackNext=1;
 let restackMode=null;     // key of the restack being edited — new placements join it
 function restackOf(parentKey){return restacks.find(r=>r.parent===parentKey);}
@@ -1075,6 +1120,7 @@ function editRestack(key){restackMode=key;const r=restacks.find(x=>x.key===key);
 function undoRestack(key){dropRestacks([key]);recomputeCloisters();}
 // The members a restacked TC actually counts: what was built / dragged in, plus any parent
 // CPMs the user reconsidered — as copies carrying the maintain / rebuild decision.
+// ("transform" CPMs are not members: they feed the TC as legacy — see restackLegacy.)
 function restackMembers(r){
   const out=[];
   strategy.forEach(s=>{
@@ -1083,6 +1129,14 @@ function restackMembers(r){
     else if(r.carry[s.id]==='rebuild')out.push(Object.assign({},s,{_rebuiltAt:r.t}));
   });
   return out;
+}
+// Parent CPMs transformed into the restacked TC: not kept as they are, but released into it —
+// their state at the restack year gives the new TC a fading head start (engine: apLegacyFn).
+function restackLegacy(r){return strategy.filter(s=>r.carry[s.id]==='transform');}
+// The parent's release brief at the restack year — what drove the tipping, what held.
+function restackBrief(r){
+  const pc=r&&cloisters.find(c=>c.id===r.parent);
+  return pc?apReleaseBrief(pc.ap,AP_MILESTONES.indexOf(r.t)):null;
 }
 function carryInRestack(key,id,mode){
   const r=restacks.find(x=>x.key===key);if(!r)return;
@@ -1124,26 +1178,30 @@ function memberAnchor(m,a){
 // Strategy list, EP stat and map badges show.
 let apScenario={drift:true,deferMaintenance:false};
 let apTimeIdx=0;
-function evaluateTC(members,win){
-  return apEvaluateTC(members.map(m=>({
+function apMember(m){
+  return{
     raw:Object.fromEntries(ANC.map(a=>[a,memberAnchor(m,a)])),
+    material:m.cpm.material,
     profile:Object.assign(apProfileFor(m.cpm,!!m.existing&&m._rebuiltAt==null),{
       installT:m._rebuiltAt!=null?m._rebuiltAt:(m.fromT||0),
       maintainFrom:m._maintainFrom!=null?m._maintainFrom:null
     })
-  })),weights,apScenario,win);
+  };
 }
-function makeCloister(key,ids,colorIdx,win,members){
+function evaluateTC(members,win,legacy){
+  return apEvaluateTC(members.map(apMember),weights,apScenario,win,(legacy||[]).map(apMember));
+}
+function makeCloister(key,ids,colorIdx,win,members,legacy){
   win=win||{startT:0,endT:null};
   members=members||strategy.filter(s=>ids.includes(s.id));
   ids=members.map(m=>m.id);
-  const ap=evaluateTC(members,win);
+  const ap=evaluateTC(members,win,legacy);
   return{id:key,ids,color:CLOISTER_PALETTE[colorIdx%CLOISTER_PALETTE.length],ap,pcn:ap.series[0].pcnObs,startT:win.startT,endT:win.endT};
 }
 function reevaluateCloisters(){
   cloisters.forEach(c=>{
     const r=c.parent&&restacks.find(x=>x.key===c.id);
-    c.ap=evaluateTC(r?restackMembers(r):strategy.filter(s=>c.ids.includes(s.id)),{startT:c.startT,endT:c.endT});
+    c.ap=evaluateTC(r?restackMembers(r):strategy.filter(s=>c.ids.includes(s.id)),{startT:c.startT,endT:c.endT},r?restackLegacy(r):null);
     if(r)c.ap.countEmpty=true;
     c.pcn=c.ap.series[0].pcnObs;
   });
@@ -1189,7 +1247,7 @@ function recomputeCloisters(){
   cloisters=[];
   const add=(spec,startT,label,short)=>{
     const child=restackOf(spec.key);
-    const c=makeCloister(spec.key,spec.ids,spec.colorIdx,{startT,endT:child?child.t:null},spec.members);
+    const c=makeCloister(spec.key,spec.ids,spec.colorIdx,{startT,endT:child?child.t:null},spec.members,spec.restack?restackLegacy(spec.restack):null);
     c.label=label;c.short=short;c.parent=spec.parent||null;
     if(spec.restack){c.inherited=spec.restack.inherited;c.carry=spec.restack.carry;c.ap.countEmpty=true;}
     cloisters.push(c);
@@ -1357,6 +1415,13 @@ function renderExistingOffSection(){
       </div>`).join('')}
     </div>`;
 }
+// "TC 1 released at +35y — driver drift. Shortfall: structural 72%, ecological 28%. Held: …"
+function releaseBriefText(b,pShort){
+  const pct=v=>Math.round(v*100)+'%';
+  const drv=b.driving.map(d=>`<b>${d.a}</b> ${pct(d.share)}`).join(', ');
+  const held=b.held.map(d=>d.a).join(', ');
+  return`${pShort} released at ${apMilestoneLabel(b.t)} — <b style="color:${AP_CAUSE_COLOR[b.cause]}">${AP_CAUSE_LABEL[b.cause]}</b>.${drv?` Shortfall carried by ${drv}.`:''}${held?` Held: ${held}.`:''} Successors should ${b.cause==='driver'?'answer the drifted anchor and grow with the driver':'renew the same niche'}.`;
+}
 function renderStratList(){
   const list=document.getElementById('str-list');
   const badge=document.getElementById('str-badge');
@@ -1383,15 +1448,25 @@ function renderStratList(){
     const label=isRestack?`${c.label} · restack ${apMilestoneLabel(c.startT)}`:(hasGeneratedCloisters&&c.ids.length===1?`${c.label} (solo)`:c.label);
     let itemsHTML=members.map(s=>{
       const mode=isRestack&&c.carry&&c.carry[s.id];
-      return renderStratItem(s,n++,isRestack?c.id:null,mode?`${mode==='rebuild'?'rebuilt':'maintained'} ${apMilestoneLabel(c.startT)}`:null);
+      return renderStratItem(s,n++,isRestack?c.id:null,mode?`${mode==='rebuild'?'rebuilt':mode==='transform'?'transformed':'maintained'} ${apMilestoneLabel(c.startT)}`:null);
     }).join('');
     if(isRestack){
-      const faded=(c.inherited||[]).filter(id=>!c.ids.includes(id)).map(id=>strategy.find(s=>s.id===id)).filter(Boolean);
-      if(!members.length)itemsHTML=`<div class="str-empty-hint" style="padding:6px">nothing counted yet — build CPMs on the map at ${apMilestoneLabel(c.startT)}, drag CPMs here, or reconsider a parent CPM below</div>`;
-      itemsHTML+=faded.map(s=>`<div class="str-item inherited" draggable="true" ondragstart="onStratDragStart(event,${s.id})" title="maintain or rebuild it in place, or drag it onto the map to build a new one at ${apMilestoneLabel(c.startT)}">
+      const pShort=cloisters.find(k=>k.id===c.parent).short;
+      const inherited=(c.inherited||[]).filter(id=>!c.ids.includes(id)).map(id=>strategy.find(s=>s.id===id)).filter(Boolean);
+      const transformed=inherited.filter(s=>c.carry&&c.carry[s.id]==='transform');
+      const faded=inherited.filter(s=>!transformed.includes(s));
+      const brief=restackBrief(restacks.find(r=>r.key===c.id));
+      const briefHTML=brief?`<div class="release-brief">${releaseBriefText(brief,pShort)}</div>`:'';
+      if(!members.length&&!transformed.length)itemsHTML=`<div class="str-empty-hint" style="padding:6px">nothing counted yet — build CPMs on the map at ${apMilestoneLabel(c.startT)}, drag CPMs here, or reconsider a parent CPM below</div>`;
+      itemsHTML=briefHTML+itemsHTML;
+      itemsHTML+=transformed.map(s=>`<div class="str-item transformed" title="released into ${c.short} at ${apMilestoneLabel(c.startT)}: its state then becomes legacy the new TC grows on, fading over ~${AP_PARAMS.legacyTau} years">
+        <div class="si-top"><div class="si-name">${s.cpm.name}</div><button class="si-remove" onclick="removeFromRestack('${c.id}',${s.id})" title="undo — back to faded / not counted">&times;</button></div>
+        <div class="si-meta"><span class="si-tag legacy-tag">&#8635; transformed ${apMilestoneLabel(c.startT)} · legacy</span><span class="si-tag">from ${pShort}</span><span class="si-tag">${s.cpm.material}</span></div>
+      </div>`).join('');
+      itemsHTML+=faded.map(s=>`<div class="str-item inherited" draggable="true" ondragstart="onStratDragStart(event,${s.id})" title="maintain, rebuild or transform it, or drag it onto the map to build a new one at ${apMilestoneLabel(c.startT)}">
         <div class="si-top"><div class="si-name">${s.cpm.name}</div>
-          <span style="display:flex;gap:3px"><button class="si-remove carry-btn" onclick="carryInRestack('${c.id}',${s.id},'maintain')" title="keep it, with maintenance resuming at ${apMilestoneLabel(c.startT)}">maintain</button><button class="si-remove carry-btn" onclick="carryInRestack('${c.id}',${s.id},'rebuild')" title="rebuild it at ${apMilestoneLabel(c.startT)} — ages from zero">rebuild</button></span></div>
-        <div class="si-meta"><span class="si-tag">from ${cloisters.find(k=>k.id===c.parent).short} · not counted</span><span class="si-tag">${s.cpm.material}</span></div>
+          <span style="display:flex;gap:3px"><button class="si-remove carry-btn" onclick="carryInRestack('${c.id}',${s.id},'maintain')" title="keep it, with maintenance resuming at ${apMilestoneLabel(c.startT)}">maintain</button><button class="si-remove carry-btn" onclick="carryInRestack('${c.id}',${s.id},'rebuild')" title="rebuild it at ${apMilestoneLabel(c.startT)} — ages from zero">rebuild</button><button class="si-remove carry-btn transform-btn" onclick="carryInRestack('${c.id}',${s.id},'transform')" title="let it decay into ${c.short}: what it holds at ${apMilestoneLabel(c.startT)} (mass as substrate, sediment, habitat, know-how) is released as legacy the new TC grows on">transform</button></span></div>
+        <div class="si-meta"><span class="si-tag">from ${pShort} · not counted</span><span class="si-tag">${s.cpm.material}</span></div>
       </div>`).join('');
     }else if(!itemsHTML){
       itemsHTML=`<div class="str-empty-hint" style="padding:6px">empty</div>`;
@@ -1407,10 +1482,14 @@ function renderStratList(){
     </div>`:'';
   const rs=restackMode&&restacks.find(r=>r.key===restackMode);
   const rc=rs&&cloisters.find(c=>c.id===rs.key),pc=rs&&cloisters.find(c=>c.id===rs.parent);
-  const banner=rs&&rc&&pc?`<div id="restack-banner">Restacking <b>${pc.short}</b> → <b style="color:${rc.color}">${rc.short}</b> at <b>${apMilestoneLabel(rs.t)}</b>. ${pc.short}'s CPMs are faded and not counted unless you <b>maintain</b> or <b>rebuild</b> them. Build new CPMs at ${apMilestoneLabel(rs.t)} by picking one in the library and clicking the map, or by <b>dragging any CPM from this list onto the map</b>; drag a CPM onto ${rc.short} to include it as it is; &times; removes it.
+  const rb=rs&&restackBrief(rs);
+  const banner=rs&&rc&&pc?`<div id="restack-banner">Restacking <b>${pc.short}</b> → <b style="color:${rc.color}">${rc.short}</b> at <b>${apMilestoneLabel(rs.t)}</b>.${rb?` ${releaseBriefText(rb,pc.short)} The library is ranked by fit to this release.`:''} ${pc.short}'s CPMs are faded and not counted unless you <b>maintain</b>, <b>rebuild</b> or <b>transform</b> them — transform releases what they hold as legacy ${rc.short} grows on. Build new CPMs at ${apMilestoneLabel(rs.t)} by picking one in the library and clicking the map, or by <b>dragging any CPM from this list onto the map</b>; drag a CPM onto ${rc.short} to include it as it is; &times; removes it.
       <div class="rb-actions"><button class="btn ac" onclick="finishRestack()">done</button><button class="btn danger" onclick="undoRestack('${rs.key}')">undo restack</button></div></div>`:'';
   list.innerHTML=banner+groupsHTML+ungroupZone+renderExistingOffSection();
   applyTcHighlight();
+  // The library ranking follows the restack being edited — re-rank when it starts, ends or shifts.
+  const rankKey=rs&&rb?`${rs.key}|${rb.cause}|${rb.driving.map(d=>d.a+d.share.toFixed(2)).join()}`:'';
+  if(rankKey!==libRankKey){libRankKey=rankKey;applyFilters();}
 }
 
 // ── ANCHOR COVERAGE ────────────────────────────────────────
@@ -1532,6 +1611,10 @@ function exportStrategy(){
       lines.push(`   Pcn observed / expected: ${[0,2,5,10].map(i=>{const x=c.ap.series[i];return x.exists&&x.pcnObs!=null?`${apMilestoneLabel(x.t)} ${x.pcnObs.toFixed(2)}/${x.pcnExp.toFixed(2)}`:null;}).filter(Boolean).join('  ')}`);
       const tp=c.ap.tipping,child=restackOf(c.id);
       lines.push(`   Tipping point: ${tp?`${apMilestoneLabel(tp.t)} — ${tp.cause==='tc'?'TC shortfall':'driver drift'}${child?` → restacked as ${cloisters.find(k=>k.id===child.key).label}`:' (not restacked)'}`:'none within 50y'}`);
+      const rb=child&&restackBrief(child);
+      if(rb)lines.push(`   Release brief: ${releaseBriefText(rb,c.short).replace(/<[^>]+>/g,'')}`);
+      const leg=child?restackLegacy(child):[];
+      if(leg.length)lines.push(`   Transformed into ${cloisters.find(k=>k.id===child.key).label} as legacy (τ ${AP_PARAMS.legacyTau}y): ${leg.map(s=>s.cpm.name).join('; ')}`);
     }
   });
   lines.push('','Adaptive pathways values are PLACEHOLDERS (thresholds, time profiles, floors, ε, k, Wcn) — see adaptive-pathways-engine.js.');
@@ -1659,9 +1742,26 @@ const apHorizonPlugin={id:'apHorizon',afterDatasetsDraw(chart){
 }};
 function renderPathwaysChart(){
   if(!pathwaysOpen)return;
+  // Shared track: TC groups with the same make-up produce identical Pcn lines, and Chart.js
+  // draws the first dataset on top — the later TC vanishes under it. Like parallel metro lines,
+  // each later coincident TC is drawn as a wider band beneath, so every colour stays visible.
+  const shownVals=c=>c.ap.series.map(s=>s.exists&&(s.active||s.t===c.endT)?s.pcnObs:null);
+  const shareWith={},band={};
+  cloisters.forEach((c,ci)=>{
+    if(!c.ap.hasData)return;
+    const v=shownVals(c);
+    const prev=cloisters.slice(0,ci).filter(k=>{
+      if(!k.ap.hasData)return false;
+      const w=shownVals(k);let common=0;
+      for(let i=0;i<v.length;i++){if(v[i]==null||w[i]==null)continue;if(Math.abs(v[i]-w[i])>0.005)return false;common++;}
+      return common>=2;
+    });
+    band[c.id]=prev.length;
+    if(prev.length)shareWith[c.id]=prev.map(k=>k.short).join(', ');
+  });
   document.getElementById('ap-legend').innerHTML=cloisters.map((c,ci)=>{
     const prof=[...new Set(strategy.filter(s=>c.ids.includes(s.id)).map(s=>AP_PROFILE_LABELS[apProfileFor(s.cpm,!!s.existing).cls]))].join(', ');
-    return`<div class="ap-legend-item" onmouseenter="hoverTc('${c.id}')" onmouseleave="hoverTc(null)"><span class="ap-legend-sw" style="${c.parent?`background:transparent;border:1.5px dashed ${c.color}`:`background:${c.color}`}"></span>${cloisterLabel(c,ci)} &middot; ${c.ap.hasData?prof:'no anchor data'}</div>`;
+    return`<div class="ap-legend-item" onmouseenter="hoverTc('${c.id}')" onmouseleave="hoverTc(null)"><span class="ap-legend-sw" style="${c.parent?`background:transparent;border:1.5px dashed ${c.color}`:`background:${c.color}`}"></span>${cloisterLabel(c,ci)} &middot; ${c.ap.hasData?prof:'no anchor data'}${shareWith[c.id]?` <span style="color:var(--t3)">&middot; shares track with ${shareWith[c.id]}</span>`:''}</div>`;
   }).join('');
   renderApHorizon();
   if(apChart){apChart.destroy();apChart=null;}
@@ -1674,7 +1774,7 @@ function renderPathwaysChart(){
       const shown=s=>s.exists&&(s.active||s.t===c.endT);
       datasets.push({
         label:cloisterShortLabel(c,ci)+' observed',data:ser.map(s=>shown(s)?s.pcnObs:null),
-        borderColor:c.color,backgroundColor:c.color,borderWidth:2,tension:0.25,borderDash:c.parent?[8,4]:[],
+        borderColor:c.color,backgroundColor:c.color,borderWidth:2+3*(band[c.id]||0),order:band[c.id]||0,tension:0.25,borderDash:c.parent?[8,4]:[],
         pointRadius:ser.map((s,i)=>tp&&i===tp.idx?5:s.belowFloor?3:1.5),
         pointStyle:ser.map(s=>s.belowFloor?'rect':'circle'),
         pointBackgroundColor:ser.map((s,i)=>tp&&i===tp.idx?AP_CAUSE_COLOR[tp.cause]:s.belowFloor?'transparent':c.color),
@@ -1741,10 +1841,14 @@ function renderApMetro(){
       ser.forEach(s=>{if(s.exists&&(s.active||s.t===c.endT)&&s.belowFloor)g+=`<rect x="${x(s.t)-2}" y="${y+6}" width="4" height="4" fill="none" stroke="#f09595" stroke-width="1"/>`;});
       if(child){
         // Transfer: parent ends, the expanded TC starts on its own row at the restack year.
+        // The transfer carries the release: its cause and driving anchors, and ↻ if parent CPMs
+        // were transformed into the new TC as legacy.
         const cy=rowY[child.key],tx=x(child.t),cc=cloisters.find(k=>k.id===child.key);
-        under+=`<line x1="${tx}" y1="${y}" x2="${tx}" y2="${cy}" stroke="${cc?cc.color:'#dedad0'}" stroke-width="2.5" stroke-dasharray="4,3"/>`;
-        g+=`<circle cx="${tx}" cy="${y}" r="5" fill="#090b17" stroke="#dedad0" stroke-width="2"/>`;
-        g+=`<text x="${tx+(tx>W*0.62?-8:8)}" y="${y-7}" font-size="7" fill="#8a8880" text-anchor="${tx>W*0.62?'end':'start'}">${apMilestoneLabel(child.t)} · restacked → ${cc?cc.short:''}</text>`;
+        const rb=restackBrief(child),nLeg=restackLegacy(child).length;
+        const relTxt=rb?`${rb.cause==='driver'?'drift':'shortfall'}: ${rb.driving.map(d=>d.a.slice(0,4)).join('+')}`:'released';
+        under+=`<line x1="${tx}" y1="${y}" x2="${tx}" y2="${cy}" stroke="${cc?cc.color:'#dedad0'}" stroke-width="${nLeg?3.5:2.5}" stroke-dasharray="${nLeg?'':'4,3'}"/>`;
+        g+=`<circle cx="${tx}" cy="${y}" r="5" fill="#090b17" stroke="${rb?AP_CAUSE_COLOR[rb.cause]:'#dedad0'}" stroke-width="2"><title>${rb?releaseBriefText(rb,c.short).replace(/<[^>]+>/g,''):''}${nLeg?` ${nLeg} CPM${nLeg===1?'':'s'} transformed into ${cc?cc.short:''} as legacy.`:''}</title></circle>`;
+        g+=`<text x="${tx+(tx>W*0.62?-8:8)}" y="${y-7}" font-size="7" fill="#8a8880" text-anchor="${tx>W*0.62?'end':'start'}">${apMilestoneLabel(child.t)} · ${relTxt} → ${cc?cc.short:''}${nLeg?' &#8635;':''}</text>`;
       }else if(tp){
         const tx=x(tp.t),col=AP_CAUSE_COLOR[tp.cause],right=tx>W*0.62;
         g+=`<line x1="${tx}" y1="${y}" x2="${x(T)}" y2="${y}" stroke="#4e4d4a" stroke-width="1.5" stroke-dasharray="3,3"/>`;

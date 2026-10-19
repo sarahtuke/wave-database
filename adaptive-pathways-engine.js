@@ -35,7 +35,21 @@
  * observedNoDrift − observed is driver drift (→ a new adaptive strategy). That split is the
  * restacking trigger's cause.
  *
- * EVERY NUMBER IN AP_PARAMS / AP_PROFILE_DEFAULTS IS A PLACEHOLDER. None are sourced; they
+ * How a tipping point shapes what comes next (19 Oct 2026) — release → reorganisation, as in
+ * the adaptive cycle, rather than end-of-life → replacement:
+ *   - RELEASE BRIEF  apReleaseBrief(): at the restack year, which anchors carried the TC's
+ *                    shortfall (each anchor's share of ln(Pcn_exp / Pcn_obs)), which held, and
+ *                    the cause. The page ranks successor CPMs against it (driving anchors
+ *                    answered; driver drift → favour CPMs that grow, TC shortfall → renew the
+ *                    same niche).
+ *   - LEGACY         a parent CPM can be "transformed" into the new TC instead of maintained,
+ *                    rebuilt or dropped: its state at release (K) is released into the child
+ *                    as legacy that fades with time, and the child grows on it:
+ *                      L_a(t) = 1 − ∏_m (1 − ρ_a,m · K_a,m · e^(−(t − t_r)/τ))
+ *                      Â_child = own + L · (1 − own)
+ *                    ρ by the parent CPM's material (AP_LEGACY_RHO), τ in AP_PARAMS.legacyTau.
+ *
+ * EVERY NUMBER IN AP_PARAMS / AP_PROFILE_DEFAULTS / AP_LEGACY_RHO IS A PLACEHOLDER. None are sourced; they
  * exist so the chart runs end to end. Open issues they stand in for are noted inline.
  */
 
@@ -62,7 +76,23 @@ var AP_PARAMS={
   k:2,
   // Which anchors a time profile moves. PLACEHOLDER — maturation/degradation is read as a
   // change in physical capacity; economic/social/authorship are held at their corpus value.
-  profileAnchors:['structural','ecological']
+  profileAnchors:['structural','ecological'],
+  // Legacy half-life scale: years over which a transformed parent's released capital fades
+  // (e^−1 after τ). PLACEHOLDER.
+  legacyTau:15,
+  // An anchor counts as "driving" the release if it carries at least this share of the
+  // shortfall. PLACEHOLDER.
+  drivingShare:0.2
+};
+
+// ρ_a — share of a transformed CPM's state at release that the new TC can grow on, by the
+// parent CPM's material. PLACEHOLDER, read as: grey mass becomes substrate / armour for new
+// habitat (structural, some ecological); green systems leave ecological memory (seed bank,
+// sediment, root mat); every CPM leaves some know-how, governance and place identity.
+var AP_LEGACY_RHO={
+  Grey:  {structural:0.5,ecological:0.3,economic:0.2,social:0.2,authorship:0.2},
+  Green: {structural:0.3,ecological:0.6,economic:0.2,social:0.25,authorship:0.25},
+  Hybrid:{structural:0.4,ecological:0.45,economic:0.2,social:0.2,authorship:0.2}
 };
 
 // Time-profile parameters by material. PLACEHOLDER until the SAS template carries time to
@@ -165,11 +195,42 @@ function apTcAhat(members,t,opts){
       var f=AP_PARAMS.profileAnchors.indexOf(a)>-1?apCapacity(m.profile,t,opts.maintain):1;
       vals.push(raw*f);
     });
-    if(!vals.length){out[a]=null;return;}
+    var L=opts.legacy?opts.legacy(t)[a]:0;
+    if(!vals.length){out[a]=L>0?L:null;return;}
     var mean=vals.reduce(function(x,y){return x+y;},0)/vals.length;
-    out[a]=Math.max(0,Math.min(1,mean/apThreshold(a,t,opts.drift,opts.baseT)));
+    var own=Math.max(0,Math.min(1,mean/apThreshold(a,t,opts.drift,opts.baseT)));
+    out[a]=own+L*(1-own); // the young TC grows on the released capital; it matters less as own ↑
   });
   return out;
+}
+
+/**
+ * Legacy of transformed parent CPMs, released at tr. legacy: [{raw, profile, material}].
+ * K_a,m = the CPM's Â at release (observed scenario); returns t → {anchor: L_a(t)}.
+ */
+function apLegacyFn(legacy,tr,scenario){
+  if(!legacy||!legacy.length)return null;
+  var maintain=!scenario.deferMaintenance;
+  var caps=legacy.map(function(m){
+    var rho=AP_LEGACY_RHO[m.material]||AP_LEGACY_RHO.Hybrid,K={};
+    AP_ANCHORS.forEach(function(a){
+      var raw=m.raw[a];
+      if(raw==null){K[a]=0;return;}
+      var f=AP_PARAMS.profileAnchors.indexOf(a)>-1?apCapacity(m.profile,tr,maintain):1;
+      K[a]=Math.max(0,Math.min(1,raw*f/apThreshold(a,tr,!!scenario.drift,tr)));
+    });
+    return{rho:rho,K:K};
+  });
+  return function(t){
+    var out={};
+    AP_ANCHORS.forEach(function(a){
+      if(t<tr){out[a]=0;return;}
+      var decay=Math.exp(-(t-tr)/AP_PARAMS.legacyTau),keep=1;
+      caps.forEach(function(c){keep*=1-c.rho[a]*c.K[a]*decay;});
+      out[a]=1-keep;
+    });
+    return out;
+  };
 }
 
 /**
@@ -179,26 +240,29 @@ function apTcAhat(members,t,opts){
  * scenario:  {drift:bool, deferMaintenance:bool}
  * win:       {startT, endT} — a restacked TC exists from startT; a parent stops contributing
  *            at endT (its child's restack year). Defaults: from Now, no end.
+ * legacy:    parent CPMs transformed into this TC at startT — [{raw, profile, material}]
  * Returns {series:[per milestone], tipping:{idx,t,cause}|null, hasData}
  *   series[i].active — counts toward EP at that milestone
  *   tipping = first failure ('tc' TC shortfall | 'driver' driver drift) at or after startT
  */
-function apEvaluateTC(members,weights,scenario,win){
+function apEvaluateTC(members,weights,scenario,win,legacy){
   win=win||{};
   var startT=win.startT||0,endT=win.endT==null?null:win.endT;
   var wa=apNormaliseWeights(weights);
+  var legacyAt=apLegacyFn(legacy,startT,scenario);
   var P=AP_PARAMS,eps=P.epsilon;
   var maintainObs=!scenario.deferMaintenance;
   var series=AP_MILESTONES.map(function(t){
     if(t<startT)return{t:t,exists:false,active:false,pcnExp:null,pcnObsNoDrift:null,pcnObs:null};
-    var exp=apTcAhat(members,t,{maintain:true,drift:false,baseT:startT});
-    var obsND=apTcAhat(members,t,{maintain:maintainObs,drift:false,baseT:startT});
-    var obs=apTcAhat(members,t,{maintain:maintainObs,drift:!!scenario.drift,baseT:startT});
+    var exp=apTcAhat(members,t,{maintain:true,drift:false,baseT:startT,legacy:legacyAt});
+    var obsND=apTcAhat(members,t,{maintain:maintainObs,drift:false,baseT:startT,legacy:legacyAt});
+    var obs=apTcAhat(members,t,{maintain:maintainObs,drift:!!scenario.drift,baseT:startT,legacy:legacyAt});
     var avail=AP_ANCHORS.filter(function(a){return obs[a]!=null;});
-    var plateau=apTcAhat(members.map(function(m){return{raw:m.raw,profile:{cls:'plateau',installT:m.profile.installT}};}),t,{maintain:true,drift:false,baseT:startT});
+    var plateau=apTcAhat(members.map(function(m){return{raw:m.raw,profile:{cls:'plateau',installT:m.profile.installT}};}),t,{maintain:true,drift:false,baseT:startT,legacy:legacyAt});
     var pcnObs=apPcn(obs,wa),pcnExp=apPcn(exp,wa),pcnPlateau=apPcn(plateau,wa);
     return{
-      t:t,exists:true,active:endT==null||t<endT,ahatExp:exp,ahatObs:obs,
+      t:t,exists:true,active:endT==null||t<endT,ahatExp:exp,ahatObsNoDrift:obsND,ahatObs:obs,
+      legacy:legacyAt?legacyAt(t):null,
       pcnExp:pcnExp,pcnObsNoDrift:apPcn(obsND,wa),pcnObs:pcnObs,
       belowFloor:avail.some(function(a){return obs[a]<P.anchorFloor;}),
       // Judged on Pcn — the whole TC's performance — not per anchor.
@@ -223,7 +287,36 @@ function apEvaluateTC(members,weights,scenario,win){
       tipping={idx:i,t:s.t,cause:s.tcLoss>=s.driverLoss?'tc':'driver'};
     }
   });
-  return{series:series,tipping:tipping,hasData:series.some(function(s){return s.pcnObs!=null;})};
+  return{series:series,tipping:tipping,wa:wa,hasLegacy:!!legacyAt,hasData:series.some(function(s){return s.pcnObs!=null;})};
+}
+
+/**
+ * Release brief — what a TC hands on at milestone idx (its restack year). Each anchor's share
+ * of the shortfall is its term in ln(Pcn_exp / Pcn_obs) = Σ Wa·(ln Â_exp − ln Â_obs), split
+ * into TC shortfall (exp → obsNoDrift) and driver drift (obsNoDrift → obs).
+ * Returns {t, cause, pcnObs, pcnExp, driving:[{a,share,gap,tc,driver,level}], held:[…], all}
+ * or null if the TC has no data there.
+ */
+function apReleaseBrief(result,idx){
+  var s=result&&result.series[idx];
+  if(!s||!s.exists||s.pcnExp==null||s.pcnObs==null)return null;
+  var lg=function(v){return Math.log(Math.max(v,0.01));};
+  var rows=AP_ANCHORS.filter(function(a){return s.ahatObs[a]!=null&&s.ahatExp[a]!=null;}).map(function(a){
+    var w=result.wa[a],e=s.ahatExp[a],nd=s.ahatObsNoDrift[a],o=s.ahatObs[a];
+    return{a:a,gap:Math.max(0,e-o),level:o,
+      tc:Math.max(0,w*(lg(e)-lg(nd))),driver:Math.max(0,w*(lg(nd)-lg(o))),
+      term:Math.max(0,w*(lg(e)-lg(o)))};
+  });
+  var total=rows.reduce(function(x,r){return x+r.term;},0);
+  rows.forEach(function(r){r.share=total>0?r.term/total:0;});
+  rows.sort(function(x,y){return y.share-x.share;});
+  var driving=rows.filter(function(r){return r.share>=AP_PARAMS.drivingShare;});
+  if(!driving.length&&rows.length&&rows[0].share>0)driving=[rows[0]];
+  return{
+    t:s.t,cause:(s.tcLoss||0)>=(s.driverLoss||0)?'tc':'driver',
+    pcnObs:s.pcnObs,pcnExp:s.pcnExp,driving:driving,
+    held:rows.filter(function(r){return driving.indexOf(r)<0;}),all:rows
+  };
 }
 
 /**
